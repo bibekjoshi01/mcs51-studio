@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=MCS51 Studio
+Comment=8051 assembly editor, debugger, and virtual training board
+Exec=/opt/mcs51-studio/mcs51-studio
+TryExec=/opt/mcs51-studio/mcs51-studio
+Icon=applications-engineering
+Terminal=false
+Categories=Education;Development;
