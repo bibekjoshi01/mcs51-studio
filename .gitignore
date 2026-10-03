@@ -14,3 +14,4 @@ reports/
 .env.*
 settings.json
 .ruff_cache/
+release/
