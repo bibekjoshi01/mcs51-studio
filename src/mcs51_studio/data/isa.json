@@ -1,1 +1,1794 @@
-[{"opcode":0,"size":1,"cycles":1,"mnemonic":"NOP","display":"NOP","class":"edsim51sh.instructions.misc.Nop"},{"opcode":1,"size":2,"cycles":2,"mnemonic":"AJMP","display":"AJMP 000H","class":"edsim51sh.instructions.branches.Ajmp"},{"opcode":2,"size":3,"cycles":2,"mnemonic":"LJMP","display":"LJMP 0000H","class":"edsim51sh.instructions.branches.Ljmp"},{"opcode":3,"size":1,"cycles":1,"mnemonic":"RR A","display":"RR A","class":"edsim51sh.instructions.rotate.RrA"},{"opcode":4,"size":1,"cycles":1,"mnemonic":"INC A","display":"INC A","class":"edsim51sh.instructions.inc.IncA"},{"opcode":5,"size":2,"cycles":1,"mnemonic":"INC ","display":"INC 00H","class":"edsim51sh.instructions.inc.IncAddress"},{"opcode":6,"size":1,"cycles":1,"mnemonic":"INC @R","display":"INC @R0","class":"edsim51sh.instructions.inc.IncAtReg"},{"opcode":7,"size":1,"cycles":1,"mnemonic":"INC @R","display":"INC @R1","class":"edsim51sh.instructions.inc.IncAtReg"},{"opcode":8,"size":1,"cycles":1,"mnemonic":"INC R","display":"INC R0","class":"edsim51sh.instructions.inc.IncReg"},{"opcode":9,"size":1,"cycles":1,"mnemonic":"INC R","display":"INC R1","class":"edsim51sh.instructions.inc.IncReg"},{"opcode":10,"size":1,"cycles":1,"mnemonic":"INC R","display":"INC R2","class":"edsim51sh.instructions.inc.IncReg"},{"opcode":11,"size":1,"cycles":1,"mnemonic":"INC R","display":"INC R3","class":"edsim51sh.instructions.inc.IncReg"},{"opcode":12,"size":1,"cycles":1,"mnemonic":"INC R","display":"INC R4","class":"edsim51sh.instructions.inc.IncReg"},{"opcode":13,"size":1,"cycles":1,"mnemonic":"INC R","display":"INC R5","class":"edsim51sh.instructions.inc.IncReg"},{"opcode":14,"size":1,"cycles":1,"mnemonic":"INC R","display":"INC R6","class":"edsim51sh.instructions.inc.IncReg"},{"opcode":15,"size":1,"cycles":1,"mnemonic":"INC R","display":"INC R7","class":"edsim51sh.instructions.inc.IncReg"},{"opcode":16,"size":3,"cycles":2,"mnemonic":"JBC","display":"JBC 00H,00H","class":"edsim51sh.instructions.branches.Jbc"},{"opcode":17,"size":2,"cycles":2,"mnemonic":"ACALL","display":"ACALL 000H","class":"edsim51sh.instructions.branches.Acall"},{"opcode":18,"size":3,"cycles":2,"mnemonic":"LCALL","display":"LCALL 0000H","class":"edsim51sh.instructions.branches.Lcall"},{"opcode":19,"size":1,"cycles":1,"mnemonic":"RRC A","display":"RRC A","class":"edsim51sh.instructions.rotate.RrcA"},{"opcode":20,"size":1,"cycles":1,"mnemonic":"DEC A","display":"DEC A","class":"edsim51sh.instructions.dec.DecA"},{"opcode":21,"size":2,"cycles":1,"mnemonic":"DEC ","display":"DEC 00H","class":"edsim51sh.instructions.dec.DecAddress"},{"opcode":22,"size":1,"cycles":1,"mnemonic":"DEC @R","display":"DEC @R0","class":"edsim51sh.instructions.dec.DecAtReg"},{"opcode":23,"size":1,"cycles":1,"mnemonic":"DEC @R","display":"DEC @R1","class":"edsim51sh.instructions.dec.DecAtReg"},{"opcode":24,"size":1,"cycles":1,"mnemonic":"DEC R","display":"DEC R0","class":"edsim51sh.instructions.dec.DecReg"},{"opcode":25,"size":1,"cycles":1,"mnemonic":"DEC R","display":"DEC R1","class":"edsim51sh.instructions.dec.DecReg"},{"opcode":26,"size":1,"cycles":1,"mnemonic":"DEC R","display":"DEC R2","class":"edsim51sh.instructions.dec.DecReg"},{"opcode":27,"size":1,"cycles":1,"mnemonic":"DEC R","display":"DEC R3","class":"edsim51sh.instructions.dec.DecReg"},{"opcode":28,"size":1,"cycles":1,"mnemonic":"DEC R","display":"DEC R4","class":"edsim51sh.instructions.dec.DecReg"},{"opcode":29,"size":1,"cycles":1,"mnemonic":"DEC R","display":"DEC R5","class":"edsim51sh.instructions.dec.DecReg"},{"opcode":30,"size":1,"cycles":1,"mnemonic":"DEC R","display":"DEC R6","class":"edsim51sh.instructions.dec.DecReg"},{"opcode":31,"size":1,"cycles":1,"mnemonic":"DEC R","display":"DEC R7","class":"edsim51sh.instructions.dec.DecReg"},{"opcode":32,"size":3,"cycles":2,"mnemonic":"JB","display":"JB 00H,00H","class":"edsim51sh.instructions.branches.Jb"},{"opcode":33,"size":2,"cycles":2,"mnemonic":"AJMP","display":"AJMP 100H","class":"edsim51sh.instructions.branches.Ajmp"},{"opcode":34,"size":1,"cycles":2,"mnemonic":"RET","display":"RET","class":"edsim51sh.instructions.branches.Ret"},{"opcode":35,"size":1,"cycles":1,"mnemonic":"RL A","display":"RL A","class":"edsim51sh.instructions.rotate.RlA"},{"opcode":36,"size":2,"cycles":1,"mnemonic":"ADD A,#","display":"ADD A,#00H","class":"edsim51sh.instructions.add.AddAdata"},{"opcode":37,"size":2,"cycles":1,"mnemonic":"ADD A,","display":"ADD A,00H","class":"edsim51sh.instructions.add.AddAaddress"},{"opcode":38,"size":1,"cycles":1,"mnemonic":"ADD A,@R","display":"ADD A,@R0","class":"edsim51sh.instructions.add.AddAatReg"},{"opcode":39,"size":1,"cycles":1,"mnemonic":"ADD A,@R","display":"ADD A,@R1","class":"edsim51sh.instructions.add.AddAatReg"},{"opcode":40,"size":1,"cycles":1,"mnemonic":"ADD A,R","display":"ADD A,R0","class":"edsim51sh.instructions.add.AddAreg"},{"opcode":41,"size":1,"cycles":1,"mnemonic":"ADD A,R","display":"ADD A,R1","class":"edsim51sh.instructions.add.AddAreg"},{"opcode":42,"size":1,"cycles":1,"mnemonic":"ADD A,R","display":"ADD A,R2","class":"edsim51sh.instructions.add.AddAreg"},{"opcode":43,"size":1,"cycles":1,"mnemonic":"ADD A,R","display":"ADD A,R3","class":"edsim51sh.instructions.add.AddAreg"},{"opcode":44,"size":1,"cycles":1,"mnemonic":"ADD A,R","display":"ADD A,R4","class":"edsim51sh.instructions.add.AddAreg"},{"opcode":45,"size":1,"cycles":1,"mnemonic":"ADD A,R","display":"ADD A,R5","class":"edsim51sh.instructions.add.AddAreg"},{"opcode":46,"size":1,"cycles":1,"mnemonic":"ADD A,R","display":"ADD A,R6","class":"edsim51sh.instructions.add.AddAreg"},{"opcode":47,"size":1,"cycles":1,"mnemonic":"ADD A,R","display":"ADD A,R7","class":"edsim51sh.instructions.add.AddAreg"},{"opcode":48,"size":3,"cycles":2,"mnemonic":"JNB","display":"JNB 00H,00H","class":"edsim51sh.instructions.branches.Jnb"},{"opcode":49,"size":2,"cycles":2,"mnemonic":"ACALL","display":"ACALL 100H","class":"edsim51sh.instructions.branches.Acall"},{"opcode":50,"size":1,"cycles":2,"mnemonic":"RETI","display":"RETI","class":"edsim51sh.instructions.branches.Reti"},{"opcode":51,"size":1,"cycles":1,"mnemonic":"RLC A","display":"RLC A","class":"edsim51sh.instructions.rotate.RlcA"},{"opcode":52,"size":2,"cycles":1,"mnemonic":"ADDC A,#","display":"ADDC A,#00H","class":"edsim51sh.instructions.add.AddcAdata"},{"opcode":53,"size":2,"cycles":1,"mnemonic":"ADDC A,","display":"ADDC A,00H","class":"edsim51sh.instructions.add.AddcAaddress"},{"opcode":54,"size":1,"cycles":1,"mnemonic":"ADDC A,@R","display":"ADDC A,@R0","class":"edsim51sh.instructions.add.AddcAatReg"},{"opcode":55,"size":1,"cycles":1,"mnemonic":"ADDC A,@R","display":"ADDC A,@R1","class":"edsim51sh.instructions.add.AddcAatReg"},{"opcode":56,"size":1,"cycles":1,"mnemonic":"ADDC A,R","display":"ADDC A,R0","class":"edsim51sh.instructions.add.AddcAreg"},{"opcode":57,"size":1,"cycles":1,"mnemonic":"ADDC A,R","display":"ADDC A,R1","class":"edsim51sh.instructions.add.AddcAreg"},{"opcode":58,"size":1,"cycles":1,"mnemonic":"ADDC A,R","display":"ADDC A,R2","class":"edsim51sh.instructions.add.AddcAreg"},{"opcode":59,"size":1,"cycles":1,"mnemonic":"ADDC A,R","display":"ADDC A,R3","class":"edsim51sh.instructions.add.AddcAreg"},{"opcode":60,"size":1,"cycles":1,"mnemonic":"ADDC A,R","display":"ADDC A,R4","class":"edsim51sh.instructions.add.AddcAreg"},{"opcode":61,"size":1,"cycles":1,"mnemonic":"ADDC A,R","display":"ADDC A,R5","class":"edsim51sh.instructions.add.AddcAreg"},{"opcode":62,"size":1,"cycles":1,"mnemonic":"ADDC A,R","display":"ADDC A,R6","class":"edsim51sh.instructions.add.AddcAreg"},{"opcode":63,"size":1,"cycles":1,"mnemonic":"ADDC A,R","display":"ADDC A,R7","class":"edsim51sh.instructions.add.AddcAreg"},{"opcode":64,"size":2,"cycles":2,"mnemonic":"JC","display":"JC 00H","class":"edsim51sh.instructions.branches.Jc"},{"opcode":65,"size":2,"cycles":2,"mnemonic":"AJMP","display":"AJMP 200H","class":"edsim51sh.instructions.branches.Ajmp"},{"opcode":66,"size":2,"cycles":1,"mnemonic":"ORL direct,A","display":"ORL 00H,A","class":"edsim51sh.instructions.orl.OrlAddressA"},{"opcode":67,"size":3,"cycles":2,"mnemonic":"ORL direct,#","display":"ORL 00H,#00H","class":"edsim51sh.instructions.orl.OrlAddressData"},{"opcode":68,"size":2,"cycles":1,"mnemonic":"ORL A,#","display":"ORL A,#00H","class":"edsim51sh.instructions.orl.OrlAdata"},{"opcode":69,"size":2,"cycles":1,"mnemonic":"ORL A,","display":"ORL A,00H","class":"edsim51sh.instructions.orl.OrlAaddress"},{"opcode":70,"size":1,"cycles":1,"mnemonic":"ORL A,@R","display":"ORL A,@R0","class":"edsim51sh.instructions.orl.OrlAatReg"},{"opcode":71,"size":1,"cycles":1,"mnemonic":"ORL A,@R","display":"ORL A,@R1","class":"edsim51sh.instructions.orl.OrlAatReg"},{"opcode":72,"size":1,"cycles":1,"mnemonic":"ORL A,R","display":"ORL A,R0","class":"edsim51sh.instructions.orl.OrlAreg"},{"opcode":73,"size":1,"cycles":1,"mnemonic":"ORL A,R","display":"ORL A,R1","class":"edsim51sh.instructions.orl.OrlAreg"},{"opcode":74,"size":1,"cycles":1,"mnemonic":"ORL A,R","display":"ORL A,R2","class":"edsim51sh.instructions.orl.OrlAreg"},{"opcode":75,"size":1,"cycles":1,"mnemonic":"ORL A,R","display":"ORL A,R3","class":"edsim51sh.instructions.orl.OrlAreg"},{"opcode":76,"size":1,"cycles":1,"mnemonic":"ORL A,R","display":"ORL A,R4","class":"edsim51sh.instructions.orl.OrlAreg"},{"opcode":77,"size":1,"cycles":1,"mnemonic":"ORL A,R","display":"ORL A,R5","class":"edsim51sh.instructions.orl.OrlAreg"},{"opcode":78,"size":1,"cycles":1,"mnemonic":"ORL A,R","display":"ORL A,R6","class":"edsim51sh.instructions.orl.OrlAreg"},{"opcode":79,"size":1,"cycles":1,"mnemonic":"ORL A,R","display":"ORL A,R7","class":"edsim51sh.instructions.orl.OrlAreg"},{"opcode":80,"size":2,"cycles":2,"mnemonic":"JNC","display":"JNC 00H","class":"edsim51sh.instructions.branches.Jnc"},{"opcode":81,"size":2,"cycles":2,"mnemonic":"ACALL","display":"ACALL 200H","class":"edsim51sh.instructions.branches.Acall"},{"opcode":82,"size":2,"cycles":1,"mnemonic":"ANL direct,A","display":"ANL 00H,A","class":"edsim51sh.instructions.anl.AnlAddressA"},{"opcode":83,"size":3,"cycles":2,"mnemonic":"ANL direct,#","display":"ANL 00H,#00H","class":"edsim51sh.instructions.anl.AnlAddressData"},{"opcode":84,"size":2,"cycles":1,"mnemonic":"ANL A,#","display":"ANL A,#00H","class":"edsim51sh.instructions.anl.AnlAdata"},{"opcode":85,"size":2,"cycles":1,"mnemonic":"ANL A,","display":"ANL A,00H","class":"edsim51sh.instructions.anl.AnlAaddress"},{"opcode":86,"size":1,"cycles":1,"mnemonic":"ANL A,@R","display":"ANL A,@R0","class":"edsim51sh.instructions.anl.AnlAatReg"},{"opcode":87,"size":1,"cycles":1,"mnemonic":"ANL A,@R","display":"ANL A,@R1","class":"edsim51sh.instructions.anl.AnlAatReg"},{"opcode":88,"size":1,"cycles":1,"mnemonic":"ANL A,R","display":"ANL A,R0","class":"edsim51sh.instructions.anl.AnlAreg"},{"opcode":89,"size":1,"cycles":1,"mnemonic":"ANL A,R","display":"ANL A,R1","class":"edsim51sh.instructions.anl.AnlAreg"},{"opcode":90,"size":1,"cycles":1,"mnemonic":"ANL A,R","display":"ANL A,R2","class":"edsim51sh.instructions.anl.AnlAreg"},{"opcode":91,"size":1,"cycles":1,"mnemonic":"ANL A,R","display":"ANL A,R3","class":"edsim51sh.instructions.anl.AnlAreg"},{"opcode":92,"size":1,"cycles":1,"mnemonic":"ANL A,R","display":"ANL A,R4","class":"edsim51sh.instructions.anl.AnlAreg"},{"opcode":93,"size":1,"cycles":1,"mnemonic":"ANL A,R","display":"ANL A,R5","class":"edsim51sh.instructions.anl.AnlAreg"},{"opcode":94,"size":1,"cycles":1,"mnemonic":"ANL A,R","display":"ANL A,R6","class":"edsim51sh.instructions.anl.AnlAreg"},{"opcode":95,"size":1,"cycles":1,"mnemonic":"ANL A,R","display":"ANL A,R7","class":"edsim51sh.instructions.anl.AnlAreg"},{"opcode":96,"size":2,"cycles":2,"mnemonic":"JZ","display":"JZ 00H","class":"edsim51sh.instructions.branches.Jz"},{"opcode":97,"size":2,"cycles":2,"mnemonic":"AJMP","display":"AJMP 300H","class":"edsim51sh.instructions.branches.Ajmp"},{"opcode":98,"size":2,"cycles":1,"mnemonic":"XRL direct,A","display":"XRL 00H,A","class":"edsim51sh.instructions.xrl.XrlAddressA"},{"opcode":99,"size":3,"cycles":2,"mnemonic":"XRL direct,#","display":"XRL 00H,#00H","class":"edsim51sh.instructions.xrl.XrlAddressData"},{"opcode":100,"size":2,"cycles":1,"mnemonic":"XRL A,#","display":"XRL A,#00H","class":"edsim51sh.instructions.xrl.XrlAdata"},{"opcode":101,"size":2,"cycles":1,"mnemonic":"XRL A,","display":"XRL A,00H","class":"edsim51sh.instructions.xrl.XrlAaddress"},{"opcode":102,"size":1,"cycles":1,"mnemonic":"XRL A,@R","display":"XRL A,@R0","class":"edsim51sh.instructions.xrl.XrlAatReg"},{"opcode":103,"size":1,"cycles":1,"mnemonic":"XRL A,@R","display":"XRL A,@R1","class":"edsim51sh.instructions.xrl.XrlAatReg"},{"opcode":104,"size":1,"cycles":1,"mnemonic":"XRL A,R","display":"XRL A,R0","class":"edsim51sh.instructions.xrl.XrlAreg"},{"opcode":105,"size":1,"cycles":1,"mnemonic":"XRL A,R","display":"XRL A,R1","class":"edsim51sh.instructions.xrl.XrlAreg"},{"opcode":106,"size":1,"cycles":1,"mnemonic":"XRL A,R","display":"XRL A,R2","class":"edsim51sh.instructions.xrl.XrlAreg"},{"opcode":107,"size":1,"cycles":1,"mnemonic":"XRL A,R","display":"XRL A,R3","class":"edsim51sh.instructions.xrl.XrlAreg"},{"opcode":108,"size":1,"cycles":1,"mnemonic":"XRL A,R","display":"XRL A,R4","class":"edsim51sh.instructions.xrl.XrlAreg"},{"opcode":109,"size":1,"cycles":1,"mnemonic":"XRL A,R","display":"XRL A,R5","class":"edsim51sh.instructions.xrl.XrlAreg"},{"opcode":110,"size":1,"cycles":1,"mnemonic":"XRL A,R","display":"XRL A,R6","class":"edsim51sh.instructions.xrl.XrlAreg"},{"opcode":111,"size":1,"cycles":1,"mnemonic":"XRL A,R","display":"XRL A,R7","class":"edsim51sh.instructions.xrl.XrlAreg"},{"opcode":112,"size":2,"cycles":2,"mnemonic":"JNZ","display":"JNZ 00H","class":"edsim51sh.instructions.branches.Jnz"},{"opcode":113,"size":2,"cycles":2,"mnemonic":"ACALL","display":"ACALL 300H","class":"edsim51sh.instructions.branches.Acall"},{"opcode":114,"size":2,"cycles":1,"mnemonic":"ORL C,","display":"ORL C,00H","class":"edsim51sh.instructions.orl.OrlCyBit"},{"opcode":115,"size":1,"cycles":2,"mnemonic":"JMP @A+DPTR","display":"JMP @A+DPTR","class":"edsim51sh.instructions.branches.JmpDptr"},{"opcode":116,"size":2,"cycles":1,"mnemonic":"MOV A,#","display":"MOV A,#00H","class":"edsim51sh.instructions.mov.MovAdata"},{"opcode":117,"size":3,"cycles":2,"mnemonic":"MOV direct,#","display":"MOV 00H,#00H","class":"edsim51sh.instructions.mov.MovAddressData"},{"opcode":118,"size":2,"cycles":1,"mnemonic":"MOV @R0,#","display":"MOV @R0,#00H","class":"edsim51sh.instructions.mov.MovAtRegData"},{"opcode":119,"size":2,"cycles":1,"mnemonic":"MOV @R1,#","display":"MOV @R1,#00H","class":"edsim51sh.instructions.mov.MovAtRegData"},{"opcode":120,"size":2,"cycles":1,"mnemonic":"MOV R0,#","display":"MOV R0,#00H","class":"edsim51sh.instructions.mov.MovRegData"},{"opcode":121,"size":2,"cycles":1,"mnemonic":"MOV R1,#","display":"MOV R1,#00H","class":"edsim51sh.instructions.mov.MovRegData"},{"opcode":122,"size":2,"cycles":1,"mnemonic":"MOV R2,#","display":"MOV R2,#00H","class":"edsim51sh.instructions.mov.MovRegData"},{"opcode":123,"size":2,"cycles":1,"mnemonic":"MOV R3,#","display":"MOV R3,#00H","class":"edsim51sh.instructions.mov.MovRegData"},{"opcode":124,"size":2,"cycles":1,"mnemonic":"MOV R4,#","display":"MOV R4,#00H","class":"edsim51sh.instructions.mov.MovRegData"},{"opcode":125,"size":2,"cycles":1,"mnemonic":"MOV R5,#","display":"MOV R5,#00H","class":"edsim51sh.instructions.mov.MovRegData"},{"opcode":126,"size":2,"cycles":1,"mnemonic":"MOV R6,#","display":"MOV R6,#00H","class":"edsim51sh.instructions.mov.MovRegData"},{"opcode":127,"size":2,"cycles":1,"mnemonic":"MOV R7,#","display":"MOV R7,#00H","class":"edsim51sh.instructions.mov.MovRegData"},{"opcode":128,"size":2,"cycles":2,"mnemonic":"SJMP","display":"SJMP 00H","class":"edsim51sh.instructions.branches.Sjmp"},{"opcode":129,"size":2,"cycles":2,"mnemonic":"AJMP","display":"AJMP 400H","class":"edsim51sh.instructions.branches.Ajmp"},{"opcode":130,"size":2,"cycles":1,"mnemonic":"ANL C,","display":"ANL C,00H","class":"edsim51sh.instructions.anl.AnlCyBit"},{"opcode":131,"size":1,"cycles":1,"mnemonic":"MOVC A,@A+PC","display":"MOVC A,@A+PC","class":"edsim51sh.instructions.movc.MovcApc"},{"opcode":132,"size":1,"cycles":4,"mnemonic":"DIV AB","display":"DIV AB","class":"edsim51sh.instructions.misc.DivAB"},{"opcode":133,"size":3,"cycles":2,"mnemonic":"MOV direct,direct","display":"MOV 00H,00H","class":"edsim51sh.instructions.mov.MovAddressAddress"},{"opcode":134,"size":2,"cycles":2,"mnemonic":"MOV direct,@Rn","display":"MOV 00H,@R0","class":"edsim51sh.instructions.mov.MovAddressAtReg"},{"opcode":135,"size":2,"cycles":2,"mnemonic":"MOV direct,@Rn","display":"MOV 00H,@R1","class":"edsim51sh.instructions.mov.MovAddressAtReg"},{"opcode":136,"size":2,"cycles":2,"mnemonic":"MOV direct,Rn","display":"MOV 00H,R0","class":"edsim51sh.instructions.mov.MovAddressReg"},{"opcode":137,"size":2,"cycles":2,"mnemonic":"MOV direct,Rn","display":"MOV 00H,R1","class":"edsim51sh.instructions.mov.MovAddressReg"},{"opcode":138,"size":2,"cycles":2,"mnemonic":"MOV direct,Rn","display":"MOV 00H,R2","class":"edsim51sh.instructions.mov.MovAddressReg"},{"opcode":139,"size":2,"cycles":2,"mnemonic":"MOV direct,Rn","display":"MOV 00H,R3","class":"edsim51sh.instructions.mov.MovAddressReg"},{"opcode":140,"size":2,"cycles":2,"mnemonic":"MOV direct,Rn","display":"MOV 00H,R4","class":"edsim51sh.instructions.mov.MovAddressReg"},{"opcode":141,"size":2,"cycles":2,"mnemonic":"MOV direct,Rn","display":"MOV 00H,R5","class":"edsim51sh.instructions.mov.MovAddressReg"},{"opcode":142,"size":2,"cycles":2,"mnemonic":"MOV direct,Rn","display":"MOV 00H,R6","class":"edsim51sh.instructions.mov.MovAddressReg"},{"opcode":143,"size":2,"cycles":2,"mnemonic":"MOV direct,Rn","display":"MOV 00H,R7","class":"edsim51sh.instructions.mov.MovAddressReg"},{"opcode":144,"size":3,"cycles":2,"mnemonic":"MOV DPTR,#","display":"MOV DPTR, #0000H","class":"edsim51sh.instructions.mov.MovDptrData"},{"opcode":145,"size":2,"cycles":2,"mnemonic":"ACALL","display":"ACALL 400H","class":"edsim51sh.instructions.branches.Acall"},{"opcode":146,"size":2,"cycles":2,"mnemonic":"MOV bit,C","display":"MOV 00H,C","class":"edsim51sh.instructions.mov.MovBitCy"},{"opcode":147,"size":1,"cycles":1,"mnemonic":"MOVC A,@A+DPTR","display":"MOVC A,@A+DPTR","class":"edsim51sh.instructions.movc.MovcAdptr"},{"opcode":148,"size":2,"cycles":1,"mnemonic":"SUBB A,#","display":"SUBB A,#00H","class":"edsim51sh.instructions.subb.SubbAdata"},{"opcode":149,"size":2,"cycles":1,"mnemonic":"SUBB A,","display":"SUBB A,00H","class":"edsim51sh.instructions.subb.SubbAaddress"},{"opcode":150,"size":1,"cycles":1,"mnemonic":"SUBB A,@R","display":"SUBB A,@R0","class":"edsim51sh.instructions.subb.SubbAatReg"},{"opcode":151,"size":1,"cycles":1,"mnemonic":"SUBB A,@R","display":"SUBB A,@R1","class":"edsim51sh.instructions.subb.SubbAatReg"},{"opcode":152,"size":1,"cycles":1,"mnemonic":"SUBB A,R","display":"SUBB A,R0","class":"edsim51sh.instructions.subb.SubbAreg"},{"opcode":153,"size":1,"cycles":1,"mnemonic":"SUBB A,R","display":"SUBB A,R1","class":"edsim51sh.instructions.subb.SubbAreg"},{"opcode":154,"size":1,"cycles":1,"mnemonic":"SUBB A,R","display":"SUBB A,R2","class":"edsim51sh.instructions.subb.SubbAreg"},{"opcode":155,"size":1,"cycles":1,"mnemonic":"SUBB A,R","display":"SUBB A,R3","class":"edsim51sh.instructions.subb.SubbAreg"},{"opcode":156,"size":1,"cycles":1,"mnemonic":"SUBB A,R","display":"SUBB A,R4","class":"edsim51sh.instructions.subb.SubbAreg"},{"opcode":157,"size":1,"cycles":1,"mnemonic":"SUBB A,R","display":"SUBB A,R5","class":"edsim51sh.instructions.subb.SubbAreg"},{"opcode":158,"size":1,"cycles":1,"mnemonic":"SUBB A,R","display":"SUBB A,R6","class":"edsim51sh.instructions.subb.SubbAreg"},{"opcode":159,"size":1,"cycles":1,"mnemonic":"SUBB A,R","display":"SUBB A,R7","class":"edsim51sh.instructions.subb.SubbAreg"},{"opcode":160,"size":2,"cycles":1,"mnemonic":"ORL C,/","display":"ORL C,/00H","class":"edsim51sh.instructions.orl.OrlCyNotBit"},{"opcode":161,"size":2,"cycles":2,"mnemonic":"AJMP","display":"AJMP 500H","class":"edsim51sh.instructions.branches.Ajmp"},{"opcode":162,"size":2,"cycles":1,"mnemonic":"MOV C,","display":"MOV C,00H","class":"edsim51sh.instructions.mov.MovCyBit"},{"opcode":163,"size":1,"cycles":1,"mnemonic":"INC DPTR","display":"INC DPTR","class":"edsim51sh.instructions.inc.IncDptr"},{"opcode":164,"size":1,"cycles":4,"mnemonic":"MUL AB","display":"MUL AB","class":"edsim51sh.instructions.misc.MulAB"},{"opcode":165,"size":1,"cycles":1,"mnemonic":"A5","display":"A5","class":"edsim51sh.instructions.misc.A5"},{"opcode":166,"size":2,"cycles":2,"mnemonic":"MOV @R0,","display":"MOV @R0,00H","class":"edsim51sh.instructions.mov.MovAtRegAddress"},{"opcode":167,"size":2,"cycles":2,"mnemonic":"MOV @R1,","display":"MOV @R1,00H","class":"edsim51sh.instructions.mov.MovAtRegAddress"},{"opcode":168,"size":2,"cycles":2,"mnemonic":"MOV R0,","display":"MOV R0,00H","class":"edsim51sh.instructions.mov.MovRegAddress"},{"opcode":169,"size":2,"cycles":2,"mnemonic":"MOV R1,","display":"MOV R1,00H","class":"edsim51sh.instructions.mov.MovRegAddress"},{"opcode":170,"size":2,"cycles":2,"mnemonic":"MOV R2,","display":"MOV R2,00H","class":"edsim51sh.instructions.mov.MovRegAddress"},{"opcode":171,"size":2,"cycles":2,"mnemonic":"MOV R3,","display":"MOV R3,00H","class":"edsim51sh.instructions.mov.MovRegAddress"},{"opcode":172,"size":2,"cycles":2,"mnemonic":"MOV R4,","display":"MOV R4,00H","class":"edsim51sh.instructions.mov.MovRegAddress"},{"opcode":173,"size":2,"cycles":2,"mnemonic":"MOV R5,","display":"MOV R5,00H","class":"edsim51sh.instructions.mov.MovRegAddress"},{"opcode":174,"size":2,"cycles":2,"mnemonic":"MOV R6,","display":"MOV R6,00H","class":"edsim51sh.instructions.mov.MovRegAddress"},{"opcode":175,"size":2,"cycles":2,"mnemonic":"MOV R7,","display":"MOV R7,00H","class":"edsim51sh.instructions.mov.MovRegAddress"},{"opcode":176,"size":2,"cycles":1,"mnemonic":"ANL C,/","display":"ANL C,/00H","class":"edsim51sh.instructions.anl.AnlCyNotBit"},{"opcode":177,"size":2,"cycles":2,"mnemonic":"ACALL","display":"ACALL 500H","class":"edsim51sh.instructions.branches.Acall"},{"opcode":178,"size":2,"cycles":1,"mnemonic":"CPL ","display":"CPL 00H","class":"edsim51sh.instructions.cpl.CplBit"},{"opcode":179,"size":1,"cycles":1,"mnemonic":"CPL C","display":"CPL C","class":"edsim51sh.instructions.cpl.CplC"},{"opcode":180,"size":3,"cycles":2,"mnemonic":"CJNE A,#","display":"CJNE A,#00H,00H","class":"edsim51sh.instructions.branches.CjneAdata"},{"opcode":181,"size":3,"cycles":2,"mnemonic":"CJNE A,","display":"CJNE A,00H,00H","class":"edsim51sh.instructions.branches.CjneAaddress"},{"opcode":182,"size":3,"cycles":2,"mnemonic":"CJNE @R0,#","display":"CJNE @R0,#00H,00H","class":"edsim51sh.instructions.branches.CjneAtRegData"},{"opcode":183,"size":3,"cycles":2,"mnemonic":"CJNE @R1,#","display":"CJNE @R1,#00H,00H","class":"edsim51sh.instructions.branches.CjneAtRegData"},{"opcode":184,"size":3,"cycles":2,"mnemonic":"CJNE R0,#","display":"CJNE R0,#00H,00H","class":"edsim51sh.instructions.branches.CjneRegData"},{"opcode":185,"size":3,"cycles":2,"mnemonic":"CJNE R1,#","display":"CJNE R1,#00H,00H","class":"edsim51sh.instructions.branches.CjneRegData"},{"opcode":186,"size":3,"cycles":2,"mnemonic":"CJNE R2,#","display":"CJNE R2,#00H,00H","class":"edsim51sh.instructions.branches.CjneRegData"},{"opcode":187,"size":3,"cycles":2,"mnemonic":"CJNE R3,#","display":"CJNE R3,#00H,00H","class":"edsim51sh.instructions.branches.CjneRegData"},{"opcode":188,"size":3,"cycles":2,"mnemonic":"CJNE R4,#","display":"CJNE R4,#00H,00H","class":"edsim51sh.instructions.branches.CjneRegData"},{"opcode":189,"size":3,"cycles":2,"mnemonic":"CJNE R5,#","display":"CJNE R5,#00H,00H","class":"edsim51sh.instructions.branches.CjneRegData"},{"opcode":190,"size":3,"cycles":2,"mnemonic":"CJNE R6,#","display":"CJNE R6,#00H,00H","class":"edsim51sh.instructions.branches.CjneRegData"},{"opcode":191,"size":3,"cycles":2,"mnemonic":"CJNE R7,#","display":"CJNE R7,#00H,00H","class":"edsim51sh.instructions.branches.CjneRegData"},{"opcode":192,"size":2,"cycles":2,"mnemonic":"PUSH ","display":"PUSH 00H","class":"edsim51sh.instructions.misc.Push"},{"opcode":193,"size":2,"cycles":2,"mnemonic":"AJMP","display":"AJMP 600H","class":"edsim51sh.instructions.branches.Ajmp"},{"opcode":194,"size":2,"cycles":1,"mnemonic":"CLR ","display":"CLR 00H","class":"edsim51sh.instructions.clr.ClrBit"},{"opcode":195,"size":1,"cycles":1,"mnemonic":"CLR C","display":"CLR C","class":"edsim51sh.instructions.clr.ClrC"},{"opcode":196,"size":1,"cycles":1,"mnemonic":"SWAP A","display":"SWAP A","class":"edsim51sh.instructions.misc.SwapA"},{"opcode":197,"size":2,"cycles":1,"mnemonic":"XCH A,","display":"XCH A,00H","class":"edsim51sh.instructions.xch.XchAaddress"},{"opcode":198,"size":1,"cycles":1,"mnemonic":"XCH A,@R","display":"XCH A,@R0","class":"edsim51sh.instructions.xch.XchAatReg"},{"opcode":199,"size":1,"cycles":1,"mnemonic":"XCH A,@R","display":"XCH A,@R1","class":"edsim51sh.instructions.xch.XchAatReg"},{"opcode":200,"size":1,"cycles":1,"mnemonic":"XCH A,R","display":"XCH A,R0","class":"edsim51sh.instructions.xch.XchAreg"},{"opcode":201,"size":1,"cycles":1,"mnemonic":"XCH A,R","display":"XCH A,R1","class":"edsim51sh.instructions.xch.XchAreg"},{"opcode":202,"size":1,"cycles":1,"mnemonic":"XCH A,R","display":"XCH A,R2","class":"edsim51sh.instructions.xch.XchAreg"},{"opcode":203,"size":1,"cycles":1,"mnemonic":"XCH A,R","display":"XCH A,R3","class":"edsim51sh.instructions.xch.XchAreg"},{"opcode":204,"size":1,"cycles":1,"mnemonic":"XCH A,R","display":"XCH A,R4","class":"edsim51sh.instructions.xch.XchAreg"},{"opcode":205,"size":1,"cycles":1,"mnemonic":"XCH A,R","display":"XCH A,R5","class":"edsim51sh.instructions.xch.XchAreg"},{"opcode":206,"size":1,"cycles":1,"mnemonic":"XCH A,R","display":"XCH A,R6","class":"edsim51sh.instructions.xch.XchAreg"},{"opcode":207,"size":1,"cycles":1,"mnemonic":"XCH A,R","display":"XCH A,R7","class":"edsim51sh.instructions.xch.XchAreg"},{"opcode":208,"size":2,"cycles":2,"mnemonic":"POP ","display":"POP 00H","class":"edsim51sh.instructions.misc.Pop"},{"opcode":209,"size":2,"cycles":2,"mnemonic":"ACALL","display":"ACALL 600H","class":"edsim51sh.instructions.branches.Acall"},{"opcode":210,"size":2,"cycles":1,"mnemonic":"SETB ","display":"SETB 00H","class":"edsim51sh.instructions.setb.SetbBit"},{"opcode":211,"size":1,"cycles":1,"mnemonic":"SETB C","display":"SETB C","class":"edsim51sh.instructions.setb.SetbC"},{"opcode":212,"size":1,"cycles":1,"mnemonic":"DA A","display":"DA A","class":"edsim51sh.instructions.misc.DaA"},{"opcode":213,"size":3,"cycles":2,"mnemonic":"DJNZ","display":"DJNZ 00H,00H","class":"edsim51sh.instructions.branches.DjnzData"},{"opcode":214,"size":1,"cycles":1,"mnemonic":"XCHD A,@R","display":"XCHD A,@R0","class":"edsim51sh.instructions.xch.XchdAatReg"},{"opcode":215,"size":1,"cycles":1,"mnemonic":"XCHD A,@R","display":"XCHD A,@R1","class":"edsim51sh.instructions.xch.XchdAatReg"},{"opcode":216,"size":2,"cycles":2,"mnemonic":"DJNZ R0,","display":"DJNZ R0,00H","class":"edsim51sh.instructions.branches.DjnzReg"},{"opcode":217,"size":2,"cycles":2,"mnemonic":"DJNZ R1,","display":"DJNZ R1,00H","class":"edsim51sh.instructions.branches.DjnzReg"},{"opcode":218,"size":2,"cycles":2,"mnemonic":"DJNZ R2,","display":"DJNZ R2,00H","class":"edsim51sh.instructions.branches.DjnzReg"},{"opcode":219,"size":2,"cycles":2,"mnemonic":"DJNZ R3,","display":"DJNZ R3,00H","class":"edsim51sh.instructions.branches.DjnzReg"},{"opcode":220,"size":2,"cycles":2,"mnemonic":"DJNZ R4,","display":"DJNZ R4,00H","class":"edsim51sh.instructions.branches.DjnzReg"},{"opcode":221,"size":2,"cycles":2,"mnemonic":"DJNZ R5,","display":"DJNZ R5,00H","class":"edsim51sh.instructions.branches.DjnzReg"},{"opcode":222,"size":2,"cycles":2,"mnemonic":"DJNZ R6,","display":"DJNZ R6,00H","class":"edsim51sh.instructions.branches.DjnzReg"},{"opcode":223,"size":2,"cycles":2,"mnemonic":"DJNZ R7,","display":"DJNZ R7,00H","class":"edsim51sh.instructions.branches.DjnzReg"},{"opcode":224,"size":1,"cycles":2,"mnemonic":"MOVX A,@DPTR","display":"MOVX A,@DPTR","class":"edsim51sh.instructions.movx.MovxAatDptr"},{"opcode":225,"size":2,"cycles":2,"mnemonic":"AJMP","display":"AJMP 700H","class":"edsim51sh.instructions.branches.Ajmp"},{"opcode":226,"size":1,"cycles":2,"mnemonic":"MOVX A,@R","display":"MOVX A,@R0","class":"edsim51sh.instructions.movx.MovxAatReg"},{"opcode":227,"size":1,"cycles":2,"mnemonic":"MOVX A,@R","display":"MOVX A,@R1","class":"edsim51sh.instructions.movx.MovxAatReg"},{"opcode":228,"size":1,"cycles":1,"mnemonic":"CLR A","display":"CLR A","class":"edsim51sh.instructions.clr.ClrA"},{"opcode":229,"size":2,"cycles":1,"mnemonic":"MOV A,","display":"MOV A,00H","class":"edsim51sh.instructions.mov.MovAaddress"},{"opcode":230,"size":1,"cycles":1,"mnemonic":"MOV A,@R","display":"MOV A,@R0","class":"edsim51sh.instructions.mov.MovAatReg"},{"opcode":231,"size":1,"cycles":1,"mnemonic":"MOV A,@R","display":"MOV A,@R1","class":"edsim51sh.instructions.mov.MovAatReg"},{"opcode":232,"size":1,"cycles":1,"mnemonic":"MOV A,R","display":"MOV A,R0","class":"edsim51sh.instructions.mov.MovAreg"},{"opcode":233,"size":1,"cycles":1,"mnemonic":"MOV A,R","display":"MOV A,R1","class":"edsim51sh.instructions.mov.MovAreg"},{"opcode":234,"size":1,"cycles":1,"mnemonic":"MOV A,R","display":"MOV A,R2","class":"edsim51sh.instructions.mov.MovAreg"},{"opcode":235,"size":1,"cycles":1,"mnemonic":"MOV A,R","display":"MOV A,R3","class":"edsim51sh.instructions.mov.MovAreg"},{"opcode":236,"size":1,"cycles":1,"mnemonic":"MOV A,R","display":"MOV A,R4","class":"edsim51sh.instructions.mov.MovAreg"},{"opcode":237,"size":1,"cycles":1,"mnemonic":"MOV A,R","display":"MOV A,R5","class":"edsim51sh.instructions.mov.MovAreg"},{"opcode":238,"size":1,"cycles":1,"mnemonic":"MOV A,R","display":"MOV A,R6","class":"edsim51sh.instructions.mov.MovAreg"},{"opcode":239,"size":1,"cycles":1,"mnemonic":"MOV A,R","display":"MOV A,R7","class":"edsim51sh.instructions.mov.MovAreg"},{"opcode":240,"size":1,"cycles":2,"mnemonic":"MOVX @DPTR,A","display":"MOVX @DPTR,A","class":"edsim51sh.instructions.movx.MovxAtDptrA"},{"opcode":241,"size":2,"cycles":2,"mnemonic":"ACALL","display":"ACALL 700H","class":"edsim51sh.instructions.branches.Acall"},{"opcode":242,"size":1,"cycles":2,"mnemonic":"MOVX @R","display":"MOVX @R0,A","class":"edsim51sh.instructions.movx.MovxAtRegA"},{"opcode":243,"size":1,"cycles":2,"mnemonic":"MOVX @R","display":"MOVX @R1,A","class":"edsim51sh.instructions.movx.MovxAtRegA"},{"opcode":244,"size":1,"cycles":1,"mnemonic":"CPL A","display":"CPL A","class":"edsim51sh.instructions.cpl.CplA"},{"opcode":245,"size":2,"cycles":1,"mnemonic":"MOV direct,A","display":"MOV 00H,A","class":"edsim51sh.instructions.mov.MovAddressA"},{"opcode":246,"size":1,"cycles":1,"mnemonic":"MOV @R0,A","display":"MOV @R0,A","class":"edsim51sh.instructions.mov.MovAtRegA"},{"opcode":247,"size":1,"cycles":1,"mnemonic":"MOV @R1,A","display":"MOV @R1,A","class":"edsim51sh.instructions.mov.MovAtRegA"},{"opcode":248,"size":1,"cycles":1,"mnemonic":"MOV R0,A","display":"MOV R0,A","class":"edsim51sh.instructions.mov.MovRegA"},{"opcode":249,"size":1,"cycles":1,"mnemonic":"MOV R1,A","display":"MOV R1,A","class":"edsim51sh.instructions.mov.MovRegA"},{"opcode":250,"size":1,"cycles":1,"mnemonic":"MOV R2,A","display":"MOV R2,A","class":"edsim51sh.instructions.mov.MovRegA"},{"opcode":251,"size":1,"cycles":1,"mnemonic":"MOV R3,A","display":"MOV R3,A","class":"edsim51sh.instructions.mov.MovRegA"},{"opcode":252,"size":1,"cycles":1,"mnemonic":"MOV R4,A","display":"MOV R4,A","class":"edsim51sh.instructions.mov.MovRegA"},{"opcode":253,"size":1,"cycles":1,"mnemonic":"MOV R5,A","display":"MOV R5,A","class":"edsim51sh.instructions.mov.MovRegA"},{"opcode":254,"size":1,"cycles":1,"mnemonic":"MOV R6,A","display":"MOV R6,A","class":"edsim51sh.instructions.mov.MovRegA"},{"opcode":255,"size":1,"cycles":1,"mnemonic":"MOV R7,A","display":"MOV R7,A","class":"edsim51sh.instructions.mov.MovRegA"}]
+[
+  {
+    "opcode": 0,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "NOP",
+    "display": "NOP"
+  },
+  {
+    "opcode": 1,
+    "size": 2,
+    "cycles": 2,
+    "mnemonic": "AJMP",
+    "display": "AJMP 000H"
+  },
+  {
+    "opcode": 2,
+    "size": 3,
+    "cycles": 2,
+    "mnemonic": "LJMP",
+    "display": "LJMP 0000H"
+  },
+  {
+    "opcode": 3,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "RR A",
+    "display": "RR A"
+  },
+  {
+    "opcode": 4,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "INC A",
+    "display": "INC A"
+  },
+  {
+    "opcode": 5,
+    "size": 2,
+    "cycles": 1,
+    "mnemonic": "INC ",
+    "display": "INC 00H"
+  },
+  {
+    "opcode": 6,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "INC @R",
+    "display": "INC @R0"
+  },
+  {
+    "opcode": 7,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "INC @R",
+    "display": "INC @R1"
+  },
+  {
+    "opcode": 8,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "INC R",
+    "display": "INC R0"
+  },
+  {
+    "opcode": 9,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "INC R",
+    "display": "INC R1"
+  },
+  {
+    "opcode": 10,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "INC R",
+    "display": "INC R2"
+  },
+  {
+    "opcode": 11,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "INC R",
+    "display": "INC R3"
+  },
+  {
+    "opcode": 12,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "INC R",
+    "display": "INC R4"
+  },
+  {
+    "opcode": 13,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "INC R",
+    "display": "INC R5"
+  },
+  {
+    "opcode": 14,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "INC R",
+    "display": "INC R6"
+  },
+  {
+    "opcode": 15,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "INC R",
+    "display": "INC R7"
+  },
+  {
+    "opcode": 16,
+    "size": 3,
+    "cycles": 2,
+    "mnemonic": "JBC",
+    "display": "JBC 00H,00H"
+  },
+  {
+    "opcode": 17,
+    "size": 2,
+    "cycles": 2,
+    "mnemonic": "ACALL",
+    "display": "ACALL 000H"
+  },
+  {
+    "opcode": 18,
+    "size": 3,
+    "cycles": 2,
+    "mnemonic": "LCALL",
+    "display": "LCALL 0000H"
+  },
+  {
+    "opcode": 19,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "RRC A",
+    "display": "RRC A"
+  },
+  {
+    "opcode": 20,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "DEC A",
+    "display": "DEC A"
+  },
+  {
+    "opcode": 21,
+    "size": 2,
+    "cycles": 1,
+    "mnemonic": "DEC ",
+    "display": "DEC 00H"
+  },
+  {
+    "opcode": 22,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "DEC @R",
+    "display": "DEC @R0"
+  },
+  {
+    "opcode": 23,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "DEC @R",
+    "display": "DEC @R1"
+  },
+  {
+    "opcode": 24,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "DEC R",
+    "display": "DEC R0"
+  },
+  {
+    "opcode": 25,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "DEC R",
+    "display": "DEC R1"
+  },
+  {
+    "opcode": 26,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "DEC R",
+    "display": "DEC R2"
+  },
+  {
+    "opcode": 27,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "DEC R",
+    "display": "DEC R3"
+  },
+  {
+    "opcode": 28,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "DEC R",
+    "display": "DEC R4"
+  },
+  {
+    "opcode": 29,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "DEC R",
+    "display": "DEC R5"
+  },
+  {
+    "opcode": 30,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "DEC R",
+    "display": "DEC R6"
+  },
+  {
+    "opcode": 31,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "DEC R",
+    "display": "DEC R7"
+  },
+  {
+    "opcode": 32,
+    "size": 3,
+    "cycles": 2,
+    "mnemonic": "JB",
+    "display": "JB 00H,00H"
+  },
+  {
+    "opcode": 33,
+    "size": 2,
+    "cycles": 2,
+    "mnemonic": "AJMP",
+    "display": "AJMP 100H"
+  },
+  {
+    "opcode": 34,
+    "size": 1,
+    "cycles": 2,
+    "mnemonic": "RET",
+    "display": "RET"
+  },
+  {
+    "opcode": 35,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "RL A",
+    "display": "RL A"
+  },
+  {
+    "opcode": 36,
+    "size": 2,
+    "cycles": 1,
+    "mnemonic": "ADD A,#",
+    "display": "ADD A,#00H"
+  },
+  {
+    "opcode": 37,
+    "size": 2,
+    "cycles": 1,
+    "mnemonic": "ADD A,",
+    "display": "ADD A,00H"
+  },
+  {
+    "opcode": 38,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "ADD A,@R",
+    "display": "ADD A,@R0"
+  },
+  {
+    "opcode": 39,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "ADD A,@R",
+    "display": "ADD A,@R1"
+  },
+  {
+    "opcode": 40,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "ADD A,R",
+    "display": "ADD A,R0"
+  },
+  {
+    "opcode": 41,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "ADD A,R",
+    "display": "ADD A,R1"
+  },
+  {
+    "opcode": 42,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "ADD A,R",
+    "display": "ADD A,R2"
+  },
+  {
+    "opcode": 43,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "ADD A,R",
+    "display": "ADD A,R3"
+  },
+  {
+    "opcode": 44,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "ADD A,R",
+    "display": "ADD A,R4"
+  },
+  {
+    "opcode": 45,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "ADD A,R",
+    "display": "ADD A,R5"
+  },
+  {
+    "opcode": 46,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "ADD A,R",
+    "display": "ADD A,R6"
+  },
+  {
+    "opcode": 47,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "ADD A,R",
+    "display": "ADD A,R7"
+  },
+  {
+    "opcode": 48,
+    "size": 3,
+    "cycles": 2,
+    "mnemonic": "JNB",
+    "display": "JNB 00H,00H"
+  },
+  {
+    "opcode": 49,
+    "size": 2,
+    "cycles": 2,
+    "mnemonic": "ACALL",
+    "display": "ACALL 100H"
+  },
+  {
+    "opcode": 50,
+    "size": 1,
+    "cycles": 2,
+    "mnemonic": "RETI",
+    "display": "RETI"
+  },
+  {
+    "opcode": 51,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "RLC A",
+    "display": "RLC A"
+  },
+  {
+    "opcode": 52,
+    "size": 2,
+    "cycles": 1,
+    "mnemonic": "ADDC A,#",
+    "display": "ADDC A,#00H"
+  },
+  {
+    "opcode": 53,
+    "size": 2,
+    "cycles": 1,
+    "mnemonic": "ADDC A,",
+    "display": "ADDC A,00H"
+  },
+  {
+    "opcode": 54,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "ADDC A,@R",
+    "display": "ADDC A,@R0"
+  },
+  {
+    "opcode": 55,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "ADDC A,@R",
+    "display": "ADDC A,@R1"
+  },
+  {
+    "opcode": 56,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "ADDC A,R",
+    "display": "ADDC A,R0"
+  },
+  {
+    "opcode": 57,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "ADDC A,R",
+    "display": "ADDC A,R1"
+  },
+  {
+    "opcode": 58,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "ADDC A,R",
+    "display": "ADDC A,R2"
+  },
+  {
+    "opcode": 59,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "ADDC A,R",
+    "display": "ADDC A,R3"
+  },
+  {
+    "opcode": 60,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "ADDC A,R",
+    "display": "ADDC A,R4"
+  },
+  {
+    "opcode": 61,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "ADDC A,R",
+    "display": "ADDC A,R5"
+  },
+  {
+    "opcode": 62,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "ADDC A,R",
+    "display": "ADDC A,R6"
+  },
+  {
+    "opcode": 63,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "ADDC A,R",
+    "display": "ADDC A,R7"
+  },
+  {
+    "opcode": 64,
+    "size": 2,
+    "cycles": 2,
+    "mnemonic": "JC",
+    "display": "JC 00H"
+  },
+  {
+    "opcode": 65,
+    "size": 2,
+    "cycles": 2,
+    "mnemonic": "AJMP",
+    "display": "AJMP 200H"
+  },
+  {
+    "opcode": 66,
+    "size": 2,
+    "cycles": 1,
+    "mnemonic": "ORL direct,A",
+    "display": "ORL 00H,A"
+  },
+  {
+    "opcode": 67,
+    "size": 3,
+    "cycles": 2,
+    "mnemonic": "ORL direct,#",
+    "display": "ORL 00H,#00H"
+  },
+  {
+    "opcode": 68,
+    "size": 2,
+    "cycles": 1,
+    "mnemonic": "ORL A,#",
+    "display": "ORL A,#00H"
+  },
+  {
+    "opcode": 69,
+    "size": 2,
+    "cycles": 1,
+    "mnemonic": "ORL A,",
+    "display": "ORL A,00H"
+  },
+  {
+    "opcode": 70,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "ORL A,@R",
+    "display": "ORL A,@R0"
+  },
+  {
+    "opcode": 71,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "ORL A,@R",
+    "display": "ORL A,@R1"
+  },
+  {
+    "opcode": 72,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "ORL A,R",
+    "display": "ORL A,R0"
+  },
+  {
+    "opcode": 73,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "ORL A,R",
+    "display": "ORL A,R1"
+  },
+  {
+    "opcode": 74,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "ORL A,R",
+    "display": "ORL A,R2"
+  },
+  {
+    "opcode": 75,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "ORL A,R",
+    "display": "ORL A,R3"
+  },
+  {
+    "opcode": 76,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "ORL A,R",
+    "display": "ORL A,R4"
+  },
+  {
+    "opcode": 77,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "ORL A,R",
+    "display": "ORL A,R5"
+  },
+  {
+    "opcode": 78,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "ORL A,R",
+    "display": "ORL A,R6"
+  },
+  {
+    "opcode": 79,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "ORL A,R",
+    "display": "ORL A,R7"
+  },
+  {
+    "opcode": 80,
+    "size": 2,
+    "cycles": 2,
+    "mnemonic": "JNC",
+    "display": "JNC 00H"
+  },
+  {
+    "opcode": 81,
+    "size": 2,
+    "cycles": 2,
+    "mnemonic": "ACALL",
+    "display": "ACALL 200H"
+  },
+  {
+    "opcode": 82,
+    "size": 2,
+    "cycles": 1,
+    "mnemonic": "ANL direct,A",
+    "display": "ANL 00H,A"
+  },
+  {
+    "opcode": 83,
+    "size": 3,
+    "cycles": 2,
+    "mnemonic": "ANL direct,#",
+    "display": "ANL 00H,#00H"
+  },
+  {
+    "opcode": 84,
+    "size": 2,
+    "cycles": 1,
+    "mnemonic": "ANL A,#",
+    "display": "ANL A,#00H"
+  },
+  {
+    "opcode": 85,
+    "size": 2,
+    "cycles": 1,
+    "mnemonic": "ANL A,",
+    "display": "ANL A,00H"
+  },
+  {
+    "opcode": 86,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "ANL A,@R",
+    "display": "ANL A,@R0"
+  },
+  {
+    "opcode": 87,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "ANL A,@R",
+    "display": "ANL A,@R1"
+  },
+  {
+    "opcode": 88,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "ANL A,R",
+    "display": "ANL A,R0"
+  },
+  {
+    "opcode": 89,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "ANL A,R",
+    "display": "ANL A,R1"
+  },
+  {
+    "opcode": 90,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "ANL A,R",
+    "display": "ANL A,R2"
+  },
+  {
+    "opcode": 91,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "ANL A,R",
+    "display": "ANL A,R3"
+  },
+  {
+    "opcode": 92,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "ANL A,R",
+    "display": "ANL A,R4"
+  },
+  {
+    "opcode": 93,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "ANL A,R",
+    "display": "ANL A,R5"
+  },
+  {
+    "opcode": 94,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "ANL A,R",
+    "display": "ANL A,R6"
+  },
+  {
+    "opcode": 95,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "ANL A,R",
+    "display": "ANL A,R7"
+  },
+  {
+    "opcode": 96,
+    "size": 2,
+    "cycles": 2,
+    "mnemonic": "JZ",
+    "display": "JZ 00H"
+  },
+  {
+    "opcode": 97,
+    "size": 2,
+    "cycles": 2,
+    "mnemonic": "AJMP",
+    "display": "AJMP 300H"
+  },
+  {
+    "opcode": 98,
+    "size": 2,
+    "cycles": 1,
+    "mnemonic": "XRL direct,A",
+    "display": "XRL 00H,A"
+  },
+  {
+    "opcode": 99,
+    "size": 3,
+    "cycles": 2,
+    "mnemonic": "XRL direct,#",
+    "display": "XRL 00H,#00H"
+  },
+  {
+    "opcode": 100,
+    "size": 2,
+    "cycles": 1,
+    "mnemonic": "XRL A,#",
+    "display": "XRL A,#00H"
+  },
+  {
+    "opcode": 101,
+    "size": 2,
+    "cycles": 1,
+    "mnemonic": "XRL A,",
+    "display": "XRL A,00H"
+  },
+  {
+    "opcode": 102,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "XRL A,@R",
+    "display": "XRL A,@R0"
+  },
+  {
+    "opcode": 103,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "XRL A,@R",
+    "display": "XRL A,@R1"
+  },
+  {
+    "opcode": 104,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "XRL A,R",
+    "display": "XRL A,R0"
+  },
+  {
+    "opcode": 105,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "XRL A,R",
+    "display": "XRL A,R1"
+  },
+  {
+    "opcode": 106,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "XRL A,R",
+    "display": "XRL A,R2"
+  },
+  {
+    "opcode": 107,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "XRL A,R",
+    "display": "XRL A,R3"
+  },
+  {
+    "opcode": 108,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "XRL A,R",
+    "display": "XRL A,R4"
+  },
+  {
+    "opcode": 109,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "XRL A,R",
+    "display": "XRL A,R5"
+  },
+  {
+    "opcode": 110,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "XRL A,R",
+    "display": "XRL A,R6"
+  },
+  {
+    "opcode": 111,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "XRL A,R",
+    "display": "XRL A,R7"
+  },
+  {
+    "opcode": 112,
+    "size": 2,
+    "cycles": 2,
+    "mnemonic": "JNZ",
+    "display": "JNZ 00H"
+  },
+  {
+    "opcode": 113,
+    "size": 2,
+    "cycles": 2,
+    "mnemonic": "ACALL",
+    "display": "ACALL 300H"
+  },
+  {
+    "opcode": 114,
+    "size": 2,
+    "cycles": 1,
+    "mnemonic": "ORL C,",
+    "display": "ORL C,00H"
+  },
+  {
+    "opcode": 115,
+    "size": 1,
+    "cycles": 2,
+    "mnemonic": "JMP @A+DPTR",
+    "display": "JMP @A+DPTR"
+  },
+  {
+    "opcode": 116,
+    "size": 2,
+    "cycles": 1,
+    "mnemonic": "MOV A,#",
+    "display": "MOV A,#00H"
+  },
+  {
+    "opcode": 117,
+    "size": 3,
+    "cycles": 2,
+    "mnemonic": "MOV direct,#",
+    "display": "MOV 00H,#00H"
+  },
+  {
+    "opcode": 118,
+    "size": 2,
+    "cycles": 1,
+    "mnemonic": "MOV @R0,#",
+    "display": "MOV @R0,#00H"
+  },
+  {
+    "opcode": 119,
+    "size": 2,
+    "cycles": 1,
+    "mnemonic": "MOV @R1,#",
+    "display": "MOV @R1,#00H"
+  },
+  {
+    "opcode": 120,
+    "size": 2,
+    "cycles": 1,
+    "mnemonic": "MOV R0,#",
+    "display": "MOV R0,#00H"
+  },
+  {
+    "opcode": 121,
+    "size": 2,
+    "cycles": 1,
+    "mnemonic": "MOV R1,#",
+    "display": "MOV R1,#00H"
+  },
+  {
+    "opcode": 122,
+    "size": 2,
+    "cycles": 1,
+    "mnemonic": "MOV R2,#",
+    "display": "MOV R2,#00H"
+  },
+  {
+    "opcode": 123,
+    "size": 2,
+    "cycles": 1,
+    "mnemonic": "MOV R3,#",
+    "display": "MOV R3,#00H"
+  },
+  {
+    "opcode": 124,
+    "size": 2,
+    "cycles": 1,
+    "mnemonic": "MOV R4,#",
+    "display": "MOV R4,#00H"
+  },
+  {
+    "opcode": 125,
+    "size": 2,
+    "cycles": 1,
+    "mnemonic": "MOV R5,#",
+    "display": "MOV R5,#00H"
+  },
+  {
+    "opcode": 126,
+    "size": 2,
+    "cycles": 1,
+    "mnemonic": "MOV R6,#",
+    "display": "MOV R6,#00H"
+  },
+  {
+    "opcode": 127,
+    "size": 2,
+    "cycles": 1,
+    "mnemonic": "MOV R7,#",
+    "display": "MOV R7,#00H"
+  },
+  {
+    "opcode": 128,
+    "size": 2,
+    "cycles": 2,
+    "mnemonic": "SJMP",
+    "display": "SJMP 00H"
+  },
+  {
+    "opcode": 129,
+    "size": 2,
+    "cycles": 2,
+    "mnemonic": "AJMP",
+    "display": "AJMP 400H"
+  },
+  {
+    "opcode": 130,
+    "size": 2,
+    "cycles": 1,
+    "mnemonic": "ANL C,",
+    "display": "ANL C,00H"
+  },
+  {
+    "opcode": 131,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "MOVC A,@A+PC",
+    "display": "MOVC A,@A+PC"
+  },
+  {
+    "opcode": 132,
+    "size": 1,
+    "cycles": 4,
+    "mnemonic": "DIV AB",
+    "display": "DIV AB"
+  },
+  {
+    "opcode": 133,
+    "size": 3,
+    "cycles": 2,
+    "mnemonic": "MOV direct,direct",
+    "display": "MOV 00H,00H"
+  },
+  {
+    "opcode": 134,
+    "size": 2,
+    "cycles": 2,
+    "mnemonic": "MOV direct,@Rn",
+    "display": "MOV 00H,@R0"
+  },
+  {
+    "opcode": 135,
+    "size": 2,
+    "cycles": 2,
+    "mnemonic": "MOV direct,@Rn",
+    "display": "MOV 00H,@R1"
+  },
+  {
+    "opcode": 136,
+    "size": 2,
+    "cycles": 2,
+    "mnemonic": "MOV direct,Rn",
+    "display": "MOV 00H,R0"
+  },
+  {
+    "opcode": 137,
+    "size": 2,
+    "cycles": 2,
+    "mnemonic": "MOV direct,Rn",
+    "display": "MOV 00H,R1"
+  },
+  {
+    "opcode": 138,
+    "size": 2,
+    "cycles": 2,
+    "mnemonic": "MOV direct,Rn",
+    "display": "MOV 00H,R2"
+  },
+  {
+    "opcode": 139,
+    "size": 2,
+    "cycles": 2,
+    "mnemonic": "MOV direct,Rn",
+    "display": "MOV 00H,R3"
+  },
+  {
+    "opcode": 140,
+    "size": 2,
+    "cycles": 2,
+    "mnemonic": "MOV direct,Rn",
+    "display": "MOV 00H,R4"
+  },
+  {
+    "opcode": 141,
+    "size": 2,
+    "cycles": 2,
+    "mnemonic": "MOV direct,Rn",
+    "display": "MOV 00H,R5"
+  },
+  {
+    "opcode": 142,
+    "size": 2,
+    "cycles": 2,
+    "mnemonic": "MOV direct,Rn",
+    "display": "MOV 00H,R6"
+  },
+  {
+    "opcode": 143,
+    "size": 2,
+    "cycles": 2,
+    "mnemonic": "MOV direct,Rn",
+    "display": "MOV 00H,R7"
+  },
+  {
+    "opcode": 144,
+    "size": 3,
+    "cycles": 2,
+    "mnemonic": "MOV DPTR,#",
+    "display": "MOV DPTR, #0000H"
+  },
+  {
+    "opcode": 145,
+    "size": 2,
+    "cycles": 2,
+    "mnemonic": "ACALL",
+    "display": "ACALL 400H"
+  },
+  {
+    "opcode": 146,
+    "size": 2,
+    "cycles": 2,
+    "mnemonic": "MOV bit,C",
+    "display": "MOV 00H,C"
+  },
+  {
+    "opcode": 147,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "MOVC A,@A+DPTR",
+    "display": "MOVC A,@A+DPTR"
+  },
+  {
+    "opcode": 148,
+    "size": 2,
+    "cycles": 1,
+    "mnemonic": "SUBB A,#",
+    "display": "SUBB A,#00H"
+  },
+  {
+    "opcode": 149,
+    "size": 2,
+    "cycles": 1,
+    "mnemonic": "SUBB A,",
+    "display": "SUBB A,00H"
+  },
+  {
+    "opcode": 150,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "SUBB A,@R",
+    "display": "SUBB A,@R0"
+  },
+  {
+    "opcode": 151,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "SUBB A,@R",
+    "display": "SUBB A,@R1"
+  },
+  {
+    "opcode": 152,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "SUBB A,R",
+    "display": "SUBB A,R0"
+  },
+  {
+    "opcode": 153,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "SUBB A,R",
+    "display": "SUBB A,R1"
+  },
+  {
+    "opcode": 154,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "SUBB A,R",
+    "display": "SUBB A,R2"
+  },
+  {
+    "opcode": 155,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "SUBB A,R",
+    "display": "SUBB A,R3"
+  },
+  {
+    "opcode": 156,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "SUBB A,R",
+    "display": "SUBB A,R4"
+  },
+  {
+    "opcode": 157,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "SUBB A,R",
+    "display": "SUBB A,R5"
+  },
+  {
+    "opcode": 158,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "SUBB A,R",
+    "display": "SUBB A,R6"
+  },
+  {
+    "opcode": 159,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "SUBB A,R",
+    "display": "SUBB A,R7"
+  },
+  {
+    "opcode": 160,
+    "size": 2,
+    "cycles": 1,
+    "mnemonic": "ORL C,/",
+    "display": "ORL C,/00H"
+  },
+  {
+    "opcode": 161,
+    "size": 2,
+    "cycles": 2,
+    "mnemonic": "AJMP",
+    "display": "AJMP 500H"
+  },
+  {
+    "opcode": 162,
+    "size": 2,
+    "cycles": 1,
+    "mnemonic": "MOV C,",
+    "display": "MOV C,00H"
+  },
+  {
+    "opcode": 163,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "INC DPTR",
+    "display": "INC DPTR"
+  },
+  {
+    "opcode": 164,
+    "size": 1,
+    "cycles": 4,
+    "mnemonic": "MUL AB",
+    "display": "MUL AB"
+  },
+  {
+    "opcode": 165,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "A5",
+    "display": "A5"
+  },
+  {
+    "opcode": 166,
+    "size": 2,
+    "cycles": 2,
+    "mnemonic": "MOV @R0,",
+    "display": "MOV @R0,00H"
+  },
+  {
+    "opcode": 167,
+    "size": 2,
+    "cycles": 2,
+    "mnemonic": "MOV @R1,",
+    "display": "MOV @R1,00H"
+  },
+  {
+    "opcode": 168,
+    "size": 2,
+    "cycles": 2,
+    "mnemonic": "MOV R0,",
+    "display": "MOV R0,00H"
+  },
+  {
+    "opcode": 169,
+    "size": 2,
+    "cycles": 2,
+    "mnemonic": "MOV R1,",
+    "display": "MOV R1,00H"
+  },
+  {
+    "opcode": 170,
+    "size": 2,
+    "cycles": 2,
+    "mnemonic": "MOV R2,",
+    "display": "MOV R2,00H"
+  },
+  {
+    "opcode": 171,
+    "size": 2,
+    "cycles": 2,
+    "mnemonic": "MOV R3,",
+    "display": "MOV R3,00H"
+  },
+  {
+    "opcode": 172,
+    "size": 2,
+    "cycles": 2,
+    "mnemonic": "MOV R4,",
+    "display": "MOV R4,00H"
+  },
+  {
+    "opcode": 173,
+    "size": 2,
+    "cycles": 2,
+    "mnemonic": "MOV R5,",
+    "display": "MOV R5,00H"
+  },
+  {
+    "opcode": 174,
+    "size": 2,
+    "cycles": 2,
+    "mnemonic": "MOV R6,",
+    "display": "MOV R6,00H"
+  },
+  {
+    "opcode": 175,
+    "size": 2,
+    "cycles": 2,
+    "mnemonic": "MOV R7,",
+    "display": "MOV R7,00H"
+  },
+  {
+    "opcode": 176,
+    "size": 2,
+    "cycles": 1,
+    "mnemonic": "ANL C,/",
+    "display": "ANL C,/00H"
+  },
+  {
+    "opcode": 177,
+    "size": 2,
+    "cycles": 2,
+    "mnemonic": "ACALL",
+    "display": "ACALL 500H"
+  },
+  {
+    "opcode": 178,
+    "size": 2,
+    "cycles": 1,
+    "mnemonic": "CPL ",
+    "display": "CPL 00H"
+  },
+  {
+    "opcode": 179,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "CPL C",
+    "display": "CPL C"
+  },
+  {
+    "opcode": 180,
+    "size": 3,
+    "cycles": 2,
+    "mnemonic": "CJNE A,#",
+    "display": "CJNE A,#00H,00H"
+  },
+  {
+    "opcode": 181,
+    "size": 3,
+    "cycles": 2,
+    "mnemonic": "CJNE A,",
+    "display": "CJNE A,00H,00H"
+  },
+  {
+    "opcode": 182,
+    "size": 3,
+    "cycles": 2,
+    "mnemonic": "CJNE @R0,#",
+    "display": "CJNE @R0,#00H,00H"
+  },
+  {
+    "opcode": 183,
+    "size": 3,
+    "cycles": 2,
+    "mnemonic": "CJNE @R1,#",
+    "display": "CJNE @R1,#00H,00H"
+  },
+  {
+    "opcode": 184,
+    "size": 3,
+    "cycles": 2,
+    "mnemonic": "CJNE R0,#",
+    "display": "CJNE R0,#00H,00H"
+  },
+  {
+    "opcode": 185,
+    "size": 3,
+    "cycles": 2,
+    "mnemonic": "CJNE R1,#",
+    "display": "CJNE R1,#00H,00H"
+  },
+  {
+    "opcode": 186,
+    "size": 3,
+    "cycles": 2,
+    "mnemonic": "CJNE R2,#",
+    "display": "CJNE R2,#00H,00H"
+  },
+  {
+    "opcode": 187,
+    "size": 3,
+    "cycles": 2,
+    "mnemonic": "CJNE R3,#",
+    "display": "CJNE R3,#00H,00H"
+  },
+  {
+    "opcode": 188,
+    "size": 3,
+    "cycles": 2,
+    "mnemonic": "CJNE R4,#",
+    "display": "CJNE R4,#00H,00H"
+  },
+  {
+    "opcode": 189,
+    "size": 3,
+    "cycles": 2,
+    "mnemonic": "CJNE R5,#",
+    "display": "CJNE R5,#00H,00H"
+  },
+  {
+    "opcode": 190,
+    "size": 3,
+    "cycles": 2,
+    "mnemonic": "CJNE R6,#",
+    "display": "CJNE R6,#00H,00H"
+  },
+  {
+    "opcode": 191,
+    "size": 3,
+    "cycles": 2,
+    "mnemonic": "CJNE R7,#",
+    "display": "CJNE R7,#00H,00H"
+  },
+  {
+    "opcode": 192,
+    "size": 2,
+    "cycles": 2,
+    "mnemonic": "PUSH ",
+    "display": "PUSH 00H"
+  },
+  {
+    "opcode": 193,
+    "size": 2,
+    "cycles": 2,
+    "mnemonic": "AJMP",
+    "display": "AJMP 600H"
+  },
+  {
+    "opcode": 194,
+    "size": 2,
+    "cycles": 1,
+    "mnemonic": "CLR ",
+    "display": "CLR 00H"
+  },
+  {
+    "opcode": 195,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "CLR C",
+    "display": "CLR C"
+  },
+  {
+    "opcode": 196,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "SWAP A",
+    "display": "SWAP A"
+  },
+  {
+    "opcode": 197,
+    "size": 2,
+    "cycles": 1,
+    "mnemonic": "XCH A,",
+    "display": "XCH A,00H"
+  },
+  {
+    "opcode": 198,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "XCH A,@R",
+    "display": "XCH A,@R0"
+  },
+  {
+    "opcode": 199,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "XCH A,@R",
+    "display": "XCH A,@R1"
+  },
+  {
+    "opcode": 200,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "XCH A,R",
+    "display": "XCH A,R0"
+  },
+  {
+    "opcode": 201,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "XCH A,R",
+    "display": "XCH A,R1"
+  },
+  {
+    "opcode": 202,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "XCH A,R",
+    "display": "XCH A,R2"
+  },
+  {
+    "opcode": 203,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "XCH A,R",
+    "display": "XCH A,R3"
+  },
+  {
+    "opcode": 204,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "XCH A,R",
+    "display": "XCH A,R4"
+  },
+  {
+    "opcode": 205,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "XCH A,R",
+    "display": "XCH A,R5"
+  },
+  {
+    "opcode": 206,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "XCH A,R",
+    "display": "XCH A,R6"
+  },
+  {
+    "opcode": 207,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "XCH A,R",
+    "display": "XCH A,R7"
+  },
+  {
+    "opcode": 208,
+    "size": 2,
+    "cycles": 2,
+    "mnemonic": "POP ",
+    "display": "POP 00H"
+  },
+  {
+    "opcode": 209,
+    "size": 2,
+    "cycles": 2,
+    "mnemonic": "ACALL",
+    "display": "ACALL 600H"
+  },
+  {
+    "opcode": 210,
+    "size": 2,
+    "cycles": 1,
+    "mnemonic": "SETB ",
+    "display": "SETB 00H"
+  },
+  {
+    "opcode": 211,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "SETB C",
+    "display": "SETB C"
+  },
+  {
+    "opcode": 212,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "DA A",
+    "display": "DA A"
+  },
+  {
+    "opcode": 213,
+    "size": 3,
+    "cycles": 2,
+    "mnemonic": "DJNZ",
+    "display": "DJNZ 00H,00H"
+  },
+  {
+    "opcode": 214,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "XCHD A,@R",
+    "display": "XCHD A,@R0"
+  },
+  {
+    "opcode": 215,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "XCHD A,@R",
+    "display": "XCHD A,@R1"
+  },
+  {
+    "opcode": 216,
+    "size": 2,
+    "cycles": 2,
+    "mnemonic": "DJNZ R0,",
+    "display": "DJNZ R0,00H"
+  },
+  {
+    "opcode": 217,
+    "size": 2,
+    "cycles": 2,
+    "mnemonic": "DJNZ R1,",
+    "display": "DJNZ R1,00H"
+  },
+  {
+    "opcode": 218,
+    "size": 2,
+    "cycles": 2,
+    "mnemonic": "DJNZ R2,",
+    "display": "DJNZ R2,00H"
+  },
+  {
+    "opcode": 219,
+    "size": 2,
+    "cycles": 2,
+    "mnemonic": "DJNZ R3,",
+    "display": "DJNZ R3,00H"
+  },
+  {
+    "opcode": 220,
+    "size": 2,
+    "cycles": 2,
+    "mnemonic": "DJNZ R4,",
+    "display": "DJNZ R4,00H"
+  },
+  {
+    "opcode": 221,
+    "size": 2,
+    "cycles": 2,
+    "mnemonic": "DJNZ R5,",
+    "display": "DJNZ R5,00H"
+  },
+  {
+    "opcode": 222,
+    "size": 2,
+    "cycles": 2,
+    "mnemonic": "DJNZ R6,",
+    "display": "DJNZ R6,00H"
+  },
+  {
+    "opcode": 223,
+    "size": 2,
+    "cycles": 2,
+    "mnemonic": "DJNZ R7,",
+    "display": "DJNZ R7,00H"
+  },
+  {
+    "opcode": 224,
+    "size": 1,
+    "cycles": 2,
+    "mnemonic": "MOVX A,@DPTR",
+    "display": "MOVX A,@DPTR"
+  },
+  {
+    "opcode": 225,
+    "size": 2,
+    "cycles": 2,
+    "mnemonic": "AJMP",
+    "display": "AJMP 700H"
+  },
+  {
+    "opcode": 226,
+    "size": 1,
+    "cycles": 2,
+    "mnemonic": "MOVX A,@R",
+    "display": "MOVX A,@R0"
+  },
+  {
+    "opcode": 227,
+    "size": 1,
+    "cycles": 2,
+    "mnemonic": "MOVX A,@R",
+    "display": "MOVX A,@R1"
+  },
+  {
+    "opcode": 228,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "CLR A",
+    "display": "CLR A"
+  },
+  {
+    "opcode": 229,
+    "size": 2,
+    "cycles": 1,
+    "mnemonic": "MOV A,",
+    "display": "MOV A,00H"
+  },
+  {
+    "opcode": 230,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "MOV A,@R",
+    "display": "MOV A,@R0"
+  },
+  {
+    "opcode": 231,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "MOV A,@R",
+    "display": "MOV A,@R1"
+  },
+  {
+    "opcode": 232,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "MOV A,R",
+    "display": "MOV A,R0"
+  },
+  {
+    "opcode": 233,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "MOV A,R",
+    "display": "MOV A,R1"
+  },
+  {
+    "opcode": 234,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "MOV A,R",
+    "display": "MOV A,R2"
+  },
+  {
+    "opcode": 235,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "MOV A,R",
+    "display": "MOV A,R3"
+  },
+  {
+    "opcode": 236,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "MOV A,R",
+    "display": "MOV A,R4"
+  },
+  {
+    "opcode": 237,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "MOV A,R",
+    "display": "MOV A,R5"
+  },
+  {
+    "opcode": 238,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "MOV A,R",
+    "display": "MOV A,R6"
+  },
+  {
+    "opcode": 239,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "MOV A,R",
+    "display": "MOV A,R7"
+  },
+  {
+    "opcode": 240,
+    "size": 1,
+    "cycles": 2,
+    "mnemonic": "MOVX @DPTR,A",
+    "display": "MOVX @DPTR,A"
+  },
+  {
+    "opcode": 241,
+    "size": 2,
+    "cycles": 2,
+    "mnemonic": "ACALL",
+    "display": "ACALL 700H"
+  },
+  {
+    "opcode": 242,
+    "size": 1,
+    "cycles": 2,
+    "mnemonic": "MOVX @R",
+    "display": "MOVX @R0,A"
+  },
+  {
+    "opcode": 243,
+    "size": 1,
+    "cycles": 2,
+    "mnemonic": "MOVX @R",
+    "display": "MOVX @R1,A"
+  },
+  {
+    "opcode": 244,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "CPL A",
+    "display": "CPL A"
+  },
+  {
+    "opcode": 245,
+    "size": 2,
+    "cycles": 1,
+    "mnemonic": "MOV direct,A",
+    "display": "MOV 00H,A"
+  },
+  {
+    "opcode": 246,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "MOV @R0,A",
+    "display": "MOV @R0,A"
+  },
+  {
+    "opcode": 247,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "MOV @R1,A",
+    "display": "MOV @R1,A"
+  },
+  {
+    "opcode": 248,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "MOV R0,A",
+    "display": "MOV R0,A"
+  },
+  {
+    "opcode": 249,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "MOV R1,A",
+    "display": "MOV R1,A"
+  },
+  {
+    "opcode": 250,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "MOV R2,A",
+    "display": "MOV R2,A"
+  },
+  {
+    "opcode": 251,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "MOV R3,A",
+    "display": "MOV R3,A"
+  },
+  {
+    "opcode": 252,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "MOV R4,A",
+    "display": "MOV R4,A"
+  },
+  {
+    "opcode": 253,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "MOV R5,A",
+    "display": "MOV R5,A"
+  },
+  {
+    "opcode": 254,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "MOV R6,A",
+    "display": "MOV R6,A"
+  },
+  {
+    "opcode": 255,
+    "size": 1,
+    "cycles": 1,
+    "mnemonic": "MOV R7,A",
+    "display": "MOV R7,A"
+  }
+]
