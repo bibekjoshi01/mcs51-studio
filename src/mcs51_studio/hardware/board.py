@@ -1,7 +1,4 @@
-"""Python peripheral board using the recovered EdSim51 default pin mappings.
-
-Peripheral timing fidelity is tracked separately from instruction conformance.
-"""
+"""Virtual learning board, configurable wiring, and peripheral stepping."""
 
 from collections import deque
 

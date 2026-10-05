@@ -8,8 +8,8 @@ from pathlib import Path
 from tkinter import Tk, messagebox
 from unittest.mock import patch
 
-from .ui.application import App
 from .metadata import APP_NAME
+from .ui.application import App
 
 
 def run_smoke_test():
