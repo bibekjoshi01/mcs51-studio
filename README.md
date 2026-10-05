@@ -8,8 +8,8 @@ and a virtual board with LEDs, switches, keypad, displays, ADC/DAC, motor, and U
 
 ## Install and run
 
-Download the installer for your computer from [Releases](../../releases).
-**The installers include Python and Tk. You do not need to install Python or Java.**
+Download the installer for your computer from [Releases](https://github.com/bibekjoshi01/mcs51-studio/releases).
+**The installers include Python and Tk. You do not need to install Python.**
 Public installers have not been published yet; native builds are prepared by the
 release workflow and remain drafts until reviewed.
 
@@ -47,9 +47,10 @@ Save with **Ctrl+S** on Windows/Linux or **Command+S** on macOS.
 
 ## Project status
 
-MCS51 Studio is an experimental reconstruction informed by EdSim51, created by
-James Rogers. The processor has reference coverage; full peripheral and interface
-parity is still in progress. See [compatibility](docs/compatibility.md).
+MCS51 Studio is an early-stage 8051 learning workbench. The current focus is a
+clear debugger and virtual board; guided lessons and a redesigned interface are
+planned. See [supported features and limits](docs/compatibility.md) and the
+[code structure and learning roadmap](docs/architecture.md).
 
 For running from Python and contributing, see [development](docs/development.md).
 Maintainers can find native packaging and signing details in [releases](docs/releases.md).
