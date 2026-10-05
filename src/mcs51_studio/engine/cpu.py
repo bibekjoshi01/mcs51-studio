@@ -4,7 +4,7 @@ The Java instruction descriptor inventory is in isa.json. Instruction execution
 is Python; no JVM, Java bridge, or original JAR is needed by this module.
 """
 
-from .resources import ISA
+from ..resources import ISA
 from .serial import Serial
 
 SFR = dict(

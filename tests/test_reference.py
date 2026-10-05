@@ -6,8 +6,8 @@ import json
 import unittest
 from pathlib import Path
 
-from mcs51_studio.assembler import assemble
-from mcs51_studio.core import CPU
+from mcs51_studio.engine.assembler import assemble
+from mcs51_studio.engine.cpu import CPU
 
 FIXTURES = Path(__file__).with_name("fixtures")
 

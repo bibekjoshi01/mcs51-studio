@@ -7,12 +7,12 @@ import tkinter as tk
 from pathlib import Path
 from tkinter import filedialog, font, messagebox, simpledialog, ttk
 
-from .assembler import AssemblyError, assemble, export_hex, import_hex
-from .board import DEFAULT_MAPPING, Board, pin
-from .config import save_shortcut, settings_path
-from .core import CPU, ISA, SFR
-from .metadata import APP_NAME, VERSION
-from .resources import LED_COUNTER
+from ..engine.assembler import AssemblyError, assemble, export_hex, import_hex
+from ..hardware.board import DEFAULT_MAPPING, Board, pin
+from ..config import save_shortcut, settings_path
+from ..engine.cpu import CPU, ISA, SFR
+from ..metadata import APP_NAME, VERSION
+from ..resources import LED_COUNTER
 
 
 class App:
@@ -968,7 +968,7 @@ def main():
     parser.add_argument("--smoke-test", action="store_true", help=argparse.SUPPRESS)
     args = parser.parse_args()
     if args.smoke_test:
-        from .smoke import run_smoke_test
+        from ..smoke import run_smoke_test
 
         raise SystemExit(run_smoke_test())
     root = tk.Tk()

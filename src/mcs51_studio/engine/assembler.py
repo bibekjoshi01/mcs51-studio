@@ -5,7 +5,7 @@ import operator
 import re
 from dataclasses import dataclass
 
-from .core import BITS, ISA, SFR
+from .cpu import BITS, ISA, SFR
 
 
 class AssemblyError(ValueError):

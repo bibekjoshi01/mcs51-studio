@@ -15,7 +15,7 @@ dev = ["ruff==0.17.2"]
 build = ["pyinstaller==6.20.0"]
 
 [project.gui-scripts]
-mcs51-studio = "mcs51_studio.app:main"
+mcs51-studio = "mcs51_studio.ui.application:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
