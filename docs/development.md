@@ -7,7 +7,7 @@ use the installers described in the [README](../README.md).
 
 - Python 3.10 or newer with Tk available.
 - Git and a graphical desktop session for the UI.
-- No Java runtime or third-party Python GUI framework is needed.
+- The runtime uses the Python standard library and Tk.
 
 Check Tk with `python -m tkinter` (or `python3 -m tkinter`). It should open a test
 window. On Debian/Ubuntu, install `python3-tk` if needed. On Windows/macOS, use a
@@ -49,7 +49,7 @@ python -m ruff format --check .
 
 Substitute `.venv/bin/python` on Linux/macOS or `.\.venv\Scripts\python.exe` on
 Windows if the environment is not activated. Headless tests do not need Tk or a
-display and cover the preserved reference fixtures plus platform settings.
+display and cover the baseline regression fixtures plus platform settings.
 
 For a real GUI startup and debugger check, run `python -m mcs51_studio --smoke-test`.
 On headless Linux, use `xvfb-run -a python -m mcs51_studio --smoke-test`.
@@ -67,7 +67,9 @@ Settings remain outside the checkout and installed application:
 Set `MCS51_STUDIO_SETTINGS` to an explicit file for an isolated or portable setup.
 Files use UTF-8; Intel HEX output uses ASCII.
 
-`src/mcs51_studio/` contains the application and bundled data, `tests/` contains
-reference and integration tests, and `packaging/` contains installer assets.
+`src/mcs51_studio/engine/` contains headless simulation and assembly,
+`hardware/` models the virtual board, and `ui/` contains desktop presentation.
+`tests/` contains regression and integration tests; `packaging/` contains installer
+assets. See [architecture.md](architecture.md) for dependency rules and the learning roadmap.
 Version and application name are defined in `metadata.py`.
 Native installers are documented separately in [releases.md](releases.md).
