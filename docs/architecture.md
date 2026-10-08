@@ -16,7 +16,11 @@ src/mcs51_studio/
     lcd.py          Character LCD controller
     uart.py         External UART endpoint
   ui/
-    application.py  Tk editor, debugger, board views, and dialogs
+    application.py  Application state, file I/O, and debugger coordination
+    workspace.py    Resizable panes, navigation, inspector, menus, and layout state
+    editor.py       Assembly editing, syntax, line gutter, search, and edit transactions
+    board_view.py   Virtual board widgets and drawing
+    theme.py        Shared colors, typography, and ttk styles
   data/             Instruction catalog and runnable example
   config.py         Platform settings paths and keyboard conventions
   resources.py      Bundled data loading
@@ -30,11 +34,15 @@ user interaction and composes the engine and virtual board. Shared resource and
 metadata modules stay outside these layers. Tests instantiate CPU and board
 models directly; the GUI smoke check exercises their integration through the UI.
 
-The desktop view is currently a single module. As the redesign starts, extract
-editor, debugger, board, and lesson views into `ui/` modules. Put run/pause/step
-coordination into a shared session/controller when multiple views need it, so
-widget callbacks do not become a second CPU implementation. Avoid creating
-placeholder modules until they have working behavior.
+The UI now separates editor behavior, board presentation, layout, and theme.
+`application.py` composes these views and owns the current CPU, board, source,
+and debugger state. Execution callbacks are canceled on pause, edit, reset, or
+close. Unsaved source is tracked separately from assembly validity.
+
+As lessons introduce multiple documents or sessions, move debugger coordination
+into a shared session/controller so each view observes the same machine. Keep
+widget callbacks out of instruction execution. Avoid placeholder modules until
+they have working behavior.
 
 ## Learning direction
 
@@ -56,7 +64,7 @@ counter is a starter example, not a complete curriculum.
 ## Implementation priorities
 
 First validate known CPU and timing limits against manufacturer documentation.
-Then add a reusable simulation session and focused UI views, followed by lesson
+Then add a reusable simulation session and lesson
 navigation and assessments. Extend headless tests for machine changes and use
 GUI smoke checks for view integration. Installer builds remain native to each
 operating system; development commands live in [development.md](development.md)
