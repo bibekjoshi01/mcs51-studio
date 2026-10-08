@@ -45,11 +45,19 @@ The app opens with an LED counter example. Click **Assemble**, then **Step** (F7
 or **Run / Pause** (F5). Double-click a listing row to toggle a breakpoint.
 Save with **Ctrl+S** on Windows/Linux or **Command+S** on macOS.
 
+Use the sidebar to switch between the editor and virtual board. Drag the dividers
+to resize the workspace and inspector. Hide supporting panes with the status-bar
+toggles, or use **Focus editor**; **View → Reset layout** restores the default.
+The bottom panel contains the listing, memory explorer, and build activity.
+
+The editor includes line numbers, assembly highlighting, find/replace, go-to-line,
+undo/redo, and indentation. Press **F1** for shortcuts or see the
+[workbench guide](docs/workbench.md).
+
 ## Project Status
 
 MCS51 Studio is an early-stage 8051 learning workbench. The current focus is a
-clear debugger and virtual board; guided lessons and a redesigned interface are
-planned. See [supported features and limits](docs/compatibility.md) and the
+clear debugger and virtual board; guided lessons are planned. See [supported features and limits](docs/compatibility.md) and the
 [code structure and learning roadmap](docs/architecture.md).
 
 For running from Python and contributing, see [development](docs/development.md).
