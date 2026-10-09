@@ -108,6 +108,8 @@ def verify_editor_workflow(app, root, temporary):
         raise RuntimeError("Indent/unindent did not preserve source")
     app.editor.tag_remove("sel", "1.0", "end")
     app.editor.mark_set("insert", "1.0")
+    view.search_term.set("mov")
+    view.find_next()
     view.search_term.set("inc")
     view.find_next()
     view.replace_term.set("DEC")
