@@ -65,3 +65,25 @@ Frozen startup tests do not prove installer upgrades or OS trust acceptance.
 Validate installation, launch, save, upgrades, and uninstall on clean target
 machines before publishing. Windows/Linux native runs await the first CI run;
 they cannot be validated natively on the current Mac.
+
+## Application artwork
+
+The editable vector master is `packaging/icons/mcs51-studio.svg`. Native icon
+assets are committed, so normal development and release builds do not require
+image-conversion tools. The Windows executable and setup wizard use the ICO;
+macOS uses the ICNS bundle resource; Linux installs SVG/PNG icons in the hicolor
+icon theme. The UI loads its bundled PNG for window and running-app icons.
+Windows shortcuts and the running process share the application ID in
+`metadata.py` so taskbar grouping identifies the same application.
+
+To update the artwork, edit the SVG and export a transparent 1024×1024 PNG with
+a vector editor. Then install the optional artwork tools and generate all sizes:
+
+```sh
+python -m pip install -e '.[artwork]'
+python scripts/build_icons.py path/to/exported-1024.png
+```
+
+Commit the SVG, ICO, ICNS, and `src/mcs51_studio/data/icon.png` together and rebuild
+native installers. The generator uses Pillow only during artwork preparation;
+Pillow is not a runtime dependency.
