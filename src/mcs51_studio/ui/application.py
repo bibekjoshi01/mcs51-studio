@@ -13,6 +13,7 @@ from ..hardware.board import DEFAULT_MAPPING, Board, pin
 from ..metadata import APP_NAME, VERSION
 from ..resources import LED_COUNTER
 from .board_view import BoardView
+from .icon import apply_icon, prepare_process_identity
 from .theme import apply_theme
 from .workspace import WorkspaceView
 
@@ -20,6 +21,7 @@ from .workspace import WorkspaceView
 class App(WorkspaceView, BoardView):
     def __init__(self, root):
         self.root = root
+        apply_icon(root)
         root.title(f"{APP_NAME} — 8051 Workbench")
         width = max(800, min(1370, root.winfo_screenwidth() - 80))
         height = max(600, min(900, root.winfo_screenheight() - 100))
@@ -668,7 +670,8 @@ def main():
         from ..smoke import run_smoke_test
 
         raise SystemExit(run_smoke_test())
-    root = tk.Tk()
+    prepare_process_identity()
+    root = tk.Tk(className="MCS51Studio")
     App(root)
     root.mainloop()
 

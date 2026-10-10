@@ -10,6 +10,7 @@ from unittest.mock import patch
 
 from .metadata import APP_NAME
 from .ui.application import App
+from .ui.icon import prepare_process_identity
 
 
 def run_smoke_test():
@@ -28,9 +29,12 @@ def run_smoke_test():
                 ),
                 patch.object(messagebox, "showerror", fail),
             ):
-                root = Tk()
+                prepare_process_identity()
+                root = Tk(className="MCS51Studio")
                 root.withdraw()
                 app = App(root)
+                if app.root._app_icon.width() != 512:
+                    raise RuntimeError("Bundled application icon did not load")
                 root.update()
                 if root.title() != f"{APP_NAME} — 8051 Workbench":
                     raise RuntimeError("Application title mismatch")
@@ -171,6 +175,12 @@ def verify_editor_workflow(app, root, temporary):
             > root.winfo_height()
         ):
             raise RuntimeError(f"Status controls were clipped at {geometry}")
+        if app.header.winfo_height() > 70 or any(
+            not child.winfo_ismapped()
+            or child.winfo_x() + child.winfo_width() > app.commandbar.winfo_width()
+            for child in app.commandbar.pack_slaves()
+        ):
+            raise RuntimeError(f"Single-row commands were clipped at {geometry}")
         if app.editor.winfo_width() < 250 or app.bottom.winfo_height() < 100:
             raise RuntimeError(f"Workspace panes were not usable at {geometry}")
         app.workspace.select(app.board_tab)
