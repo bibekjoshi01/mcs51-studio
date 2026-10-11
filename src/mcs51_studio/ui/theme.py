@@ -78,6 +78,7 @@ def apply_theme(root):
         background=[("active", SELECTION), ("pressed", BORDER)],
         foreground=[("disabled", MUTED)],
     )
+    style.configure("Footer.TButton", padding=(8, 2))
     style.configure("Primary.TButton", background=MINT, foreground=BG)
     style.map(
         "Primary.TButton",
