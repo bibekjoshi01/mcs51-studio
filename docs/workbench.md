@@ -15,8 +15,8 @@ Sidebar, Inspector, and Bottom controls, or the View menu, to hide them.
 **View → Reset layout** restores the standard layout if a pane becomes too small.
 Pane visibility and divider positions are saved with application settings.
 
-The sidebar opens the editor, board, listing, memory explorer, instruction
-reference, and tools. The LED counter button restores the starter program after
+The sidebar opens the editor, board, listing, memory explorer, and tools.
+Open **Instruction Reference** from the footer for the 8051 instruction catalog. The LED counter button restores the starter program after
 checking for unsaved edits. Narrow or short sidebar, inspector, and board views
 can be scrolled.
 
