@@ -101,15 +101,16 @@ class WorkspaceView:
                 text=label,
                 command=action,
                 width=0,
+                padding=(7, 6),
                 style="Primary.TButton" if primary else "TButton",
             ).pack(side="left", padx=2)
         self.run_button = ttk.Button(
-            toolbar, text="Run  F5", command=self.toggle_run, width=0
+            toolbar, text="Run  F5", command=self.toggle_run, width=0, padding=(7, 6)
         )
         self.run_button.pack(side="left", padx=2)
-        ttk.Button(toolbar, text="Reset", command=self.reset, width=0).pack(
-            side="left", padx=2
-        )
+        ttk.Button(
+            toolbar, text="Reset", command=self.reset, width=0, padding=(7, 6)
+        ).pack(side="left", padx=2)
         ttk.Label(toolbar, text="Batch", style="Muted.TLabel").pack(
             side="left", padx=(10, 6)
         )
@@ -120,8 +121,19 @@ class WorkspaceView:
             width=7,
             state="readonly",
         ).pack(side="left")
+        for label, command in [
+            ("Pin Mappings", self.mapping_dialog),
+            ("Oscilloscope", self.scope_window),
+        ]:
+            ttk.Button(
+                toolbar, text=label, command=command, width=0, padding=(7, 6)
+            ).pack(side="left", padx=2)
         ttk.Button(
-            toolbar, text="Focus editor", command=self.focus_editor, width=0
+            toolbar,
+            text="Focus editor",
+            command=self.focus_editor,
+            width=0,
+            padding=(7, 6),
         ).pack(side="right", padx=2)
         self.vertical = ttk.Panedwindow(self.root, orient="vertical")
         self.vertical.pack(fill="both", expand=True, padx=10)
@@ -222,13 +234,6 @@ class WorkspaceView:
             ("Memory explorer", lambda: self.show_bottom("Memory")),
         ]:
             ttk.Button(parent, text=label, command=action).pack(fill="x", pady=3)
-        ttk.Separator(parent).pack(fill="x", pady=18)
-        ttk.Button(parent, text="Pin mappings…", command=self.mapping_dialog).pack(
-            fill="x", pady=3
-        )
-        ttk.Button(parent, text="Oscilloscope", command=self.scope_window).pack(
-            fill="x", pady=3
-        )
 
     def build_inspector(self):
         scroll = ScrollableFrame(self.inspector)
