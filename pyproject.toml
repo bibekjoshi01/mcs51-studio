@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=77.0.3"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -8,7 +8,13 @@ dynamic = ["version"]
 description = "A Python desktop workbench for the 8051 microcontroller"
 readme = "README.md"
 requires-python = ">=3.10"
+license = "LicenseRef-MCS51-Studio-Educational"
+license-files = ["LICENSE"]
 dependencies = []
+
+[project.urls]
+Repository = "https://github.com/bibekjoshi01/mcs51-studio"
+Issues = "https://github.com/bibekjoshi01/mcs51-studio/issues"
 
 [project.optional-dependencies]
 dev = ["ruff==0.17.2"]

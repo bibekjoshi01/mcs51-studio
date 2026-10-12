@@ -5,6 +5,7 @@ AppName=MCS51 Studio
 AppVersion={#AppVersion}
 AppPublisher=MCS51 Studio
 SetupIconFile={#IconFile}
+LicenseFile={#LicenseFile}
 DefaultDirName={localappdata}\Programs\MCS51 Studio
 DefaultGroupName=MCS51 Studio
 PrivilegesRequired=lowest

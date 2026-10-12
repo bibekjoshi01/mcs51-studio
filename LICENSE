@@ -1,0 +1,44 @@
+MCS51 Studio Educational Source-Available License 1.0
+Copyright (c) 2026 Bibek Joshi
+All rights reserved except as expressly granted below.
+
+1. Free educational permission
+You may view, download, run, and make private copies or modifications of this
+software for personal learning, study, experimentation, and noncommercial
+teaching, without charge. Keep this license and copyright notice with copies.
+
+2. Redistribution restrictions
+You may not publish, redistribute, sell, sublicense, or incorporate the software
+or substantial portions of its source code into another distributed product
+without prior written permission from the copyright holder. This includes
+modified versions. You may share a link to the official repository or releases.
+Rights necessarily granted through the terms of the hosting platform, including
+GitHub's on-platform viewing and forking functionality, are unaffected.
+
+3. Commercial permission
+Commercial use requires a separate written license from the copyright holder.
+This includes use in a business's operations, commercial products or services,
+paid training, consulting, and resale. A commercial license may require payment
+or may be granted by written permission on separately agreed terms. Request
+permission from Bibek Joshi through https://github.com/bibekjoshi01 before use.
+
+4. Contributions and separate rights
+You retain ownership of your contributions. Submitting a contribution for
+inclusion grants the copyright holder a nonexclusive, worldwide, royalty-free
+right to use, modify, distribute, and sublicense that contribution under these
+educational terms and separate commercial licenses. Submit only material you
+have authority to license this way.
+This license grants only rights controlled by the copyright holder. Third-party
+components and material under separate terms retain those terms. Your own
+assembly programs and original data are not licensed by this document.
+
+5. Warranty and liability
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND
+NONINFRINGEMENT. TO THE MAXIMUM EXTENT PERMITTED BY LAW, THE COPYRIGHT HOLDER
+AND CONTRIBUTORS ARE NOT LIABLE FOR CLAIMS, DAMAGES, OR OTHER LIABILITY ARISING
+FROM THE SOFTWARE OR ITS USE.
+
+6. Reserved rights
+No trademark rights are granted. Permissions under this license terminate if
+you violate its conditions. Any rights not expressly granted are reserved.
