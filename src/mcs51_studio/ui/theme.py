@@ -62,11 +62,9 @@ def apply_theme(root):
         focuscolor=FOCUS,
     )
     style.configure("TFrame", background=PANEL)
-    style.configure("Shell.TFrame", background=BG)
     style.configure("TLabel", background=PANEL, foreground=TEXT)
     style.configure("Muted.TLabel", foreground=MUTED)
     style.configure("Section.TLabel", foreground=MUTED, font=(interface, -10, "bold"))
-    style.configure("Title.TLabel", font=(interface, -20, "bold"))
     style.configure("Mono.TLabel", font=(technical, -12))
     style.configure("TLabelframe", borderwidth=1, relief="solid", padding=8)
     style.configure(

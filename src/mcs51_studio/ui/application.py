@@ -646,7 +646,9 @@ class App(WorkspaceView, BoardView):
             "A Python desktop workbench for the 8051.\n\n"
             "Explore assembly, registers, memory, and virtual peripherals.\n\n"
             "An evolving learning workbench. See docs/compatibility.md "
-            "for supported features and simulation limits.",
+            "for supported features and simulation limits.\n\n"
+            "Free for noncommercial learning. Commercial use and redistribution "
+            "require permission; see LICENSE.",
         )
 
     def close(self):
