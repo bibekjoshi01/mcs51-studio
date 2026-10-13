@@ -71,6 +71,8 @@ def freeze():
         str(ROOT / "src"),
         "--add-data",
         f"{ROOT / 'src/mcs51_studio/data'}:mcs51_studio/data",
+        "--add-data",
+        f"{ROOT / 'LICENSE'}:.",
     ]
     if sys.platform == "darwin":
         arguments += [
@@ -84,7 +86,7 @@ def freeze():
             arguments += ["--codesign-identity", identity]
     if sys.platform == "win32":
         arguments += ["--icon", str(ROOT / "packaging/icons/mcs51-studio.ico")]
-    arguments.append(str(ROOT / "launch.py"))
+    arguments.append(str(ROOT / "scripts/launch.py"))
     run(*arguments, cwd=ROOT)
     bundle = ROOT / "dist" / name
     executable = bundle / (f"{name}.exe" if sys.platform == "win32" else name)
@@ -130,6 +132,7 @@ def windows_installer(bundle, output, arch):
         f"/DOutputName={name}",
         f"/DIconFile={ROOT / 'packaging/icons/mcs51-studio.ico'}",
         f"/DAppUserModelID={APP_ID}",
+        f"/DLicenseFile={ROOT / 'LICENSE'}",
         ROOT / "packaging/windows/setup.iss",
     )
     return output / f"{name}.exe"
@@ -187,6 +190,9 @@ def linux_installer(bundle, output, arch):
             icons = staging / "usr/share/icons/hicolor" / size / "apps"
             icons.mkdir(parents=True)
             shutil.copy2(source, icons / f"mcs51-studio{source.suffix}")
+        documentation = staging / "usr/share/doc/mcs51-studio"
+        documentation.mkdir(parents=True)
+        shutil.copy2(ROOT / "LICENSE", documentation / "copyright")
         control = staging / "DEBIAN"
         control.mkdir()
         maintainer = os.environ.get("MCS51_DEB_MAINTAINER", "MCS51 Studio contributors")
