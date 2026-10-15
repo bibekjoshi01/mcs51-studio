@@ -6,16 +6,14 @@ from tkinter import messagebox, ttk
 from ..metadata import APP_NAME
 from . import theme
 from .editor import AssemblyEditor
-from .widgets import CollapsibleSection, ScrollableFrame
+from .widgets import ScrollableFrame
 
 
 class WorkspaceView:
     def build_workspace(self):
-        self.sidebar_visible = tk.BooleanVar(value=True)
         self.inspector_visible = tk.BooleanVar(value=True)
         self.bottom_visible = tk.BooleanVar(value=True)
         self.machine_state = tk.StringVar(value="EDITING")
-        self.current_instruction = tk.StringVar(value="0000  NOP")
         self.build_menu()
         header = ttk.Frame(self.root, padding=(12, 8))
         self.header = header
@@ -87,12 +85,10 @@ class WorkspaceView:
         self.vertical.pack(fill="both", expand=True, padx=10)
         self.horizontal = ttk.Panedwindow(self.vertical, orient="horizontal")
         self.vertical.add(self.horizontal, weight=4)
-        self.sidebar = ttk.Frame(self.horizontal, padding=12, width=165)
         self.center = ttk.Frame(self.horizontal)
-        self.inspector = ttk.Frame(self.horizontal, padding=10, width=235)
-        for frame, weight in [(self.sidebar, 0), (self.center, 5), (self.inspector, 0)]:
+        self.inspector = ttk.Frame(self.horizontal, padding=10, width=300)
+        for frame, weight in [(self.center, 5), (self.inspector, 0)]:
             self.horizontal.add(frame, weight=weight)
-        self.build_sidebar()
         self.workspace = ttk.Notebook(self.center)
         self.workspace.pack(fill="both", expand=True)
         self.editor_tab = ttk.Frame(self.workspace)
@@ -104,9 +100,9 @@ class WorkspaceView:
         )
         self.editor_view.pack(fill="both", expand=True)
         self.editor = self.editor_view.text
-        board_scroll = ScrollableFrame(self.board_tab)
-        board_scroll.pack(fill="both", expand=True)
-        self.build_board(board_scroll.content)
+        self.board_scroll = ScrollableFrame(self.board_tab)
+        self.board_scroll.pack(fill="both", expand=True)
+        self.build_board(self.board_scroll.content)
         self.build_inspector()
         self.bottom = ttk.Frame(self.vertical)
         self.vertical.add(self.bottom, weight=1)
@@ -142,7 +138,7 @@ class WorkspaceView:
         statusbar = ttk.Frame(self.root, padding=(12, 5))
         self.statusbar = statusbar
         statusbar.pack(side="bottom", fill="x", before=self.vertical)
-        for name in ("sidebar", "inspector", "bottom"):
+        for name in ("inspector", "bottom"):
             ttk.Checkbutton(
                 statusbar,
                 text=name.title(),
@@ -166,72 +162,6 @@ class WorkspaceView:
         self.log_activity(
             "Ready. Assemble the example, then step through the instructions. F1 opens keyboard shortcuts."
         )
-
-    def build_sidebar(self):
-        scroll = ScrollableFrame(self.sidebar)
-        scroll.content.configure(padding=0)
-        scroll.pack(fill="both", expand=True)
-        parent = scroll.content
-        ttk.Label(parent, text="WORKSPACE", style="Section.TLabel").pack(
-            anchor="w", pady=(2, 10)
-        )
-        for label, action in [
-            ("Assembly editor", lambda: self.workspace.select(self.editor_tab)),
-            ("Virtual board", lambda: self.workspace.select(self.board_tab)),
-            ("Program listing", lambda: self.show_bottom("Listing")),
-            ("Memory explorer", lambda: self.show_bottom("Memory")),
-        ]:
-            ttk.Button(parent, text=label, command=action).pack(fill="x", pady=3)
-
-    def build_inspector(self):
-        scroll = ScrollableFrame(self.inspector)
-        scroll.content.configure(padding=0)
-        scroll.pack(fill="both", expand=True)
-        parent = scroll.content
-        ttk.Label(parent, text="PROCESSOR INSPECTOR", style="Section.TLabel").pack(
-            anchor="w", pady=(2, 10)
-        )
-        ttk.Label(parent, text="NEXT INSTRUCTION", style="Section.TLabel").pack(
-            anchor="w", pady=(8, 4)
-        )
-        ttk.Label(
-            parent,
-            textvariable=self.current_instruction,
-            style="Mono.TLabel",
-            wraplength=220,
-        ).pack(anchor="w", pady=(0, 16))
-        self.register_section = CollapsibleSection(parent, "REGISTERS")
-        self.register_section.pack(fill="x")
-        registers = self.register_section.body
-        names = ["PC", "ACC", "B", "PSW", "SP", "DPL", "DPH"] + [
-            f"R{i}" for i in range(8)
-        ]
-        for i, name in enumerate(names):
-            row, column = divmod(i, 3)
-            cell = ttk.Frame(registers)
-            cell.grid(row=row, column=column, sticky="ew", padx=3, pady=4)
-            registers.columnconfigure(column, weight=1)
-            ttk.Label(cell, text=name, style="Section.TLabel").pack(anchor="w")
-            var = tk.StringVar()
-            self.reg_vars[name] = var
-            entry = ttk.Entry(
-                cell, textvariable=var, width=5, font=(self.mono_font, -12)
-            )
-            entry.pack(fill="x", pady=(3, 0))
-            entry.bind("<Return>", lambda e, n=name: self.edit_register(n))
-        ttk.Label(
-            parent, text="Hexadecimal · Enter to apply", style="Muted.TLabel"
-        ).pack(anchor="w", pady=10)
-        self.flag_section = CollapsibleSection(parent, "STATUS FLAGS")
-        self.flag_section.pack(fill="x", pady=6)
-        self.flags = ttk.Label(
-            self.flag_section.body,
-            text="",
-            style="Mono.TLabel",
-            wraplength=205,
-            justify="left",
-        )
-        self.flags.pack(anchor="w")
 
     def build_listing(self, parent):
         ttk.Label(
@@ -343,7 +273,7 @@ class WorkspaceView:
             )
         view = tk.Menu(menu, tearoff=False)
         menu.add_cascade(label="View", menu=view)
-        for name in ("sidebar", "inspector", "bottom"):
+        for name in ("inspector", "bottom"):
             view.add_checkbutton(
                 label=name.title(),
                 variable=getattr(self, f"{name}_visible"),
@@ -390,7 +320,6 @@ class WorkspaceView:
             "f": self.editor_view.show_find,
             "g": self.editor_view.goto_line,
             ("Alt-f" if modifier == "Command" else "h"): self.editor_view.show_find,
-            "b": lambda: self.toggle_pane("sidebar"),
             "j": lambda: self.toggle_pane("bottom"),
         }
 
@@ -431,10 +360,7 @@ class WorkspaceView:
         manager = self.vertical if name == "bottom" else self.horizontal
         visible = getattr(self, f"{name}_visible").get()
         if visible and str(pane) not in manager.panes():
-            if name == "sidebar":
-                manager.insert(0, pane, weight=0)
-            else:
-                manager.add(pane, weight=1 if name == "bottom" else 0)
+            manager.add(pane, weight=1 if name == "bottom" else 0)
         elif not visible and str(pane) in manager.panes():
             manager.forget(pane)
 
@@ -444,31 +370,27 @@ class WorkspaceView:
         self.tools.select(self.tool_tabs[tab])
 
     def focus_editor(self):
-        focus = (
-            self.sidebar_visible.get()
-            or self.inspector_visible.get()
-            or self.bottom_visible.get()
-        )
-        for name in ("sidebar", "inspector", "bottom"):
+        focus = self.inspector_visible.get() or self.bottom_visible.get()
+        for name in ("inspector", "bottom"):
             getattr(self, f"{name}_visible").set(not focus)
             self.apply_pane(name)
         self.workspace.select(self.editor_tab)
         self.editor.focus_set()
 
     def reset_layout(self):
-        for name in ("sidebar", "inspector", "bottom"):
+        for name in ("inspector", "bottom"):
             getattr(self, f"{name}_visible").set(True)
             self.apply_pane(name)
         self.root.update_idletasks()
-        self.horizontal.sashpos(0, 175)
-        self.horizontal.sashpos(1, max(600, self.horizontal.winfo_width() - 255))
+        self.horizontal.sashpos(0, max(350, self.horizontal.winfo_width() - 300))
         self.vertical.sashpos(0, max(300, self.vertical.winfo_height() - 260))
 
     def capture_layout(self):
         return {
+            "version": 2,
             "visible": {
                 name: getattr(self, f"{name}_visible").get()
-                for name in ("sidebar", "inspector", "bottom")
+                for name in ("inspector", "bottom")
             },
             "horizontal": [
                 self.horizontal.sashpos(i)
@@ -481,11 +403,15 @@ class WorkspaceView:
         self.reset_layout()
         visible = self.layout_settings.get("visible", {})
         if isinstance(visible, dict):
-            for name in ("sidebar", "inspector", "bottom"):
+            for name in ("inspector", "bottom"):
                 if isinstance(visible.get(name), bool):
                     getattr(self, f"{name}_visible").set(visible[name])
                     self.apply_pane(name)
-        positions = self.layout_settings.get("horizontal", [])
+        positions = (
+            self.layout_settings.get("horizontal", [])
+            if self.layout_settings.get("version") == 2
+            else []
+        )
         if isinstance(positions, list):
             for i, value in enumerate(positions[: len(self.horizontal.panes()) - 1]):
                 if isinstance(value, int):
@@ -576,7 +502,7 @@ class WorkspaceView:
         replace_key = "Command+Option+F" if modifier == "Command" else "Ctrl+H"
         messagebox.showinfo(
             "Keyboard shortcuts",
-            f"{modifier}+N / O / S     New / Open / Save\n{modifier}+Shift+S       Save as\n{modifier}+Z / Shift+Z   Undo / Redo\n{modifier}+F / G         Find / Go to line\n{modifier}+/             Toggle line comments\n{replace_key}             Find and replace\nTab / Shift+Tab         Indent / Unindent\n{modifier}+B / J         Toggle sidebar / bottom panel\nF6                      Assemble\nF5                      Run / Pause\nF7                      Step instruction\nShift+F5                Reset machine\n\nClick a line number to toggle a breakpoint after assembly.\nDrag dividers to resize panes. View → Reset layout restores them.",
+            f"{modifier}+N / O / S     New / Open / Save\n{modifier}+Shift+S       Save as\n{modifier}+Z / Shift+Z   Undo / Redo\n{modifier}+F / G         Find / Go to line\n{modifier}+/             Toggle line comments\n{replace_key}             Find and replace\nTab / Shift+Tab         Indent / Unindent\n{modifier}+J             Toggle bottom panel\nF6                      Assemble\nF5                      Run / Pause\nF7                      Step instruction\nShift+F5                Reset machine\n\nClick a line number to toggle a breakpoint after assembly.\nDrag dividers to resize panes. View → Reset layout restores them.",
             parent=self.root,
         )
 

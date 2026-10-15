@@ -14,11 +14,12 @@ from ..metadata import APP_NAME, VERSION
 from ..resources import LED_COUNTER
 from .board_view import BoardView
 from .icon import apply_icon, prepare_process_identity
+from .inspector import InspectorView
 from .theme import apply_theme
 from .workspace import WorkspaceView
 
 
-class App(WorkspaceView, BoardView):
+class App(WorkspaceView, BoardView, InspectorView):
     def __init__(self, root):
         self.root = root
         apply_icon(root)
@@ -262,20 +263,6 @@ class App(WorkspaceView, BoardView):
                 else self.cpu.ram[SFR[name]]
             )
             var.set(f"{value:04X}" if name == "PC" else f"{value:02X}")
-        self.flags.configure(
-            text="   ".join(
-                f"{n}={(self.cpu.ram[0xD0] >> b) & 1}"
-                for n, b in [
-                    ("CY", 7),
-                    ("AC", 6),
-                    ("F0", 5),
-                    ("RS1", 4),
-                    ("RS0", 3),
-                    ("OV", 2),
-                    ("P", 0),
-                ]
-            )
-        )
         opcode = self.cpu.code[self.cpu.pc]
         size = ISA[opcode]["size"]
         encoded = bytes(self.cpu.code[(self.cpu.pc + i) & 0xFFFF] for i in range(size))
@@ -288,9 +275,7 @@ class App(WorkspaceView, BoardView):
             if location and source_matches and not self.dirty
             else ISA[opcode]["mnemonic"].split()[0]
         )
-        self.current_instruction.set(
-            f"{self.cpu.pc:04X}  {encoded.hex(' ').upper()}\n{description}"
-        )
+        self.update_inspector(opcode, encoded, description)
         kind = self.memory_kind.get()
         try:
             start = (
