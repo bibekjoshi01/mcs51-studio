@@ -4,6 +4,8 @@ import math
 import tkinter as tk
 from tkinter import ttk
 
+from .widgets import FlowGrid
+
 
 class BoardView:
     def build_board(self, parent):
@@ -27,6 +29,7 @@ class BoardView:
         )
         self.segment_canvas.pack(fill="x", pady=5)
         tabs = ttk.Notebook(parent)
+        self.peripheral_tabs = tabs
         tabs.pack(fill="both", expand=True)
         peripherals, terminal, hardware = (
             ttk.Frame(tabs, padding=10),
@@ -36,6 +39,7 @@ class BoardView:
         tabs.add(peripherals, text="Peripherals")
         tabs.add(terminal, text="UART")
         tabs.add(hardware, text="Hardware")
+        self.hardware_tab = hardware
         keypad = ttk.LabelFrame(
             peripherals, text="4 × 3 keypad · hold a key to press", padding=5
         )
@@ -144,22 +148,51 @@ class BoardView:
             text="Enable the peripherals used by your program. Shared pins can affect each other.",
             wraplength=420,
         ).pack(anchor="w", pady=(0, 10))
+        self.hardware_toggles = FlowGrid(hardware)
+        self.hardware_toggles.pack(fill="x", pady=(0, 12))
+        labels = {
+            "leds": "LEDs",
+            "display": "7-segment",
+            "adc": "ADC",
+            "dac": "DAC",
+            "lcd": "LCD",
+            "uart": "UART",
+        }
         for name, value in self.board.enabled.items():
             var = tk.BooleanVar(value=value)
             self.enabled_vars[name] = var
-            ttk.Checkbutton(
-                hardware,
-                text=name.replace("_", " ").title(),
+            toggle = ttk.Checkbutton(
+                self.hardware_toggles,
+                text=labels.get(name, name.replace("_", " ").title()),
                 variable=var,
                 command=self.hardware_changed,
-            ).pack(anchor="w")
+                style="Hardware.TCheckbutton",
+            )
+            self.hardware_toggles.add(toggle)
         ttk.Button(
             hardware, text="Configure pin mappings…", command=self.mapping_dialog
         ).pack(anchor="w", pady=10)
+        ports = ttk.LabelFrame(hardware, text="Port signal state", padding=12)
+        ports.pack(fill="x", pady=(4, 0))
         for n in range(4):
-            label = ttk.Label(hardware, text="", font=(self.mono_font, -12))
-            label.pack(anchor="w", pady=2)
+            label = ttk.Label(ports, text="", font=(self.mono_font, -12))
+            label.pack(anchor="w", pady=6)
             self.port_labels[n] = label
+
+        def size_selected_tab(event=None):
+            selected = tabs.select()
+            if selected:
+                height = tabs.nametowidget(selected).winfo_reqheight()
+                if int(tabs.cget("height")) != height:
+                    tabs.configure(height=height)
+
+        tabs.bind(
+            "<<NotebookTabChanged>>", lambda event: tabs.after_idle(size_selected_tab)
+        )
+        self.hardware_toggles.bind(
+            "<<FlowLayoutChanged>>", lambda event: tabs.after_idle(size_selected_tab)
+        )
+        tabs.after_idle(size_selected_tab)
 
     def draw_segments(self):
         c = self.segment_canvas
