@@ -4,21 +4,27 @@ The logo, small learning-workbench tagline, and file/debugger commands share one
 compact top row, leaving more vertical space for the editor and bottom tools.
 The workspace keeps source, machine state, and peripherals in separate areas.
 The editor and virtual board share the central tab area. The processor inspector
-shows the next instruction, registers, and flags; register values are hexadecimal.
+shows a next-instruction card, individual status-flag tiles, and editable registers.
+The card separates source, address, bytes, and timing; the flag grid shows the
+active register bank alongside the PSW bits. Register values are hexadecimal.
 Edit a value and press Enter to apply it.
 
 ## Panels and navigation
 
 Drag the horizontal or vertical dividers to resize areas. Use the status-bar
-Sidebar, Inspector, and Bottom controls, or the View menu, to hide them.
+Inspector and Bottom controls, or the View menu, to hide them.
 **Focus editor** hides supporting panels; press it again to show them.
 **View → Reset layout** restores the standard layout if a pane becomes too small.
 Pane visibility and divider positions are saved with application settings.
 
-The sidebar opens the editor, board, listing, and memory explorer.
+Use the workspace tabs for the editor and virtual board, and bottom tabs for
+the listing, memory explorer, and activity.
 **Pin Mappings** and **Oscilloscope** are in the top command row.
 Open **Instruction Reference** from the footer for the 8051 instruction catalog.
-Narrow or short sidebar, inspector, and board views can be scrolled.
+The inspector and board can be scrolled when their contents exceed the window.
+Board scrolling respects trackpad movement size; scrolling over the UART text
+area moves the text without also moving the board. Hardware enables are arranged
+in horizontal rows that wrap to fit the available width.
 
 The bottom tools contain:
 
@@ -58,7 +64,7 @@ Fn depending on your keyboard settings.
 - Ctrl+G: Go to line.
 - Ctrl+/: Toggle comments on the selected lines or current line.
 - Tab / Shift+Tab: Indent / unindent. Enter preserves leading indentation.
-- Ctrl+B / Ctrl+J: Toggle sidebar / bottom tools.
+- Ctrl+J: Toggle bottom tools.
 - F6: Assemble. F7: Step one instruction. F5: Run or pause.
 - Shift+F5: Reset machine state. F1: Shortcut reference.
 
