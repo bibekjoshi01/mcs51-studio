@@ -12,6 +12,7 @@ from ..engine.cpu import CPU, ISA, SFR
 from ..hardware.board import DEFAULT_MAPPING, Board, pin
 from ..metadata import APP_NAME, VERSION
 from ..resources import LED_COUNTER
+from ..source_files import write_source
 from .board_view import BoardView
 from .icon import apply_icon, prepare_process_identity
 from .inspector import InspectorView
@@ -32,6 +33,7 @@ class App(WorkspaceView, BoardView, InspectorView):
         self.cpu = CPU()
         self.board = Board(self.cpu)
         self.program = None
+        self.assembled_source = None
         self.running = False
         self.run_after = None
         self.breakpoints = set()
@@ -66,6 +68,7 @@ class App(WorkspaceView, BoardView, InspectorView):
     def edited(self, event=None):
         self.dirty = True
         self.pause_execution()
+        self.breakpoints.clear()
         self.document_modified = self.editor.get("1.0", "end-1c") != self.saved_source
         self.update_document_title()
         self.run_button.configure(text="Run  F5")
@@ -77,13 +80,27 @@ class App(WorkspaceView, BoardView, InspectorView):
 
     def assemble(self):
         self.pause_execution()
+        self.editor_view.flush_changes()
+        source = self.editor.get("1.0", "end-1c")
+        self.editor_view.clear_diagnostic()
         try:
-            self.program = assemble(self.editor.get("1.0", "end-1c"))
-        except AssemblyError as e:
-            self.log_activity(f"Assembly failed: {e}")
+            program = assemble(source)
+            if not program.used:
+                raise AssemblyError("Program contains no instructions or data")
+        except AssemblyError as error:
+            self.program = None
+            self.assembled_source = None
+            self.dirty = True
+            self.breakpoints.clear()
+            self.populate_listing()
+            self.refresh()
+            self.editor_view.show_diagnostic(error.message, error.line)
+            self.log_activity(f"Assembly failed: {error}")
             self.show_bottom("Activity")
-            messagebox.showerror("Assembly error", str(e))
+            self.status.set(f"Assembly failed · {error}")
             return False
+        self.program = program
+        self.assembled_source = source
         self.reset()
         self.dirty = False
         self.populate_listing()
@@ -93,6 +110,10 @@ class App(WorkspaceView, BoardView, InspectorView):
             f"Assembled {len(self.program.used)} bytes · {len(self.program.locations)} source statements"
         )
         return True
+
+    def source_is_stale(self):
+        self.editor_view.flush_changes()
+        return self.dirty or self.editor.get("1.0", "end-1c") != self.assembled_source
 
     def reset(self):
         self.pause_execution()
@@ -116,7 +137,7 @@ class App(WorkspaceView, BoardView, InspectorView):
 
     def step(self):
         self.pause_execution()
-        if self.dirty or not self.program:
+        if self.source_is_stale() or not self.program:
             if not self.assemble():
                 return
         try:
@@ -134,7 +155,7 @@ class App(WorkspaceView, BoardView, InspectorView):
             self.status.set("Paused")
             self.refresh()
             return
-        if self.dirty or not self.program:
+        if self.source_is_stale() or not self.program:
             if not self.assemble():
                 return
         self.running = True
@@ -437,6 +458,7 @@ class App(WorkspaceView, BoardView, InspectorView):
                     "; Intel HEX image loaded. Original assembly source is unavailable.\n; Use Listing and Memory to inspect the executable.\n"
                 )
                 self.program = program
+                self.assembled_source = self.editor.get("1.0", "end-1c")
                 self.dirty = False
                 self.reset()
                 self.populate_listing()
@@ -449,26 +471,30 @@ class App(WorkspaceView, BoardView, InspectorView):
             messagebox.showerror("Open failed", str(e))
 
     def save_source(self, save_as=False):
-        if self.path is None or save_as:
-            path = filedialog.asksaveasfilename(
+        self.editor_view.flush_changes()
+        path = self.path
+        if path is None or save_as:
+            chosen = filedialog.asksaveasfilename(
                 defaultextension=".asm", filetypes=[("8051 assembly", "*.asm")]
             )
-            if not path:
+            if not chosen:
                 return False
-            self.path = Path(path)
+            path = Path(chosen)
+        source = self.editor.get("1.0", "end-1c")
         try:
-            self.path.write_text(self.editor.get("1.0", "end-1c"), encoding="utf-8")
-            self.saved_source = self.editor.get("1.0", "end-1c")
-            self.document_modified = False
-            self.update_document_title()
-            self.status.set(f"Saved {self.path.name}")
-            return True
-        except OSError as e:
-            messagebox.showerror("Save failed", str(e))
+            write_source(path, source)
+        except OSError as error:
+            messagebox.showerror("Save failed", str(error))
             return False
+        self.path = path
+        self.saved_source = source
+        self.document_modified = False
+        self.update_document_title()
+        self.status.set(f"Saved {self.path.name}")
+        return True
 
     def export(self):
-        if self.dirty or not self.program:
+        if self.source_is_stale() or not self.program:
             if not self.assemble():
                 return
         path = filedialog.asksaveasfilename(
