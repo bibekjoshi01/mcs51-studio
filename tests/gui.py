@@ -4,7 +4,7 @@ import os
 import tempfile
 import unittest
 from pathlib import Path
-from tkinter import TclError, Tk, filedialog, messagebox
+from tkinter import TclError, Tk, filedialog, messagebox, ttk
 from types import SimpleNamespace
 from unittest.mock import patch
 
@@ -73,7 +73,13 @@ class WorkbenchUI(unittest.TestCase):
         self.assertGreater(
             scroll.content.winfo_reqheight(), scroll.canvas.winfo_height()
         )
-        scroll.canvas.yview_moveto(0.3)
+        # Leave enough travel for both wheel deltas, regardless of the native
+        # font metrics and the resulting board height.
+        spacer = ttk.Frame(scroll.content, height=200)
+        spacer.pack()
+        self.addCleanup(spacer.destroy)
+        root.update()
+        scroll.canvas.yview_moveto(0)
         start = scroll.canvas.canvasy(0)
         event = SimpleNamespace(widget=app.led_canvas, num=None, delta=0)
         scroll.wheel(event)

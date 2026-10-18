@@ -82,6 +82,24 @@ class WorkspaceView:
             width=0,
             padding=(7, 6),
         ).pack(side="right", padx=2)
+
+        def fit_header(event):
+            # Font metrics vary by platform. Keep commands available at the
+            # minimum window width by collapsing the brand to its icon first.
+            full_width = (
+                24
+                + 14
+                + self.header_icon.width()
+                + 8
+                + identity.winfo_reqwidth()
+                + toolbar.winfo_reqwidth()
+            )
+            if event.width < full_width:
+                identity.pack_forget()
+            elif not identity.winfo_manager():
+                identity.pack(side="left")
+
+        header.bind("<Configure>", fit_header)
         self.vertical = ttk.Panedwindow(self.root, orient="vertical")
         self.vertical.pack(fill="both", expand=True, padx=10)
         self.horizontal = ttk.Panedwindow(self.vertical, orient="horizontal")
