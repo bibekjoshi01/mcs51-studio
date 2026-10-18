@@ -39,11 +39,21 @@ New/Open check for unsaved source and offer Save, Discard, or Cancel. Assembling
 never marks a modified file as saved. A dot on the editor tab indicates unsaved
 source. Editing pauses execution and requires assembly before the next run.
 
-The editor supports assembly highlighting, line numbers, horizontal/vertical
-scrolling, automatic indentation, multiline indentation, comment toggling,
-find/replace, and a context menu. Find is case-insensitive, wraps at the end of
-the document, and treats the search text literally. Replace-all is one undoable
-operation. Escape closes the search controls.
+The editor toolbar and context menu provide Undo, Redo, Cut, Copy, Paste, and
+Find/Replace. Editing supports assembly highlighting, line numbers, indentation,
+comment toggling, line duplication/movement/deletion, and adjustable text size.
+Ctrl+Space completes instruction names, registers, and program symbols.
+
+Find/Replace offers case-sensitive and whole-word matching, forward/backward
+navigation, and match counts. Search and replacement text are literal;
+replace-all is one undoable operation. Escape closes the search controls.
+Pasted source accepts Windows or Unix line endings. Saves replace files atomically
+so a failed write does not truncate the previous file.
+
+Assembly errors appear beside the source with a marked line and in Activity.
+Editing clears the old diagnostic. Failed assembly blocks execution of the
+previous program until the source assembles successfully. Empty or comments-only
+buffers cannot run.
 
 Intel HEX images contain machine code without original assembly source. Opening
 one displays an explanatory buffer and loads the image into the debugger; use
@@ -62,6 +72,10 @@ Fn depending on your keyboard settings.
 - Ctrl+F: Find and replace. Ctrl+H also opens it on Windows/Linux;
   use Command+Option+F on macOS.
 - Ctrl+G: Go to line.
+- Ctrl+D: Duplicate lines. Ctrl+Shift+K: Delete lines.
+- Alt+Up / Alt+Down: Move lines.
+- Ctrl+Space: Complete an instruction or symbol (Control+Space on macOS).
+- Ctrl++ / Ctrl+- / Ctrl+0: Increase, decrease, or reset editor text size.
 - Ctrl+/: Toggle comments on the selected lines or current line.
 - Tab / Shift+Tab: Indent / unindent. Enter preserves leading indentation.
 - Ctrl+J: Toggle bottom tools.
