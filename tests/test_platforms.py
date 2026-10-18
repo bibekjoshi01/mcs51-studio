@@ -33,6 +33,10 @@ class PlatformSettings(unittest.TestCase):
                 self.subTest(platform=platform),
                 patch("sys.platform", platform),
                 patch.dict(os.environ, {variable: str(base)}, clear=True),
+                patch(
+                    "pathlib.Path.home",
+                    side_effect=RuntimeError("Could not determine home directory."),
+                ),
             ):
                 self.assertEqual(
                     settings_path(), base / "mcs51-studio" / "settings.json"
