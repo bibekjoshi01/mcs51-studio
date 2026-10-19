@@ -26,6 +26,17 @@ Board scrolling respects trackpad movement size; scrolling over the UART text
 area moves the text without also moving the board. Hardware enables are arranged
 in horizontal rows that wrap to fit the available width.
 
+The board separates digital I/O, the four-digit display, and peripheral cards.
+Mint LEDs indicate active-low outputs; each LED shows its mapped pin. Switches
+show their bit number and current 0/1 level. Device badges distinguish disabled
+hardware from an enabled device that is idle. Keypad keys support mouse hold or
+Space while focused. Keypad and motor cards stack when space is limited.
+
+UART has its own scrollable transcript and Clear output action; clearing the view
+does not erase received simulation data. Hardware shows port latch and effective
+pin values in both binary and hexadecimal. Reset clears the terminal and machine
+state while retaining the analogue slider, switch, and interrupt-gate inputs.
+
 The bottom tools contain:
 
 - **Listing:** addresses, encoded bytes, and corresponding source statements.
