@@ -65,6 +65,43 @@ def apply_theme(root):
     style.configure("TLabel", background=PANEL, foreground=TEXT)
     style.configure("Card.TFrame", background=INPUT, borderwidth=1, relief="solid")
     style.configure("Card.TLabel", background=INPUT)
+    style.configure("Board.TFrame", background=INPUT)
+    style.configure(
+        "BoardTitle.TLabel", background=INPUT, font=(interface, -13, "bold")
+    )
+    style.configure(
+        "BoardMuted.TLabel", background=INPUT, foreground=MUTED, font=(interface, -11)
+    )
+    style.configure("BoardValue.TLabel", background=INPUT, font=(technical, -12))
+    style.configure("Keypad.TButton", padding=(10, 9), font=(technical, -14))
+    style.layout(
+        "Switch.TCheckbutton",
+        [
+            (
+                "Checkbutton.padding",
+                {
+                    "sticky": "nswe",
+                    "children": [("Checkbutton.label", {"sticky": "nswe"})],
+                },
+            )
+        ],
+    )
+    style.configure(
+        "Switch.TCheckbutton",
+        background=BORDER,
+        anchor="center",
+        padding=(2, 7),
+        font=(technical, -11),
+    )
+    style.map(
+        "Switch.TCheckbutton",
+        background=[
+            ("disabled", INPUT),
+            ("selected", "#23413E"),
+            ("active", SELECTION),
+        ],
+        foreground=[("disabled", MUTED), ("selected", MINT)],
+    )
     style.configure("Hardware.TCheckbutton", background=INPUT, padding=(12, 10))
     style.map(
         "Hardware.TCheckbutton",
