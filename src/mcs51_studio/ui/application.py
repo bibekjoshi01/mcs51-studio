@@ -125,6 +125,9 @@ class App(WorkspaceView, BoardView, InspectorView):
         if self.program:
             self.cpu.code[:] = self.program.code
         self.uart_position = 0
+        self.clear_uart_output()
+        self.board.analogue = self.analogue.get()
+        self.board.key_gate = self.key_gate_var.get()
         self.board.switches = [v.get() for v in self.switch_vars]
         self.board.update()
         self.refresh()
@@ -359,36 +362,7 @@ class App(WorkspaceView, BoardView, InspectorView):
             if str(self.cpu.pc) in self.listing.get_children():
                 self.listing.see(str(self.cpu.pc))
         self.editor_view.redraw()
-        canvas = self.led_canvas
-        canvas.delete("all")
-        for i in range(8):
-            bit = 7 - i
-            high = self.board.read_pin(self.board.mapping["leds"][bit])
-            x = 16 + i * max(40, (canvas.winfo_width() - 48) / 8)
-            canvas.create_oval(
-                x,
-                4,
-                x + 22,
-                26,
-                fill="#78E4BB"
-                if not high and self.board.enabled["leds"]
-                else "#303D55",
-                outline="",
-            )
-            canvas.create_text(
-                x + 11, 39, text=f"LED{bit}", fill="#92A1B9", font=(self.ui_font, -10)
-            )
-        self.draw_segments()
-        self.draw_motor()
-        self.lcd_text.configure(text="\n".join(self.board.lcd.lines()))
-        self.dac_text.configure(
-            text=f"DAC {self.board.dac_value * 5 / 255:.3f} V  ·  ADC {self.board.adc_value:02X}  ·  {'Converting' if self.board.adc_remaining else 'Idle'}"
-        )
-        for n, label in self.port_labels.items():
-            addr = 0x80 + n * 16
-            label.configure(
-                text=f"P{n}  latch {self.cpu.ram[addr]:08b}   pins {self.cpu.read(addr):08b}"
-            )
+        self.update_board()
         if self.uart_position < len(self.board.uart.received):
             data = self.board.uart.received[self.uart_position :]
             self.uart_position = len(self.board.uart.received)
@@ -409,6 +383,8 @@ class App(WorkspaceView, BoardView, InspectorView):
         self.refresh()
 
     def key(self, key, pressed):
+        if pressed and not self.board.enabled["keypad"]:
+            return
         if pressed:
             self.board.keys.add(key)
         else:
@@ -418,14 +394,14 @@ class App(WorkspaceView, BoardView, InspectorView):
 
     def hardware_changed(self):
         self.board.enabled.update({k: v.get() for k, v in self.enabled_vars.items()})
+        if not self.board.enabled["keypad"]:
+            self.board.keys.clear()
         self.board.update()
         self.refresh()
 
     def analogue_changed(self, value):
         self.board.analogue = float(value)
-        self.analogue_text.configure(
-            text=f"{float(value):.2f} V · comparator reference = DAC"
-        )
+        self.analogue_text.configure(text=f"{float(value):.2f} V")
 
     def uart_receive(self):
         self.board.enabled["uart"] = True

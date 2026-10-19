@@ -128,6 +128,54 @@ class WorkbenchUI(unittest.TestCase):
         scroll.wheel(event)
         self.assertGreaterEqual(scroll.canvas.canvasy(0), 0)
 
+    def test_board_feedback_and_controls(self):
+        app = self.app
+        self.root.deiconify()
+        app.workspace.select(app.board_tab)
+        self.root.update()
+        app.enabled_vars["switches"].set(True)
+        app.hardware_changed()
+        before = app.switch_vars[0].get()
+        app.switch_buttons[0].invoke()
+        self.assertEqual(app.board.switches[0], not before)
+        self.assertIn(str(int(not before)), app.switch_buttons[0].cget("text"))
+        app.switch_buttons[0].invoke()
+        for name in ("display", "leds", "keypad"):
+            app.enabled_vars[name].set(False)
+        app.hardware_changed()
+        app.board.digits = [0] * 4
+        app.refresh()
+        self.assertEqual(app.board_badges["display"].cget("text"), "○ Disabled")
+        for item in app.segment_canvas.find_all():
+            if app.segment_canvas.type(item) in ("line", "oval"):
+                self.assertEqual(app.segment_canvas.itemcget(item, "fill"), "#303D55")
+        app.key((0, 0), True)
+        self.assertFalse(app.board.keys)
+        self.assertTrue(app.keypad_buttons[0].instate(["disabled"]))
+        for name in ("display", "leds", "keypad"):
+            app.enabled_vars[name].set(True)
+        app.hardware_changed()
+        app.key((0, 0), True)
+        self.assertIn((0, 0), app.board.keys)
+        app.key((0, 0), False)
+        app.analogue.set(2.5)
+        app.analogue_changed(2.5)
+        app.key_gate_var.set(True)
+        app.key_gate_changed()
+        app.reset()
+        self.assertEqual(app.board.analogue, 2.5)
+        self.assertTrue(app.board.key_gate)
+        app.board.uart.received.extend([65, 66])
+        app.refresh()
+        self.assertEqual(app.uart_output.get("1.0", "end-1c"), "AB")
+        app.clear_uart_output()
+        app.refresh()
+        self.assertEqual(app.uart_output.get("1.0", "end-1c"), "")
+        self.assertEqual(app.board.uart.received[-2:], [65, 66])
+        self.assertEqual(len(app.port_values), 4)
+        app.analogue.set(0)
+        app.key_gate_var.set(False)
+
     def test_inspector_and_legacy_layout(self):
         app = self.app
         self.assertFalse(hasattr(app, "sidebar"))
