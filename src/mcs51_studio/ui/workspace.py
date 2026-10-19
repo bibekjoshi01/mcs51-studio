@@ -549,7 +549,11 @@ class WorkspaceView:
         )
 
     def edit_action(self, event):
-        target = self.root.focus_get()
+        try:
+            target = self.root.focus_get()
+        except (KeyError, tk.TclError):
+            # Let a native popup keep its own edit commands.
+            return
         if target == self.editor or not isinstance(target, (tk.Text, ttk.Entry)):
             commands = {
                 "<<Cut>>": self.editor_view.cut,
