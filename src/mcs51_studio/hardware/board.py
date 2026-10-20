@@ -102,20 +102,7 @@ class Board:
             for i, high in enumerate(self.switches):
                 if not high:
                     self.hold_low(self.mapping["switches"][i])
-        if self.enabled["keypad"]:
-            # A closed key joins its selected column to the corresponding row.
-            for row, column in self.keys:
-                r, col = (
-                    self.mapping["key_rows"][row],
-                    self.mapping["key_columns"][column],
-                )
-                if not self.read_pin(r) or not self.read_pin(col):
-                    self.hold_low(r)
-                    self.hold_low(col)
-            if self.key_gate and any(
-                not self.read_pin(p) for p in self.mapping["key_rows"]
-            ):
-                self.hold_low(self.mapping["key_gate"][0])
+        self.settle_keys()
         if self.enabled["adc"]:
             if self.adc_remaining and elapsed:
                 self.adc_remaining = max(
@@ -126,12 +113,6 @@ class Board:
                 self.adc_value = (self.adc_snapshot & mask) | (255 ^ mask)
                 if not self.adc_remaining:
                     self.adc_intr = False
-            if not self.adc_intr:
-                self.hold_low(self.mapping["adc_intr"][0])
-            if not self.get("adc_rd"):
-                for i, p in enumerate(self.mapping["adc_data"]):
-                    if not self.adc_value >> i & 1:
-                        self.hold_low(p)
             wr = self.get("adc_wr")
             if not self.previous_wr and wr:
                 self.adc_remaining = 20
@@ -139,14 +120,32 @@ class Board:
                 self.adc_value = 255
                 self.adc_snapshot = min(255, max(0, int(self.analogue / 5 * 255 + 0.5)))
             self.previous_wr = bool(wr)
+            if not self.adc_intr:
+                self.hold_low(self.mapping["adc_intr"][0])
+            if not self.get("adc_rd"):
+                for i, p in enumerate(self.mapping["adc_data"]):
+                    if not self.adc_value >> i & 1:
+                        self.hold_low(p)
+        else:
+            self.adc_remaining = 0
+            self.adc_value = 255
+            self.adc_intr = True
+            self.previous_wr = True
+        self.digits = [255] * 4
+
         if self.enabled["display"] and self.get("display_cs"):
             selected = (
                 self.get("display_select", 0) | self.get("display_select", 1) << 1
             )
             self.digits[selected] = self.data("segments")
-        if self.enabled["dac"] and not self.get("dac_wr"):
-            self.dac_value = self.data("dac_data")
-            self.scope.append((c.cycles, self.dac_value * 5 / 255))
+        if self.enabled["dac"]:
+            if not self.get("dac_wr"):
+                self.dac_value = self.data("dac_data")
+            sample = (c.cycles, self.dac_value * 5 / 255)
+            if self.scope and self.scope[-1][0] == c.cycles:
+                self.scope[-1] = sample
+            else:
+                self.scope.append(sample)
         if self.enabled["motor"]:
             first, second = self.get("motor_control", 0), self.get("motor_control", 1)
             self.motor_direction = 0 if first == second else 1 if first else -1
@@ -158,12 +157,20 @@ class Board:
             self.motor_angle = self.motor_position * 45
             if self.motor_position == 0:
                 self.hold_low(self.mapping["motor_sensor"][0])
+        else:
+            self.motor_direction = 0
         if self.enabled["lcd"]:
             e = bool(self.get("lcd_e"))
             if self.previous_e and not e:
                 self.lcd.accept(self.data("lcd_data"), self.get("lcd_rs"))
             self.previous_e = e
-        if self.enabled["comparator"] and self.analogue <= self.dac_value * 5 / 255:
+        else:
+            self.previous_e = False
+        if (
+            self.enabled["comparator"]
+            and not self.enabled["adc"]
+            and self.analogue <= self.dac_value * 5 / 255
+        ):
             self.hold_low(self.mapping["comparator_output"][0])
         if self.enabled["uart"]:
             rx = self.get("uart_rx")
@@ -171,6 +178,35 @@ class Board:
                 self.hold_low(self.mapping["uart_tx"][0])
             for _ in range(elapsed):
                 self.uart.pulse(rx)
+
+        self.settle_keys()
+
+    @property
+    def led_mask(self):
+        """Active-low LED outputs, bit 0 representing LED 0."""
+        return (255 ^ self.data("leds")) if self.enabled["leds"] else 0
+
+    def output_state(self):
+        return self.led_mask, tuple(self.digits)
+
+    def settle_keys(self):
+        if not self.enabled["keypad"]:
+            return
+        # A connected key group must settle regardless of set iteration order.
+        for _ in range(7):
+            before = tuple(self.cpu.port_inputs.values())
+            for row, column in self.keys:
+                r = self.mapping["key_rows"][row]
+                col = self.mapping["key_columns"][column]
+                if not self.read_pin(r) or not self.read_pin(col):
+                    self.hold_low(r)
+                    self.hold_low(col)
+            if tuple(self.cpu.port_inputs.values()) == before:
+                break
+        if self.key_gate and any(
+            not self.read_pin(p) for p in self.mapping["key_rows"]
+        ):
+            self.hold_low(self.mapping["key_gate"][0])
 
     def receive(self, text):
         self.uart.start(text)
