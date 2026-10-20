@@ -168,12 +168,20 @@ class App(WorkspaceView, BoardView, InspectorView):
         self.run_after = None
         if not self.running:
             return
+        output_changed = False
         try:
+            previous_output = self.board.output_state()
             deadline = time.monotonic() + 0.025
             for _ in range(int(self.speed.get())):
                 self.step_once()
                 if self.cpu.pc in self.breakpoints:
                     self.pause_execution()
+                    break
+                if (
+                    self.observe_outputs.get()
+                    and self.board.output_state() != previous_output
+                ):
+                    output_changed = True
                     break
                 if time.monotonic() > deadline:
                     break
@@ -185,7 +193,9 @@ class App(WorkspaceView, BoardView, InspectorView):
             messagebox.showerror("Execution stopped", str(e))
         self.refresh()
         if self.running:
-            self.run_after = self.root.after(10, self.run_batch)
+            self.run_after = self.root.after(
+                40 if output_changed else 10, self.run_batch
+            )
 
     def populate_listing(self):
         self.listing.delete(*self.listing.get_children())
@@ -402,6 +412,8 @@ class App(WorkspaceView, BoardView, InspectorView):
     def analogue_changed(self, value):
         self.board.analogue = float(value)
         self.analogue_text.configure(text=f"{float(value):.2f} V")
+        self.board.update()
+        self.refresh()
 
     def uart_receive(self):
         self.board.enabled["uart"] = True
