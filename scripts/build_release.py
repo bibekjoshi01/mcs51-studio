@@ -203,7 +203,7 @@ def linux_installer(bundle, output, arch):
             f"Architecture: {deb_arch}\nMaintainer: {maintainer}\n"
             "Depends: libc6 (>= 2.35), libgcc-s1, libstdc++6, libfontconfig1, "
             "libx11-6, libxext6, libxrender1, libxft2, libxss1, libxcb1\n"
-            "Description: 8051 desktop assembly workbench\n"
+            "Description: 8051 assembly editor, debugger, and simulator\n"
             " Assembly editor, debugger, and virtual microcontroller training board.\n",
             encoding="utf-8",
         )

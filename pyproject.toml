@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "mcs51-studio"
 dynamic = ["version"]
-description = "A Python desktop workbench for the 8051 microcontroller"
+description = "Desktop assembly editor, debugger, and simulator for the 8051 microcontroller"
 readme = "README.md"
 requires-python = ">=3.10"
 license = "LicenseRef-MCS51-Studio-Educational"
