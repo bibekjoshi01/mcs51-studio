@@ -10,7 +10,7 @@ from ..config import settings_path
 from ..engine.assembler import AssemblyError, assemble, export_hex, import_hex
 from ..engine.cpu import CPU, ISA, SFR
 from ..hardware.board import DEFAULT_MAPPING, Board, pin
-from ..metadata import APP_NAME, VERSION
+from ..metadata import APP_NAME, DESCRIPTION, PROJECT_URL, TAGLINE, VERSION
 from ..resources import LED_COUNTER
 from ..source_files import write_source
 from .board_view import BoardView
@@ -639,15 +639,79 @@ class App(WorkspaceView, BoardView, InspectorView):
         )
 
     def about(self):
+        import webbrowser
+
+        existing = getattr(self, "about_window", None)
+        if existing is not None and existing.winfo_exists():
+            existing.lift()
+            return
+        window = self.about_window = tk.Toplevel(self.root)
+        window.title(f"About {APP_NAME}")
+        window.transient(self.root)
+        window.resizable(False, False)
+        apply_icon(window)
+        body = ttk.Frame(window, padding=24)
+        body.pack(fill="both", expand=True)
+        brand = ttk.Frame(body)
+        brand.pack(fill="x", pady=(0, 16))
+        ttk.Label(brand, image=self.header_icon).pack(side="left", padx=(0, 14))
+        identity = ttk.Frame(brand)
+        identity.pack(side="left")
+        ttk.Label(identity, text=APP_NAME, font=(self.ui_font, -22, "bold")).pack(
+            anchor="w"
+        )
+        ttk.Label(identity, text=f"Version {VERSION}", style="Muted.TLabel").pack(
+            anchor="w", pady=(4, 0)
+        )
+        ttk.Label(body, text=TAGLINE, font=(self.ui_font, -14, "bold")).pack(anchor="w")
+        ttk.Label(
+            body,
+            text="Write and debug assembly, inspect processor state, and simulate connected peripherals in one desktop application.",
+            wraplength=410,
+            justify="left",
+        ).pack(fill="x", pady=(10, 18))
+        ttk.Separator(body).pack(fill="x")
+        ttk.Label(
+            body,
+            text="Free for noncommercial educational use. Commercial use and redistribution require written permission.",
+            style="Muted.TLabel",
+            wraplength=410,
+            justify="left",
+        ).pack(fill="x", pady=14)
+        actions = ttk.Frame(body)
+        actions.pack(fill="x")
+        for label, path in (
+            ("User guide", "/blob/main/docs/workbench.md"),
+            ("License", "/blob/main/LICENSE"),
+            ("Report an issue", "/issues"),
+        ):
+            ttk.Button(
+                actions,
+                text=label,
+                command=lambda p=path: webbrowser.open(PROJECT_URL + p),
+                style="Footer.TButton",
+            ).pack(side="left", padx=(0, 6))
+        close = ttk.Button(actions, text="Close", command=window.destroy)
+        close.pack(side="right")
+        window.bind("<Escape>", lambda event: window.destroy())
+        close.focus_set()
+
+    def capabilities(self):
         messagebox.showinfo(
-            f"About {APP_NAME}",
-            f"{APP_NAME} {VERSION}\n"
-            "A Python desktop workbench for the 8051.\n\n"
-            "Explore assembly, registers, memory, and virtual peripherals.\n\n"
-            "An evolving learning workbench. See docs/compatibility.md "
-            "for supported features and simulation limits.\n\n"
-            "Free for noncommercial learning. Commercial use and redistribution "
-            "require permission; see LICENSE.",
+            "Simulation capabilities",
+            "Assembly editing and debugging\n"
+            "Assemble programs, inspect registers and memory, set breakpoints, "
+            "and import or export Intel HEX files.\n\n"
+            "Virtual hardware\n"
+            "LEDs, switches, multiplexed displays, keypad, LCD, ADC/DAC, "
+            "comparator, motor, and UART with configurable pin mappings.\n\n"
+            "Simulation boundaries\n"
+            "The current model uses a fixed 1 microsecond machine cycle. "
+            "MOVX external-memory operations are not implemented. Some flag "
+            "and timer modes have known limitations. Electrical effects and "
+            "sub-instruction pin timing are not modeled.\n\n"
+            "Use the supported-features guide for detailed simulation limits.",
+            parent=self.root,
         )
 
     def close(self):
@@ -664,7 +728,7 @@ class App(WorkspaceView, BoardView, InspectorView):
 def main():
     import argparse
 
-    parser = argparse.ArgumentParser(description=f"{APP_NAME}: 8051 desktop workbench")
+    parser = argparse.ArgumentParser(description=f"{APP_NAME}: {DESCRIPTION}")
     parser.add_argument("--smoke-test", action="store_true", help=argparse.SUPPRESS)
     args = parser.parse_args()
     if args.smoke_test:

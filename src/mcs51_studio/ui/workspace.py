@@ -4,7 +4,7 @@ import tkinter as tk
 from tkinter import messagebox, ttk
 
 from ..engine.source import normalize_source
-from ..metadata import APP_NAME
+from ..metadata import APP_NAME, TAGLINE
 from . import theme
 from .editor import AssemblyEditor
 from .widgets import ScrollableFrame
@@ -30,7 +30,7 @@ class WorkspaceView:
         )
         ttk.Label(
             identity,
-            text="8051 learning workbench",
+            text=TAGLINE,
             foreground=theme.MUTED,
             font=(self.ui_font, -9),
         ).pack(anchor="w")
@@ -330,7 +330,11 @@ class WorkspaceView:
         help_menu.add_command(
             label="Keyboard shortcuts", command=self.shortcuts_help, accelerator="F1"
         )
-        help_menu.add_command(label="About MCS51 Studio", command=self.about)
+        help_menu.add_command(
+            label="Simulation capabilities", command=self.capabilities
+        )
+        help_menu.add_separator()
+        help_menu.add_command(label=f"About {APP_NAME}", command=self.about)
 
     def bind_shortcuts(self):
         modifier = (
