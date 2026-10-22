@@ -283,7 +283,11 @@ class App(WorkspaceView, BoardView, InspectorView):
     def refresh(self):
         if not hasattr(self, "memory"):
             return
-        focus = self.root.focus_get()
+        try:
+            focus = self.root.focus_get()
+        except (KeyError, tk.TclError):
+            # Native Tk popups (such as a combobox popdown) have no Python widget.
+            focus = None
         for name, var in self.reg_vars.items():
             if isinstance(focus, ttk.Entry) and str(focus.cget("textvariable")) == str(
                 var
