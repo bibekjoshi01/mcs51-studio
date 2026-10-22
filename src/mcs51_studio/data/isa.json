@@ -1122,7 +1122,7 @@
   {
     "opcode": 160,
     "size": 2,
-    "cycles": 1,
+    "cycles": 2,
     "mnemonic": "ORL C,/",
     "display": "ORL C,/00H"
   },
@@ -1143,7 +1143,7 @@
   {
     "opcode": 163,
     "size": 1,
-    "cycles": 1,
+    "cycles": 2,
     "mnemonic": "INC DPTR",
     "display": "INC DPTR"
   },
@@ -1234,7 +1234,7 @@
   {
     "opcode": 176,
     "size": 2,
-    "cycles": 1,
+    "cycles": 2,
     "mnemonic": "ANL C,/",
     "display": "ANL C,/00H"
   },

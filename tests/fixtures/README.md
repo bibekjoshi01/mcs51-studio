@@ -1,4 +1,4 @@
-# Regression fixtures
+# Regression Fixtures
 
 The instruction, timer, serial, and assembly fixtures were rechecked against the
 installed reference JAR on 2026-10-26. Its SHA-256 is
@@ -22,5 +22,17 @@ payload bits. LCD address wrapping and CGRAM exit are tested separately. CPL and
 JBC use port latches for read-modify-write, as specified by the
 [8051 hardware manual](https://ww1.microchip.com/downloads/aemDocuments/documents/OTH/ProductDocuments/UserGuides/doc4316.pdf).
 
-Matching sampled reference states is not proof of hardware accuracy. See
-[known limits](../../docs/compatibility.md), including MOVX and timer/flag gaps.
+## Classic 8051 Corrections
+
+The instruction comparison now selects defined, unchanged classic-8051 cases.
+Inputs addressing unimplemented SFRs or upper indirect RAM are excluded; they
+now produce explicit errors. SUBB, PUSH/POP, MOVX, and reserved A5 expectations
+are replaced by independent specification checks. Expected parity is normalized
+to ACC at instruction boundaries. Golden fixture files remain unchanged.
+
+The old timer fixtures are retained as historical evidence, not executed as a
+correctness oracle: mode 0, split mode, gating, and baud-clock behavior contain
+known reference defects. Full-period and boundary tests now define those cases.
+The instruction catalog also corrects the two-cycle durations of INC DPTR,
+ORL C,/bit, and ANL C,/bit. See the [processor profile](../../docs/processor.md)
+for sources, test coverage, and simulation resolution.
