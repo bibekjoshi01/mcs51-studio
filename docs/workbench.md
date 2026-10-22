@@ -1,6 +1,6 @@
-# Using the workbench
+# MCS51 Studio user guide
 
-The logo, small learning-workbench tagline, and file/debugger commands share one
+The application identity and file/debugger commands share one
 compact top row, leaving more vertical space for the editor and bottom tools.
 The workspace keeps source, machine state, and peripherals in separate areas.
 The editor and virtual board share the central tab area. The processor inspector
@@ -111,6 +111,4 @@ work per UI update; it is not an oscillator-frequency setting.
 The shared theme uses dark navy surfaces, mint actions and execution indicators,
 lavender syntax/focus accents, and muted secondary labels. Technical values use
 Menlo or an available monospace fallback; interface text uses Avenir Next,
-Segoe UI, or an available sans-serif fallback. Native Tk/ttk controls retain
-platform behavior, including native file dialogs. Colors and text styles are
-centralized in `ui/theme.py` for subsequent iterations.
+Segoe UI, or an available sans-serif fallback. File dialogs follow the conventions of your operating system.
