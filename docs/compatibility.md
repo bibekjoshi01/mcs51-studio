@@ -1,7 +1,8 @@
 # Supported features and simulation limits
 
-MCS51 Studio is an educational simulator under active development. It is not yet
-a cycle-accurate hardware model. Use the limits below when designing exercises.
+This guide defines the processor and peripheral behavior supported by the current
+version of MCS51 Studio. The simulator models digital behavior; it does not provide
+complete cycle-accurate or electrical circuit simulation.
 
 ## Available now
 
@@ -41,7 +42,6 @@ runs on those systems and a complete visual review remain pending.
 - The external UART uses 8 data bits without parity and 7 data bits plus odd/even
   parity. It does not model all framing errors or an arbitrary physical link.
 - Broader assembler syntax remains planned.
-- Guided lessons and exercise assessment are not implemented. The redesigned
-  workbench is available; Windows/Linux visual review remains pending.
+- Guided lessons and exercise assessment are not implemented. Windows/Linux visual review remains pending.
 
 See [architecture.md](architecture.md) for the development direction.
