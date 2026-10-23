@@ -106,7 +106,7 @@ class AssemblyEditor(EditorActions, ttk.Frame):
         ).pack(side="left", fill="x", expand=True)
         ttk.Button(
             self.diagnostic,
-            text="Go to error",
+            text="Go To Error",
             command=self.goto_error,
             width=0,
             style="Footer.TButton",
@@ -186,13 +186,13 @@ class AssemblyEditor(EditorActions, ttk.Frame):
             ("Cut", self.cut),
             ("Copy", self.copy),
             ("Paste", self.paste),
-            ("Select all", self.select_all),
-            ("Duplicate lines", self.duplicate_lines),
-            ("Delete lines", self.delete_lines),
-            ("Toggle comment", self.toggle_comment),
-            ("Complete symbol", self.complete),
+            ("Select All", self.select_all),
+            ("Duplicate Lines", self.duplicate_lines),
+            ("Delete Lines", self.delete_lines),
+            ("Toggle Comment", self.toggle_comment),
+            ("Complete Symbol", self.complete),
             ("Find…", self.show_find),
-            ("Go to line…", self.goto_line),
+            ("Go To Line…", self.goto_line),
         ]:
             self.menu.add_command(label=label, command=action)
         self.text.bind("<Button-3>", self.context_menu)
@@ -324,7 +324,7 @@ class AssemblyEditor(EditorActions, ttk.Frame):
 
     def goto_line(self, event=None):
         line = simpledialog.askinteger(
-            "Go to line",
+            "Go To Line",
             "Line number",
             parent=self,
             minvalue=1,

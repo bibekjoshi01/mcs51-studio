@@ -77,7 +77,7 @@ class WorkspaceView:
             ).pack(side="left", padx=2)
         ttk.Button(
             toolbar,
-            text="Focus editor",
+            text="Focus Editor",
             command=self.focus_editor,
             width=0,
             padding=(7, 6),
@@ -113,7 +113,7 @@ class WorkspaceView:
         self.editor_tab = ttk.Frame(self.workspace)
         self.board_tab = ttk.Frame(self.workspace)
         self.workspace.add(self.editor_tab, text="untitled.asm")
-        self.workspace.add(self.board_tab, text="Virtual board")
+        self.workspace.add(self.board_tab, text="Virtual Board")
         self.editor_view = AssemblyEditor(
             self.editor_tab, self.mono_font, self.edited, self.breakpoint_at_line
         )
@@ -127,11 +127,11 @@ class WorkspaceView:
         self.vertical.add(self.bottom, weight=1)
         bottom_header = ttk.Frame(self.bottom, padding=(10, 2))
         bottom_header.pack(fill="x")
-        ttk.Label(bottom_header, text="DEBUG TOOLS", style="Section.TLabel").pack(
+        ttk.Label(bottom_header, text="Debug Tools", style="Section.TLabel").pack(
             side="left"
         )
         ttk.Button(
-            bottom_header, text="Hide panel", command=lambda: self.toggle_pane("bottom")
+            bottom_header, text="Hide Panel", command=lambda: self.toggle_pane("bottom")
         ).pack(side="right")
         self.tools = ttk.Notebook(self.bottom)
         self.tools.pack(fill="both", expand=True)
@@ -193,7 +193,7 @@ class WorkspaceView:
         )
         for col, width in [("pc", 90), ("bytes", 130), ("source", 450)]:
             self.listing.heading(
-                col, text={"pc": "ADDRESS", "bytes": "BYTES", "source": "SOURCE"}[col]
+                col, text={"pc": "Address", "bytes": "Bytes", "source": "Source"}[col]
             )
             self.listing.column(col, width=width, stretch=col == "source")
         scroll = ttk.Scrollbar(parent, command=self.listing.yview)
@@ -211,14 +211,14 @@ class WorkspaceView:
         kind = ttk.Combobox(
             header,
             textvariable=self.memory_kind,
-            values=["RAM", "SFR", "Code"],
+            values=["RAM", "SFR", "Code", "XDATA"],
             width=7,
             state="readonly",
         )
         kind.pack(side="left")
         kind.bind("<<ComboboxSelected>>", lambda e: self.refresh())
         self.memory_start = tk.StringVar(value="0000")
-        ttk.Label(header, text="Code address (hex)", style="Muted.TLabel").pack(
+        ttk.Label(header, text="Code / XDATA Address (Hex)", style="Muted.TLabel").pack(
             side="left", padx=8
         )
         entry = ttk.Entry(header, textvariable=self.memory_start, width=7)
@@ -226,7 +226,7 @@ class WorkspaceView:
         entry.bind("<Return>", lambda e: self.refresh())
         ttk.Button(header, text="Go", command=self.refresh).pack(side="left", padx=5)
         ttk.Label(
-            header, text="Double-click to edit a RAM byte", style="Muted.TLabel"
+            header, text="Double-click to edit a byte", style="Muted.TLabel"
         ).pack(side="right")
         self.memory = ttk.Treeview(
             parent,
@@ -234,7 +234,7 @@ class WorkspaceView:
             show="headings",
             height=4,
         )
-        for name, label, width in [("addr", "ADDRESS", 85)] + [
+        for name, label, width in [("addr", "Address", 85)] + [
             (str(i), f"{i:X}", 36) for i in range(16)
         ]:
             self.memory.heading(name, text=label)
@@ -254,10 +254,10 @@ class WorkspaceView:
             "⌘" if self.root.tk.call("tk", "windowingsystem") == "aqua" else "Ctrl+"
         )
         for label, action, accelerator in [
-            ("New program", self.new_file, modifier + "N"),
-            ("Open assembly / HEX…", self.open_file, modifier + "O"),
+            ("New Program", self.new_file, modifier + "N"),
+            ("Open Assembly / HEX…", self.open_file, modifier + "O"),
             ("Save", self.save_source, modifier + "S"),
-            ("Save as…", lambda: self.save_source(True), modifier + "Shift+S"),
+            ("Save As…", lambda: self.save_source(True), modifier + "Shift+S"),
             ("Export Intel HEX…", self.export, ""),
         ]:
             file.add_command(label=label, command=action, accelerator=accelerator)
@@ -270,10 +270,10 @@ class WorkspaceView:
             ("Undo", "undo", "Z"),
             ("Redo", "redo", "Shift+Z"),
             ("Find…", "show_find", "F"),
-            ("Go to line…", "goto_line", "G"),
-            ("Toggle comment", "toggle_comment", "/"),
-            ("Duplicate lines", "duplicate_lines", "D"),
-            ("Delete lines", "delete_lines", "Shift+K"),
+            ("Go To Line…", "goto_line", "G"),
+            ("Toggle Comment", "toggle_comment", "/"),
+            ("Duplicate Lines", "duplicate_lines", "D"),
+            ("Delete Lines", "delete_lines", "Shift+K"),
         ]:
             edit.add_command(
                 label=label,
@@ -285,7 +285,7 @@ class WorkspaceView:
             ("Cut", "<<Cut>>", "X"),
             ("Copy", "<<Copy>>", "C"),
             ("Paste", "<<Paste>>", "V"),
-            ("Select all", "<<SelectAll>>", "A"),
+            ("Select All", "<<SelectAll>>", "A"),
         ]:
             edit.add_command(
                 label=label,
@@ -293,7 +293,7 @@ class WorkspaceView:
                 accelerator=modifier + shortcut,
             )
         edit.add_command(
-            label="Complete symbol",
+            label="Complete Symbol",
             command=lambda: self.editor_view.complete(),
             accelerator="Ctrl+Space",
         )
@@ -306,32 +306,32 @@ class WorkspaceView:
                 command=lambda n=name: self.apply_pane(n),
             )
         view.add_separator()
-        view.add_command(label="Focus editor", command=self.focus_editor)
-        view.add_command(label="Reset layout", command=self.reset_layout)
+        view.add_command(label="Focus Editor", command=self.focus_editor)
+        view.add_command(label="Reset Layout", command=self.reset_layout)
         run = tk.Menu(menu, tearoff=False)
         menu.add_cascade(label="Run", menu=run)
         for label, action, key in [
             ("Assemble", self.assemble, "F6"),
             ("Run / Pause", self.toggle_run, "F5"),
-            ("Step instruction", self.step, "F7"),
-            ("Reset machine", self.reset, "Shift+F5"),
+            ("Step Instruction", self.step, "F7"),
+            ("Reset Machine", self.reset, "Shift+F5"),
         ]:
             run.add_command(label=label, command=action, accelerator=key)
         tools = tk.Menu(menu, tearoff=False)
         menu.add_cascade(label="Tools", menu=tools)
         for label, action in [
-            ("Pin mappings…", self.mapping_dialog),
+            ("Pin Mappings…", self.mapping_dialog),
             ("Oscilloscope", self.scope_window),
-            ("8051 instruction reference", self.isa_window),
+            ("8051 Instruction Reference", self.isa_window),
         ]:
             tools.add_command(label=label, command=action)
         help_menu = tk.Menu(menu, tearoff=False)
         menu.add_cascade(label="Help", menu=help_menu)
         help_menu.add_command(
-            label="Keyboard shortcuts", command=self.shortcuts_help, accelerator="F1"
+            label="Keyboard Shortcuts", command=self.shortcuts_help, accelerator="F1"
         )
         help_menu.add_command(
-            label="Simulation capabilities", command=self.capabilities
+            label="Simulation Capabilities", command=self.capabilities
         )
         help_menu.add_separator()
         help_menu.add_command(label=f"About {APP_NAME}", command=self.about)
@@ -483,7 +483,7 @@ class WorkspaceView:
         if self.editor.get("1.0", "end-1c") == self.saved_source:
             return True
         answer = messagebox.askyesnocancel(
-            "Unsaved program", "Save your program before continuing?", parent=self.root
+            "Unsaved Program", "Save your program before continuing?", parent=self.root
         )
         if answer is None:
             return False
@@ -517,7 +517,7 @@ class WorkspaceView:
     def new_file(self):
         if self.confirm_discard():
             self.replace_source("")
-            self.status.set("New program · write 8051 assembly or open a source file")
+            self.status.set("New Program · write 8051 Assembly or open a source file")
 
     def breakpoint_at_line(self, line):
         if self.source_is_stale() or not self.program:
@@ -547,8 +547,8 @@ class WorkspaceView:
         )
         replace_key = "Command+Option+F" if modifier == "Command" else "Ctrl+H"
         messagebox.showinfo(
-            "Keyboard shortcuts",
-            f"{modifier}+N / O / S     New / Open / Save\n{modifier}+Shift+S       Save as\n{modifier}+X / C / V     Cut / Copy / Paste\n{modifier}+Z / Shift+Z   Undo / Redo\n{modifier}+F / G         Find / Go to line\n{modifier}+/             Toggle line comments\n{replace_key}             Find and replace\nTab / Shift+Tab         Indent / Unindent\n{modifier}+D             Duplicate lines\n{modifier}+Shift+K       Delete lines\nAlt+Up / Down           Move lines\nCtrl+Space              Complete symbol\n{modifier}++ / − / 0     Zoom in / out / reset\n{modifier}+J             Toggle bottom panel\nF6                      Assemble\nF5                      Run / Pause\nF7                      Step instruction\nShift+F5                Reset machine\n\nClick a line number to toggle a breakpoint after assembly.\nDrag dividers to resize panes. View → Reset layout restores them.",
+            "Keyboard Shortcuts",
+            f"{modifier}+N / O / S     New / Open / Save\n{modifier}+Shift+S       Save As\n{modifier}+X / C / V     Cut / Copy / Paste\n{modifier}+Z / Shift+Z   Undo / Redo\n{modifier}+F / G         Find / Go To Line\n{modifier}+/             Toggle Line Comments\n{replace_key}             Find And Replace\nTab / Shift+Tab         Indent / Unindent\n{modifier}+D             Duplicate Lines\n{modifier}+Shift+K       Delete Lines\nAlt+Up / Down           Move Lines\nCtrl+Space              Complete Symbol\n{modifier}++ / − / 0     Zoom In / Out / Reset\n{modifier}+J             Toggle Bottom Panel\nF6                      Assemble\nF5                      Run / Pause\nF7                      Step Instruction\nShift+F5                Reset Machine\n\nClick a line number to toggle a breakpoint after assembly.\nDrag dividers to resize panes. View → Reset Layout restores them.",
             parent=self.root,
         )
 

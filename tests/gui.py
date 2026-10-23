@@ -58,6 +58,43 @@ class WorkbenchUI(unittest.TestCase):
         self.app.peripheral_tabs.select(0)
         self.root.update()
 
+    def test_external_memory_and_processor_errors(self):
+        app = self.app
+        app.replace_source(
+            "MOV DPTR,#1234H\nMOV A,#5AH\nMOVX @DPTR,A\nCLR A\nMOVX A,@DPTR"
+        )
+        self.assertTrue(app.assemble())
+        for _ in range(5):
+            app.step()
+        self.assertEqual(app.cpu.a, 0x5A)
+        app.memory_kind.set("XDATA")
+        app.memory_start.set("1234")
+        app.refresh()
+        self.assertEqual(app.memory.item("4656", "values")[5], "5A")
+        with (
+            patch.object(app.memory, "identify_row", return_value="4656"),
+            patch.object(app.memory, "identify_column", return_value="#6"),
+            patch(
+                "mcs51_studio.ui.application.simpledialog.askstring", return_value="A5"
+            ),
+        ):
+            app.edit_memory(SimpleNamespace(x=0, y=0))
+        self.assertEqual(app.cpu.xram[0x1234], 0xA5)
+        self.assertEqual(app.cpu.code[0x1234], 0)
+        app.memory_start.set("FFFF")
+        app.refresh()
+        self.assertEqual(app.memory.get_children()[-1], "65520")
+        app.memory_kind.set("RAM")
+        app.refresh()
+        self.assertEqual(app.memory.get_children()[-1], "112")
+        app.replace_source("MOV R0,#90H\nMOV @R0,#55H")
+        self.assertTrue(app.assemble())
+        app.step()
+        with patch.object(messagebox, "showerror") as error:
+            app.step()
+        self.assertIn("outside Classic 8051 RAM", error.call_args.args[1])
+        self.assertEqual(app.cpu.ram[0x90], 255)
+
     def test_editor_and_workspace(self):
         verify_editor_workflow(self.app, self.root, Path(self.temporary.name))
 

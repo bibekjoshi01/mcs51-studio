@@ -149,7 +149,7 @@ class App(WorkspaceView, BoardView, InspectorView):
                 f"Stepped opcode {op:02X} · {self.cpu.instructions:,} instructions · {self.cpu.cycles:,} machine cycles"
             )
         except Exception as e:
-            messagebox.showerror("Execution stopped", str(e))
+            messagebox.showerror("Execution Stopped", str(e))
         self.refresh()
 
     def toggle_run(self):
@@ -190,7 +190,7 @@ class App(WorkspaceView, BoardView, InspectorView):
             )
         except Exception as e:
             self.pause_execution()
-            messagebox.showerror("Execution stopped", str(e))
+            messagebox.showerror("Execution Stopped", str(e))
         self.refresh()
         if self.running:
             self.run_after = self.root.after(
@@ -249,7 +249,7 @@ class App(WorkspaceView, BoardView, InspectorView):
             self.refresh()
         except ValueError:
             messagebox.showerror(
-                "Invalid value", "Enter a hexadecimal value within the register range."
+                "Invalid Value", "Enter a hexadecimal value within the register range."
             )
 
     def edit_memory(self, event):
@@ -261,7 +261,7 @@ class App(WorkspaceView, BoardView, InspectorView):
             return
         address = int(row) + int(col[1:]) - 2
         value = simpledialog.askstring(
-            "Edit memory",
+            "Edit Memory",
             f"Address {address:04X}, new hexadecimal byte:",
             parent=self.root,
         )
@@ -273,12 +273,16 @@ class App(WorkspaceView, BoardView, InspectorView):
                 raise ValueError()
             if self.memory_kind.get() == "Code":
                 self.cpu.code[address] = n
+            elif self.memory_kind.get() == "XDATA":
+                self.cpu.xram[address] = n
             else:
                 self.cpu.write(address, n)
             self.board.update()
             self.refresh()
-        except ValueError:
-            messagebox.showerror("Invalid byte", "Use a value from 00 to FF.")
+        except ValueError as error:
+            messagebox.showerror(
+                "Invalid Byte", str(error) or "Use a value from 00 to FF."
+            )
 
     def refresh(self):
         if not hasattr(self, "memory"):
@@ -318,7 +322,7 @@ class App(WorkspaceView, BoardView, InspectorView):
         try:
             start = (
                 int(self.memory_start.get(), 16) & 0xFF80
-                if kind == "Code"
+                if kind in ("Code", "XDATA")
                 else 128
                 if kind == "SFR"
                 else 0
@@ -330,6 +334,8 @@ class App(WorkspaceView, BoardView, InspectorView):
             data = (
                 self.cpu.code[addr : addr + 16]
                 if kind == "Code"
+                else self.cpu.xram[addr : addr + 16]
+                if kind == "XDATA"
                 else self.cpu.ram[addr : addr + 16]
             )
             self.memory.insert(
@@ -438,7 +444,7 @@ class App(WorkspaceView, BoardView, InspectorView):
             return
         self.pause_execution()
         path = filedialog.askopenfilename(
-            filetypes=[("8051 programs", "*.asm *.a51 *.hex *.txt"), ("All files", "*")]
+            filetypes=[("8051 Programs", "*.asm *.a51 *.hex *.txt"), ("All Files", "*")]
         )
         if not path:
             return
@@ -460,14 +466,14 @@ class App(WorkspaceView, BoardView, InspectorView):
             self.replace_source(text, Path(path))
             self.status.set(f"Opened {self.path.name}")
         except (OSError, ValueError) as e:
-            messagebox.showerror("Open failed", str(e))
+            messagebox.showerror("Open Failed", str(e))
 
     def save_source(self, save_as=False):
         self.editor_view.flush_changes()
         path = self.path
         if path is None or save_as:
             chosen = filedialog.asksaveasfilename(
-                defaultextension=".asm", filetypes=[("8051 assembly", "*.asm")]
+                defaultextension=".asm", filetypes=[("8051 Assembly", "*.asm")]
             )
             if not chosen:
                 return False
@@ -476,7 +482,7 @@ class App(WorkspaceView, BoardView, InspectorView):
         try:
             write_source(path, source)
         except OSError as error:
-            messagebox.showerror("Save failed", str(error))
+            messagebox.showerror("Save Failed", str(error))
             return False
         self.path = path
         self.saved_source = source
@@ -497,12 +503,12 @@ class App(WorkspaceView, BoardView, InspectorView):
                 Path(path).write_text(export_hex(self.program), encoding="ascii")
                 self.status.set("Intel HEX exported")
             except OSError as e:
-                messagebox.showerror("Export failed", str(e))
+                messagebox.showerror("Export Failed", str(e))
 
     def mapping_dialog(self):
         self.pause_execution()
         window = tk.Toplevel(self.root)
-        window.title("Pin mappings")
+        window.title("Pin Mappings")
         window.geometry("650x650")
         canvas = tk.Canvas(window, highlightthickness=0)
         scroll = ttk.Scrollbar(window, orient="vertical", command=canvas.yview)
@@ -521,9 +527,18 @@ class App(WorkspaceView, BoardView, InspectorView):
             wraplength=550,
         ).grid(row=0, column=0, columnspan=2, pady=10)
         for row, (name, pins) in enumerate(self.board.mapping.items(), 1):
-            ttk.Label(frame, text=name).grid(
-                row=row, column=0, sticky="w", padx=5, pady=3
-            )
+            ttk.Label(
+                frame,
+                text=" ".join(
+                    part.upper()
+                    if part
+                    in {"adc", "dac", "lcd", "uart", "cs", "rd", "wr", "rs", "tx", "rx"}
+                    else "LEDs"
+                    if part == "leds"
+                    else part.capitalize()
+                    for part in name.split("_")
+                ),
+            ).grid(row=row, column=0, sticky="w", padx=5, pady=3)
             entry = ttk.Entry(frame, width=48)
             entry.insert(0, ", ".join(pins))
             entry.grid(row=row, column=1, pady=3)
@@ -546,15 +561,15 @@ class App(WorkspaceView, BoardView, InspectorView):
                 self.refresh()
                 window.destroy()
             except ValueError as e:
-                messagebox.showerror("Invalid mapping", str(e), parent=window)
+                messagebox.showerror("Invalid Mapping", str(e), parent=window)
 
-        ttk.Button(frame, text="Apply and save", command=save).grid(
+        ttk.Button(frame, text="Apply And Save", command=save).grid(
             row=len(entries) + 1, column=1, pady=15
         )
 
     def scope_window(self):
         window = tk.Toplevel(self.root)
-        window.title("DAC oscilloscope")
+        window.title("DAC Oscilloscope")
         window.geometry("740x330")
         c = tk.Canvas(window, background="#121B29")
         c.pack(fill="both", expand=True)
@@ -572,7 +587,7 @@ class App(WorkspaceView, BoardView, InspectorView):
             c.create_text(
                 w / 2,
                 h - 15,
-                text="Machine cycles · recent DAC samples",
+                text="Machine Cycles · Recent DAC Samples",
                 fill="#92A1B9",
             )
             c.create_text(22, 10, text="Volts", fill="#92A1B9")
@@ -594,7 +609,7 @@ class App(WorkspaceView, BoardView, InspectorView):
 
     def isa_window(self):
         w = tk.Toplevel(self.root)
-        w.title("8051 instruction reference")
+        w.title("8051 Instruction Reference")
         w.geometry("670x500")
         text = tk.Text(w, font=(self.mono_font, -12))
         text.pack(fill="both", expand=True)
@@ -685,9 +700,9 @@ class App(WorkspaceView, BoardView, InspectorView):
         actions = ttk.Frame(body)
         actions.pack(fill="x")
         for label, path in (
-            ("User guide", "/blob/main/docs/workbench.md"),
+            ("User Guide", "/blob/main/docs/workbench.md"),
             ("License", "/blob/main/LICENSE"),
-            ("Report an issue", "/issues"),
+            ("Report An Issue", "/issues"),
         ):
             ttk.Button(
                 actions,
@@ -702,18 +717,21 @@ class App(WorkspaceView, BoardView, InspectorView):
 
     def capabilities(self):
         messagebox.showinfo(
-            "Simulation capabilities",
-            "Assembly editing and debugging\n"
+            "Simulation Capabilities",
+            "Assembly Editing And Debugging\n"
             "Assemble programs, inspect registers and memory, set breakpoints, "
             "and import or export Intel HEX files.\n\n"
-            "Virtual hardware\n"
+            "Virtual Hardware\n"
             "LEDs, switches, multiplexed displays, keypad, LCD, ADC/DAC, "
             "comparator, motor, and UART with configurable pin mappings.\n\n"
-            "Simulation boundaries\n"
-            "The current model uses a fixed 1 microsecond machine cycle. "
-            "MOVX external-memory operations are not implemented. Some flag "
-            "and timer modes have known limitations. Electrical effects and "
-            "sub-instruction pin timing are not modeled.\n\n"
+            "Simulation Boundaries\n"
+            "Classic 8051: 12 MHz, 12 clocks per machine cycle (1 microsecond), "
+            "128 bytes of internal RAM, two timers, and five interrupt sources. "
+            "The board provides 64 KB of external RAM through MOVX; inspect it "
+            "in Memory → XDATA. 8052 and AT89S52 are not supported profiles.\n\n"
+            "Instructions complete at machine-cycle boundaries. Electrical effects "
+            "and sub-instruction pin timing are not modeled. Undefined RAM/SFR "
+            "accesses and reserved opcodes stop execution with an error.\n\n"
             "Use the supported-features guide for detailed simulation limits.",
             parent=self.root,
         )

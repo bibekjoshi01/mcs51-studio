@@ -16,14 +16,19 @@ class InspectorView:
         scroll.content.configure(padding=0)
         scroll.pack(fill="both", expand=True)
         parent = scroll.content
-        ttk.Label(parent, text="PROCESSOR INSPECTOR", style="Section.TLabel").pack(
+        ttk.Label(parent, text="Processor Inspector", style="Section.TLabel").pack(
             anchor="w", pady=(2, 12)
         )
+        ttk.Label(
+            parent,
+            text=f"{self.cpu.profile.name} · 12 MHz · 12 Clocks",
+            style="Muted.TLabel",
+        ).pack(anchor="w", pady=(0, 10))
         card = ttk.Frame(parent, style="Card.TFrame", padding=12)
         card.pack(fill="x", pady=(0, 14))
         ttk.Label(
             card,
-            text="NEXT INSTRUCTION",
+            text="Next Instruction",
             style="Card.TLabel",
             foreground=theme.MUTED,
             font=(self.ui_font, -10, "bold"),
@@ -47,8 +52,8 @@ class InspectorView:
         )
         source.pack(fill="x", pady=(0, 12))
         for label, variable in (
-            ("ADDRESS", self.instruction_address),
-            ("BYTES", self.instruction_bytes),
+            ("Address", self.instruction_address),
+            ("Bytes", self.instruction_bytes),
         ):
             row = ttk.Frame(card, style="Card.TFrame", borderwidth=0)
             row.pack(fill="x", pady=4)
@@ -81,7 +86,7 @@ class InspectorView:
             "<Configure>",
             lambda event: source.configure(wraplength=max(100, event.width - 26)),
         )
-        self.flag_section = CollapsibleSection(parent, "STATUS FLAGS")
+        self.flag_section = CollapsibleSection(parent, "Status Flags")
         self.flag_section.pack(fill="x", pady=6)
         self.flag_values = {}
         self.flag_labels = {}
@@ -119,7 +124,7 @@ class InspectorView:
             justify="left",
         ).grid(row=2, column=0, columnspan=4, sticky="w", padx=3, pady=(10, 4))
 
-        self.register_section = CollapsibleSection(parent, "REGISTERS")
+        self.register_section = CollapsibleSection(parent, "Registers")
         self.register_section.pack(fill="x")
         registers = self.register_section.body
         names = ["PC", "ACC", "B", "PSW", "SP", "DPL", "DPH"] + [

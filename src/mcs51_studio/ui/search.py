@@ -34,10 +34,10 @@ class SearchPanel(ttk.Frame):
             )
         options = ttk.Frame(self)
         options.pack(fill="x", pady=3)
-        ttk.Checkbutton(options, text="Match case", variable=self.match_case).pack(
+        ttk.Checkbutton(options, text="Match Case", variable=self.match_case).pack(
             side="left"
         )
-        ttk.Checkbutton(options, text="Whole word", variable=self.whole_word).pack(
+        ttk.Checkbutton(options, text="Whole Word", variable=self.whole_word).pack(
             side="left", padx=6
         )
         ttk.Label(options, textvariable=self.result, style="Muted.TLabel").pack(
@@ -53,7 +53,7 @@ class SearchPanel(ttk.Frame):
         ttk.Button(row, text="Replace", command=self.replace_next, width=0).pack(
             side="left", padx=2
         )
-        ttk.Button(row, text="Replace all", command=self.replace_all, width=0).pack(
+        ttk.Button(row, text="Replace All", command=self.replace_all, width=0).pack(
             side="left", padx=2
         )
         for variable in (self.query, self.match_case, self.whole_word):

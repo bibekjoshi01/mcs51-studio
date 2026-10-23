@@ -1,4 +1,4 @@
-"""Virtual board presentation; machine behavior stays in hardware/."""
+"""Virtual Board presentation; machine behavior stays in hardware/."""
 
 import math
 import tkinter as tk
@@ -34,12 +34,12 @@ class BoardView:
         self.board_badges = {}
         heading = ttk.Frame(parent)
         heading.pack(fill="x", pady=(0, 12))
-        ttk.Label(heading, text="Virtual board", font=(self.ui_font, -18, "bold")).pack(
+        ttk.Label(heading, text="Virtual Board", font=(self.ui_font, -18, "bold")).pack(
             side="left"
         )
         self.observe_outputs = tk.BooleanVar(value=True)
         ttk.Checkbutton(
-            heading, text="Show transitions", variable=self.observe_outputs
+            heading, text="Show Transitions", variable=self.observe_outputs
         ).pack(side="right", padx=(10, 0))
         self.board_summary = ttk.Label(heading, style="Muted.TLabel")
         self.board_summary.pack(side="right")
@@ -76,7 +76,7 @@ class BoardView:
             self.switch_buttons[bit] = button
         card, top = self.board_card(
             parent,
-            "7-segment display",
+            "7-Segment Display",
             "Four multiplexed digits · only the selected digit is driven",
             "display",
         )
@@ -124,14 +124,14 @@ class BoardView:
         self.key_gate_var = gate
         ttk.Checkbutton(
             keypad,
-            text="Interrupt gate",
+            text="Interrupt Gate",
             variable=gate,
             command=self.key_gate_changed,
         ).grid(row=4, column=0, columnspan=3, pady=(8, 0))
         for column in range(3):
             keypad.columnconfigure(column, weight=1)
         card, motor = self.board_card(
-            devices, "DC motor", "Direction and shaft position", "motor"
+            devices, "DC Motor", "Direction and shaft position", "motor"
         )
         devices.add(card)
         self.motor_canvas = tk.Canvas(
@@ -145,8 +145,8 @@ class BoardView:
         self.motor_text.pack(fill="x")
         card, analogue = self.board_card(
             peripherals,
-            "Analogue signals",
-            "Input: 0–5 V · comparator reference follows DAC output",
+            "Analogue Signals",
+            "Input: 0–5 V · comparator reference follows DAC Output",
         )
         card.pack(fill="x", pady=10)
         self.analogue = tk.DoubleVar(value=0)
@@ -179,9 +179,9 @@ class BoardView:
         )
         self.lcd_text.pack(fill="x")
         ttk.Label(
-            terminal, text="Serial terminal", font=(self.ui_font, -15, "bold")
+            terminal, text="Serial Terminal", font=(self.ui_font, -15, "bold")
         ).pack(anchor="w")
-        ttk.Label(terminal, text="Received from 8051", style="Muted.TLabel").pack(
+        ttk.Label(terminal, text="Received From 8051", style="Muted.TLabel").pack(
             anchor="w", pady=(4, 8)
         )
         transcript = ttk.Frame(terminal)
@@ -204,7 +204,7 @@ class BoardView:
         self.uart_input = ttk.Entry(send)
         self.uart_input.pack(side="left", fill="x", expand=True)
         self.uart_input.bind("<Return>", lambda event: self.uart_receive())
-        ttk.Button(send, text="Transmit to 8051", command=self.uart_receive).pack(
+        ttk.Button(send, text="Transmit To 8051", command=self.uart_receive).pack(
             side="left", padx=5
         )
         uart_controls = ttk.Frame(terminal)
@@ -212,7 +212,7 @@ class BoardView:
         ttk.Label(uart_controls, text="Baud").pack(side="left")
         ttk.Button(
             uart_controls,
-            text="Clear output",
+            text="Clear Output",
             command=self.clear_uart_output,
             style="Footer.TButton",
         ).pack(side="right")
@@ -247,7 +247,7 @@ class BoardView:
         self.hardware_toggles.pack(fill="x", pady=(0, 12))
         labels = {
             "leds": "LEDs",
-            "display": "7-segment",
+            "display": "7-Segment",
             "adc": "ADC",
             "dac": "DAC",
             "lcd": "LCD",
@@ -265,15 +265,15 @@ class BoardView:
             )
             self.hardware_toggles.add(toggle)
         ttk.Button(
-            hardware, text="Configure pin mappings…", command=self.mapping_dialog
+            hardware, text="Configure Pin Mappings…", command=self.mapping_dialog
         ).pack(anchor="w", pady=10)
         card, ports = self.board_card(
             hardware,
-            "Port signals",
+            "Port Signals",
             "Latch is the written value; pins show the effective input level. Bits run 7 → 0.",
         )
         card.pack(fill="x", pady=(4, 0))
-        for column, title in enumerate(("PORT", "LATCH", "PINS")):
+        for column, title in enumerate(("Port", "Latch", "Pins")):
             ttk.Label(ports, text=title, style="BoardMuted.TLabel").grid(
                 row=0, column=column, sticky="w", padx=8, pady=(0, 6)
             )
