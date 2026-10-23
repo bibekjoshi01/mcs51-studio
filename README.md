@@ -6,7 +6,7 @@ MCS51 Studio brings assembly editing, debugging, and peripheral simulation into
 one desktop application. Inspect registers and memory, trace program execution,
 and work with a configurable virtual board.
 
-## Install and Run
+## Install And Run
 
 Get the installer from [Releases](https://github.com/bibekjoshi01/mcs51-studio/releases).
 Installers include everything needed to run the application; no separate runtime
@@ -30,12 +30,13 @@ installation is required. Public installers are not yet published.
 
 The editor opens with an LED counter. **F6** assembles, **F7** steps, and **F5**
 runs or pauses. Save with **Ctrl+S**, or **Command+S** on macOS. Press **F1** for
-shortcuts. Resize panes by dragging dividers; **View → Reset layout** restores them.
+shortcuts. Resize panes by dragging dividers; **View → Reset Layout** restores them.
 
 ## Capabilities
 
 - Assembly editor with syntax highlighting, completion, and find/replace.
-- Instruction stepping, breakpoints, registers, flags, and memory inspection.
+- Classic 12-clock 8051 with stepping, breakpoints, registers, and flags.
+- 128-byte internal RAM and 64 KB external RAM with MOVX and XDATA inspection.
 - LEDs, switches, multiplexed displays, keypad, LCD, ADC/DAC, motor, and UART.
 - Configurable pin mappings, output playback, and DAC waveform inspection.
 - Assembly source files and Intel HEX import/export.
@@ -43,10 +44,11 @@ shortcuts. Resize panes by dragging dividers; **View → Reset layout** restores
 See [supported features and limits](docs/compatibility.md) for the processor model
 and peripheral behavior supported by this version.
 
-## Development and Documentation
+## Development And Documentation
 
 - [Development](docs/development.md): source setup, testing, and contribution.
 - [Workbench guide](docs/workbench.md): editor, debugger, panels, and shortcuts.
+- [Processor Profile](docs/processor.md): exact configuration and validation.
 - [Architecture](docs/architecture.md): code layout and dependency boundaries.
 - [Releases](docs/releases.md): native builds, artwork, and signing.
 
