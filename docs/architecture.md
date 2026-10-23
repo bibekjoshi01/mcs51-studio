@@ -2,7 +2,7 @@
 
 ```text
 src/mcs51_studio/
-  engine/      CPU, assembler, interrupts, timers, on-chip serial
+  engine/      Processor profile, CPU, assembler, interrupts, timers, serial
   hardware/    Virtual board, LCD, external UART, and wiring
   ui/          Application, workspace, editor, inspector, board views, theme, icons, widgets
   data/        Instruction catalog, example assembly, runtime icon
@@ -37,9 +37,8 @@ focused headless tests; presentation changes use desktop integration checks.
 
 ## Next Steps
 
-Validate known CPU and timing limits against manufacturer documentation, then
-add a shared simulation session when multiple documents or lessons need it.
+Keep the [Classic 8051 contract](processor.md) covered by specification tests.
+Add a shared simulation session when multiple documents or lessons need it.
 Build lessons around runnable examples and observable state changes: registers
 and addressing, control flow and stack, ports and displays, timers and interrupts,
-serial, and integrated board projects. External-memory lessons depend on MOVX
-implementation. Add modules when they contain working behavior, not placeholders.
+serial, and integrated board projects. External-memory lessons can use MOVX and the XDATA inspector. Add modules when they contain working behavior, not placeholders.
