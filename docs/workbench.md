@@ -1,4 +1,4 @@
-# MCS51 Studio user guide
+# MCS51 Studio User Guide
 
 The application identity and file/debugger commands share one
 compact top row, leaving more vertical space for the editor and bottom tools.
@@ -9,7 +9,7 @@ The card separates source, address, bytes, and timing; the flag grid shows the
 active register bank alongside the PSW bits. Register values are hexadecimal.
 Edit a value and press Enter to apply it.
 
-## Panels and navigation
+## Panels And Navigation
 
 Drag the horizontal or vertical dividers to resize areas. Use the status-bar
 Inspector and Bottom controls, or the View menu, to hide them.
@@ -52,7 +52,7 @@ The bottom tools contain:
   address and press Enter. Double-click a RAM byte to edit it.
 - **Activity:** assembly results and diagnostics. Assembly errors open this tab.
 
-## Editor and files
+## Editor And Files
 
 New/Open check for unsaved source and offer Save, Discard, or Cancel. Assembling
 never marks a modified file as saved. A dot on the editor tab indicates unsaved
@@ -79,7 +79,7 @@ one displays an explanatory buffer and loads the image into the debugger; use
 Listing and Memory to inspect it. Editing that buffer starts a new assembly
 program. Export Intel HEX writes the current assembled program.
 
-## Keyboard shortcuts
+## Keyboard Shortcuts
 
 Use Command on macOS wherever Ctrl is shown below. Function keys may require
 Fn depending on your keyboard settings.
@@ -106,9 +106,14 @@ toggle a breakpoint. A pink gutter dot marks the breakpoint; a mint arrow and
 line highlight mark the next source instruction. The toolbar batch value limits
 work per UI update; it is not an oscillator-frequency setting.
 
-## Visual conventions
+## Visual Conventions
 
 The shared theme uses dark navy surfaces, mint actions and execution indicators,
 lavender syntax/focus accents, and muted secondary labels. Technical values use
 Menlo or an available monospace fallback; interface text uses Avenir Next,
 Segoe UI, or an available sans-serif fallback. File dialogs follow the conventions of your operating system.
+
+The processor inspector identifies **Classic 8051 · 12 MHz · 12 Clocks**.
+In Memory, select **XDATA** to inspect external RAM used by MOVX. Enter a hex
+address and choose **Go**; double-click a byte to edit it while paused. **RAM**
+contains only 00–7FH; **SFR** and **Code** are separate views.
