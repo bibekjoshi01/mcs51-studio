@@ -3,7 +3,7 @@
 Run from Python source using the commands below. End users should use the
 installers described in the [README](../README.md).
 
-## Setup and Run
+## Setup And Run
 
 Use Python 3.10+ with Tk and a graphical desktop. `python -m tkinter` should open
 a test window. Debian/Ubuntu may need `python3-tk`; Windows/macOS Python builds
