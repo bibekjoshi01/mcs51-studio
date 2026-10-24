@@ -1,4 +1,4 @@
-# Native releases
+# Native Releases
 
 The installer bundles the Python interpreter, Tk, application code, data, and
 project license. Windows setup displays the license; Linux also installs it in
@@ -7,7 +7,7 @@ Build each OS/architecture on its own native machine; PyInstaller is not a
 cross-compiler. The release workflow covers Windows x64, Linux amd64/arm64, and
 macOS Intel/Apple Silicon.
 
-## Automated builds
+## Automated Builds
 
 Run **Build installers** from GitHub Actions for test artifacts. Each job runs the
 tests, freezes the app, smoke-tests the frozen executable, and creates its native
@@ -26,7 +26,7 @@ Outputs are:
 - `MCS51-Studio-<version>-linux-amd64.deb` and `*-linux-arm64.deb`
 - One `.sha256` file beside each installer.
 
-## Local packaging
+## Local Packaging
 
 Use the virtual environment from [development](development.md):
 
@@ -51,7 +51,7 @@ macOS package installs in `/Applications`. The Debian package installs under
 and declares system-library dependencies. Set `MCS51_DEB_MAINTAINER` to the
 release maintainer identity when preparing public Debian packages.
 
-## Signing and release validation
+## Signing And Release Validation
 
 Default CI artifacts are **unsigned test installers**. Production Windows code
 signing and Apple signing/notarization require the maintainer's certificates;
@@ -68,7 +68,7 @@ Validate installation, launch, save, upgrades, and uninstall on clean target
 machines before publishing. Windows/Linux native runs await the first CI run;
 they cannot be validated natively on the current Mac.
 
-## Application artwork
+## Application Artwork
 
 The editable vector master is `packaging/icons/mcs51-studio.svg`. Native icon
 assets are committed, so normal development and release builds do not require
