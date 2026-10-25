@@ -77,6 +77,7 @@ class Board:
         self.previous_e = False
         self.previous_wr = True
         self.last_cycles = 0
+        self.on_sample = None
 
     def read_pin(self, name):
         a, b = pin(name)
@@ -180,6 +181,8 @@ class Board:
                 self.uart.pulse(rx)
 
         self.settle_keys()
+        if self.on_sample:
+            self.on_sample()
 
     @property
     def led_mask(self):
