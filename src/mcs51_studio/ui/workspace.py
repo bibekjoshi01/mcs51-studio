@@ -69,8 +69,8 @@ class WorkspaceView:
             state="readonly",
         ).pack(side="left")
         for label, command in [
-            ("Pin Mappings", self.mapping_dialog),
-            ("Oscilloscope", self.scope_window),
+            ("Wiring", self.wiring_window),
+            ("Instruments", self.show_instruments),
         ]:
             ttk.Button(
                 toolbar, text=label, command=command, width=0, padding=(7, 6)
@@ -320,8 +320,9 @@ class WorkspaceView:
         tools = tk.Menu(menu, tearoff=False)
         menu.add_cascade(label="Tools", menu=tools)
         for label, action in [
-            ("Pin Mappings…", self.mapping_dialog),
-            ("Oscilloscope", self.scope_window),
+            ("Wiring…", self.wiring_window),
+            ("Logic Analyzer…", self.show_instruments),
+            ("DAC Scope…", self.scope_window),
             ("8051 Instruction Reference", self.isa_window),
         ]:
             tools.add_command(label=label, command=action)

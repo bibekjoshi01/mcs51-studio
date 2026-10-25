@@ -13,7 +13,15 @@ class BoardView:
         card = ttk.Frame(parent, style="Card.TFrame", padding=12)
         header = ttk.Frame(card, style="Board.TFrame")
         header.pack(fill="x", pady=(0, 4))
-        ttk.Label(header, text=title, style="BoardTitle.TLabel").pack(side="left")
+        if device:
+            ttk.Button(
+                header,
+                text=title,
+                style="Footer.TButton",
+                command=lambda: self.wiring_window(device),
+            ).pack(side="left")
+        else:
+            ttk.Label(header, text=title, style="BoardTitle.TLabel").pack(side="left")
         if device:
             badge = ttk.Label(header, style="BoardMuted.TLabel")
             badge.pack(side="right")
@@ -120,7 +128,7 @@ class BoardView:
                 button.bind("<KeyPress-space>", lambda e, k=key: self.key(k, True))
                 button.bind("<KeyRelease-space>", lambda e, k=key: self.key(k, False))
                 button.bind("<FocusOut>", lambda e, k=key: self.key(k, False))
-        gate = tk.BooleanVar(value=False)
+        gate = tk.BooleanVar(value=self.board.key_gate)
         self.key_gate_var = gate
         ttk.Checkbutton(
             keypad,
@@ -146,7 +154,8 @@ class BoardView:
         card, analogue = self.board_card(
             peripherals,
             "Analogue Signals",
-            "Input: 0–5 V · comparator reference follows DAC Output",
+            "Input: 0–5 V · comparator reference follows DAC output",
+            "adc",
         )
         card.pack(fill="x", pady=10)
         self.analogue = tk.DoubleVar(value=0)
@@ -163,6 +172,8 @@ class BoardView:
         self.analogue_text.pack(anchor="w")
         self.dac_text = ttk.Label(analogue, text="", style="BoardMuted.TLabel")
         self.dac_text.pack(anchor="w", pady=(8, 0))
+        self.dac_text.configure(cursor="hand2")
+        self.dac_text.bind("<Button-1>", lambda event: self.wiring_window("dac"))
         card, lcd = self.board_card(
             peripherals, "LCD", "16 × 2 character display · enable in Hardware", "lcd"
         )
@@ -178,8 +189,11 @@ class BoardView:
             anchor="w",
         )
         self.lcd_text.pack(fill="x")
-        ttk.Label(
-            terminal, text="Serial Terminal", font=(self.ui_font, -15, "bold")
+        ttk.Button(
+            terminal,
+            text="Serial Terminal",
+            style="Footer.TButton",
+            command=lambda: self.wiring_window("uart"),
         ).pack(anchor="w")
         ttk.Label(terminal, text="Received From 8051", style="Muted.TLabel").pack(
             anchor="w", pady=(4, 8)
@@ -265,7 +279,7 @@ class BoardView:
             )
             self.hardware_toggles.add(toggle)
         ttk.Button(
-            hardware, text="Configure Pin Mappings…", command=self.mapping_dialog
+            hardware, text="Wiring And Shared Pins…", command=self.wiring_window
         ).pack(anchor="w", pady=10)
         card, ports = self.board_card(
             hardware,

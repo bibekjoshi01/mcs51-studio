@@ -95,6 +95,80 @@ class WorkbenchUI(unittest.TestCase):
         self.assertIn("outside Classic 8051 RAM", error.call_args.args[1])
         self.assertEqual(app.cpu.ram[0x90], 255)
 
+    def test_wiring_and_measurement_tools(self):
+        import copy
+
+        from mcs51_studio.hardware.wiring import shared_connections
+
+        app, root = self.app, self.root
+        old_mapping = copy.deepcopy(app.board.mapping)
+        old_enabled = app.board.enabled.copy()
+        old_gate = app.board.key_gate
+        try:
+            app.wiring_window("leds")
+            root.update()
+            tools = app.instruments
+            self.assertEqual(tools.selected_device, "leds")
+            self.assertTrue(tools.pinout.find_all())
+            tools.select_pin("P1.0")
+            self.assertIn("LED Bank", tools.detail.get("1.0", "end"))
+            tools.preset.set("LED Counter")
+            tools.apply_preset()
+            self.assertEqual(shared_connections(app.board), [])
+            with patch(
+                "mcs51_studio.ui.instruments.simpledialog.askstring",
+                return_value="My Experiment",
+            ):
+                tools.save_preset()
+            app.wiring_presets.clear()
+            app.load_settings()
+            self.assertIn("My Experiment", app.wiring_presets)
+            app.replace_source("CLR P1.0\nLOOP: SETB P1.0\nNOP\nCLR P1.0\nSJMP LOOP")
+            app.show_instruments("Logic Analyzer")
+            tools.logic.duration.set("100")
+            tools.logic.arm()
+            for _ in range(90):
+                app.step_once()
+            tools.logic.draw()
+            self.assertEqual(app.capture.state, "Complete")
+            self.assertIn("Duty 40 %", tools.logic.metrics.get())
+            tools.logic.zoom(0.5)
+            self.assertLess(tools.logic.bounds[1] - tools.logic.bounds[0], 100)
+            tools.logic.place_cursor(SimpleNamespace(x=150, y=50))
+            tools.logic.place_cursor(SimpleNamespace(x=250, y=50))
+            self.assertIn("Δt=", tools.logic.metrics.get())
+            app.show_instruments("DAC Scope")
+            app.board.enabled["dac"] = True
+            app.cpu.write(0x80, 0x7F)
+            for value in (0, 64, 128, 255):
+                app.cpu.write(0x90, value)
+                app.cpu.cycles += 10
+                app.board.update()
+            tools.dac.draw()
+            tools.dac.freeze()
+            self.assertEqual(len(tools.dac.frozen), 4)
+            tools.dac.place_cursor(SimpleNamespace(x=150, y=50))
+            tools.dac.place_cursor(SimpleNamespace(x=250, y=50))
+            self.assertIn("ΔV=", tools.dac.metrics.get())
+            tools.window.geometry("900x640")
+            root.update()
+            self.assertLessEqual(tools.logic.canvas.winfo_reqwidth(), 900)
+            app.reset()
+            self.assertEqual(app.capture.state, "Idle")
+            self.assertIsNone(tools.dac.frozen)
+        finally:
+            if app.instruments:
+                app.instruments.close()
+            app.board.mapping, app.board.enabled, app.board.key_gate = (
+                old_mapping,
+                old_enabled,
+                old_gate,
+            )
+            for name, variable in app.enabled_vars.items():
+                variable.set(old_enabled[name])
+            app.key_gate_var.set(old_gate)
+            app.board.update()
+
     def test_editor_and_workspace(self):
         verify_editor_workflow(self.app, self.root, Path(self.temporary.name))
 

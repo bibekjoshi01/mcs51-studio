@@ -9,7 +9,9 @@ from tkinter import filedialog, messagebox, simpledialog, ttk
 from ..config import settings_path
 from ..engine.assembler import AssemblyError, assemble, export_hex, import_hex
 from ..engine.cpu import CPU, ISA, SFR
+from ..hardware.analyzer import LogicCapture, port_mask
 from ..hardware.board import DEFAULT_MAPPING, Board, pin
+from ..hardware.wiring import validate_preset
 from ..metadata import APP_NAME, DESCRIPTION, PROJECT_URL, TAGLINE, VERSION
 from ..resources import LED_COUNTER
 from ..source_files import write_source
@@ -32,6 +34,10 @@ class App(WorkspaceView, BoardView, InspectorView):
         self.ui_font, self.mono_font = apply_theme(root)
         self.cpu = CPU()
         self.board = Board(self.cpu)
+        self.capture = LogicCapture()
+        self.board.on_sample = self.record_signals
+        self.instruments = None
+        self.wiring_presets = {}
         self.program = None
         self.assembled_source = None
         self.running = False
@@ -121,6 +127,13 @@ class App(WorkspaceView, BoardView, InspectorView):
         enabled = self.board.enabled.copy()
         self.cpu.reset()
         self.board = Board(self.cpu, mapping)
+        self.capture.clear()
+        self.board.on_sample = self.record_signals
+        if self.instruments is not None:
+            self.instruments.dac.frozen = None
+            self.instruments.dac.freeze_button.configure(text="Freeze")
+            self.instruments.logic.fit()
+            self.instruments.dac.fit()
         self.board.enabled.update(enabled)
         if self.program:
             self.cpu.code[:] = self.program.code
@@ -555,57 +568,37 @@ class App(WorkspaceView, BoardView, InspectorView):
                         raise ValueError(f"{k} needs {len(DEFAULT_MAPPING[k])} pins")
                     for p in values:
                         pin(p)
+                validate_preset({"mapping": mapping, "enabled": self.board.enabled})
+                self.capture.clear()
+                self.board.scope.clear()
                 self.board.mapping = mapping
                 self.save_settings()
                 self.board.update()
                 self.refresh()
                 window.destroy()
-            except ValueError as e:
+            except (ValueError, OSError) as e:
                 messagebox.showerror("Invalid Mapping", str(e), parent=window)
 
         ttk.Button(frame, text="Apply And Save", command=save).grid(
             row=len(entries) + 1, column=1, pady=15
         )
 
+    def record_signals(self):
+        if self.capture.state in ("Armed", "Capturing"):
+            self.capture.sample(self.cpu.cycles, port_mask(self.cpu))
+
+    def show_instruments(self, tab="Logic Analyzer", device=None):
+        from .instruments import Instruments
+
+        if self.instruments is None:
+            self.instruments = Instruments(self)
+        self.instruments.show(tab, device)
+
+    def wiring_window(self, device=None):
+        self.show_instruments("Wiring", device)
+
     def scope_window(self):
-        window = tk.Toplevel(self.root)
-        window.title("DAC Oscilloscope")
-        window.geometry("740x330")
-        c = tk.Canvas(window, background="#121B29")
-        c.pack(fill="both", expand=True)
-
-        def draw():
-            if not window.winfo_exists():
-                return
-            c.delete("all")
-            w, h = max(200, c.winfo_width()), max(150, c.winfo_height())
-            c.create_line(45, 20, 45, h - 40, w - 20, h - 40, fill="#566675")
-            for v in range(6):
-                y = h - 40 - v * (h - 60) / 5
-                c.create_text(24, y, text=str(v), fill="#92A1B9")
-                c.create_line(45, y, w - 20, y, fill="#303D55")
-            c.create_text(
-                w / 2,
-                h - 15,
-                text="Machine Cycles · Recent DAC Samples",
-                fill="#92A1B9",
-            )
-            c.create_text(22, 10, text="Volts", fill="#92A1B9")
-            data = list(self.board.scope)
-            if len(data) > 1:
-                lo, hi = data[0][0], data[-1][0]
-                coords = []
-                for t, v in data:
-                    coords.extend(
-                        (
-                            45 + (t - lo) / max(1, hi - lo) * (w - 65),
-                            h - 40 - v / 5 * (h - 60),
-                        )
-                    )
-                c.create_line(*coords, fill="#78E4BB", width=2)
-            window.after(100, draw)
-
-        draw()
+        self.show_instruments("DAC Scope")
 
     def isa_window(self):
         w = tk.Toplevel(self.root)
@@ -624,6 +617,15 @@ class App(WorkspaceView, BoardView, InspectorView):
     def load_settings(self):
         try:
             data = json.loads(self.settings_path.read_text(encoding="utf-8"))
+            presets = data.get("wiring_presets", {})
+            if isinstance(presets, dict):
+                for name, preset in presets.items():
+                    if isinstance(name, str) and 0 < len(name) <= 80:
+                        try:
+                            self.wiring_presets[name] = validate_preset(preset)
+                        except (ValueError, TypeError):
+                            continue
+            self.board.key_gate = data.get("key_gate") is True
             layout = data.get("layout", {})
             self.layout_settings = layout if isinstance(layout, dict) else {}
             if set(data.get("mapping", {})) == set(DEFAULT_MAPPING):
@@ -649,6 +651,8 @@ class App(WorkspaceView, BoardView, InspectorView):
             json.dumps(
                 {
                     "mapping": self.board.mapping,
+                    "wiring_presets": self.wiring_presets,
+                    "key_gate": self.board.key_gate,
                     "enabled": self.board.enabled,
                     "layout": self.capture_layout(),
                 },
@@ -723,7 +727,11 @@ class App(WorkspaceView, BoardView, InspectorView):
             "and import or export Intel HEX files.\n\n"
             "Virtual Hardware\n"
             "LEDs, switches, multiplexed displays, keypad, LCD, ADC/DAC, "
-            "comparator, motor, and UART with configurable pin mappings.\n\n"
+            "comparator, motor, and UART with visible wiring, shared-pin explanations, "
+            "and experiment presets.\n\n"
+            "Measurement Tools\n"
+            "Digital logic capture with edge triggers, zoom, pulse measurements, "
+            "and cursors; a DAC scope with time and voltage scales.\n\n"
             "Simulation Boundaries\n"
             "Classic 8051: 12 MHz, 12 clocks per machine cycle (1 microsecond), "
             "128 bytes of internal RAM, two timers, and five interrupt sources. "
@@ -744,6 +752,8 @@ class App(WorkspaceView, BoardView, InspectorView):
             self.save_settings()
         except OSError:
             pass
+        if self.instruments is not None:
+            self.instruments.close()
         self.root.destroy()
 
 
