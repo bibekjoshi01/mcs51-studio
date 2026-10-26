@@ -3,6 +3,7 @@
 import tkinter as tk
 from tkinter import messagebox, ttk
 
+from ..engine.source import normalize_source
 from ..metadata import APP_NAME
 from . import theme
 from .editor import AssemblyEditor
@@ -253,6 +254,8 @@ class WorkspaceView:
             ("Find…", "show_find", "F"),
             ("Go to line…", "goto_line", "G"),
             ("Toggle comment", "toggle_comment", "/"),
+            ("Duplicate lines", "duplicate_lines", "D"),
+            ("Delete lines", "delete_lines", "Shift+K"),
         ]:
             edit.add_command(
                 label=label,
@@ -271,6 +274,11 @@ class WorkspaceView:
                 command=lambda e=event: self.edit_action(e),
                 accelerator=modifier + shortcut,
             )
+        edit.add_command(
+            label="Complete symbol",
+            command=lambda: self.editor_view.complete(),
+            accelerator="Ctrl+Space",
+        )
         view = tk.Menu(menu, tearoff=False)
         menu.add_cascade(label="View", menu=view)
         for name in ("inspector", "bottom"):
@@ -341,13 +349,25 @@ class WorkspaceView:
         }.items():
             self.root.bind(f"<{key}>", invoke(action))
         for key, action in {
+            "c": self.editor_view.copy,
+            "x": self.editor_view.cut,
+            "v": self.editor_view.paste,
+            "Shift-V": self.editor_view.paste,
             "z": self.editor_view.undo,
             "Shift-Z": self.editor_view.redo,
             "y": self.editor_view.redo,
             "a": self.editor_view.select_all,
             "slash": self.editor_view.toggle_comment,
+            "d": self.editor_view.duplicate_lines,
+            "Shift-K": self.editor_view.delete_lines,
+            "plus": lambda: self.editor_view.change_zoom(1),
+            "equal": lambda: self.editor_view.change_zoom(1),
+            "minus": lambda: self.editor_view.change_zoom(-1),
+            "0": lambda: self.editor_view.change_zoom(reset=True),
         }.items():
             self.editor.bind(f"<{modifier}-{key}>", invoke(action))
+        self.editor.bind("<Alt-Up>", lambda event: self.editor_view.move_lines(-1))
+        self.editor.bind("<Alt-Down>", lambda event: self.editor_view.move_lines(1))
         self.editor.bind("<Escape>", lambda e: self.editor_view.hide_find())
 
     def toggle_pane(self, name):
@@ -448,7 +468,12 @@ class WorkspaceView:
         return self.save_source() if answer else True
 
     def replace_source(self, source, name=None):
+        source = normalize_source(source)
         self.pause_execution()
+        self.editor_view.close_completion()
+        self.editor_view.clear_diagnostic()
+        self.editor_view.notice.set("")
+        self.editor_view.search_panel.invalidate()
         self.editor.delete("1.0", "end")
         self.editor.insert("1.0", source)
         self.editor.edit_reset()
@@ -458,6 +483,7 @@ class WorkspaceView:
         self.document_modified = False
         self.dirty = True
         self.program = None
+        self.assembled_source = None
         self.breakpoints.clear()
         self.populate_listing()
         self.editor_view.highlight()
@@ -469,12 +495,10 @@ class WorkspaceView:
     def new_file(self):
         if self.confirm_discard():
             self.replace_source("")
-            self.status.set(
-                "New program · write assembly or open the LED counter example"
-            )
+            self.status.set("New program · write 8051 assembly or open a source file")
 
     def breakpoint_at_line(self, line):
-        if self.dirty or not self.program:
+        if self.source_is_stale() or not self.program:
             self.status.set("Assemble first to set a source breakpoint")
             return
         addresses = [
@@ -502,13 +526,22 @@ class WorkspaceView:
         replace_key = "Command+Option+F" if modifier == "Command" else "Ctrl+H"
         messagebox.showinfo(
             "Keyboard shortcuts",
-            f"{modifier}+N / O / S     New / Open / Save\n{modifier}+Shift+S       Save as\n{modifier}+Z / Shift+Z   Undo / Redo\n{modifier}+F / G         Find / Go to line\n{modifier}+/             Toggle line comments\n{replace_key}             Find and replace\nTab / Shift+Tab         Indent / Unindent\n{modifier}+J             Toggle bottom panel\nF6                      Assemble\nF5                      Run / Pause\nF7                      Step instruction\nShift+F5                Reset machine\n\nClick a line number to toggle a breakpoint after assembly.\nDrag dividers to resize panes. View → Reset layout restores them.",
+            f"{modifier}+N / O / S     New / Open / Save\n{modifier}+Shift+S       Save as\n{modifier}+X / C / V     Cut / Copy / Paste\n{modifier}+Z / Shift+Z   Undo / Redo\n{modifier}+F / G         Find / Go to line\n{modifier}+/             Toggle line comments\n{replace_key}             Find and replace\nTab / Shift+Tab         Indent / Unindent\n{modifier}+D             Duplicate lines\n{modifier}+Shift+K       Delete lines\nAlt+Up / Down           Move lines\nCtrl+Space              Complete symbol\n{modifier}++ / − / 0     Zoom in / out / reset\n{modifier}+J             Toggle bottom panel\nF6                      Assemble\nF5                      Run / Pause\nF7                      Step instruction\nShift+F5                Reset machine\n\nClick a line number to toggle a breakpoint after assembly.\nDrag dividers to resize panes. View → Reset layout restores them.",
             parent=self.root,
         )
 
     def edit_action(self, event):
         target = self.root.focus_get()
-        if isinstance(target, (tk.Text, ttk.Entry)):
+        if target == self.editor or not isinstance(target, (tk.Text, ttk.Entry)):
+            commands = {
+                "<<Cut>>": self.editor_view.cut,
+                "<<Copy>>": self.editor_view.copy,
+                "<<Paste>>": self.editor_view.paste,
+                "<<SelectAll>>": self.editor_view.select_all,
+            }
+            self.editor.focus_set()
+            commands[event]()
+        elif isinstance(target, (tk.Text, ttk.Entry)):
             target.event_generate(event)
         else:
             self.editor.focus_set()

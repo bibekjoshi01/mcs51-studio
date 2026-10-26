@@ -9,6 +9,7 @@ src/mcs51_studio/
   config.py    Platform settings paths
   metadata.py  Application name, ID, and version
   resources.py Bundled data loading
+  source_files.py Atomic source saves
   smoke.py     Minimal packaged-app self-check
 scripts/       Source launcher, installer builds, icon generation
 packaging/     Native installer definitions and master icon assets
@@ -23,7 +24,9 @@ docs/          Development, usage, architecture, limits, and releases
 - `ui/application.py` owns machine state, files, and execution coordination.
   `workspace.py` arranges panes, navigation, menus, and document actions.
   `editor.py`, `inspector.py`, `board_view.py`, and `widgets.py` handle presentation
-  and interaction.
+  and interaction. The editor delegates grouped edits to `editor_actions.py`,
+  literal search to `search.py`, and explicit completion to `completion.py`.
+  `engine/source.py` handles source normalization and quoted data parsing.
 - Shared resources, metadata, and platform settings stay outside these layers.
 - Detailed editor and layout checks live in `tests/gui.py`. Installed apps keep
   only a small self-check for release validation.

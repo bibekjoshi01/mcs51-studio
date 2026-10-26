@@ -39,7 +39,10 @@ python -m ruff format --check .
 python tests/gui.py
 ```
 
-The first command is headless. `tests/gui.py` exercises the editor, file safety,
+The first command is headless, covering CPU regression cases, assembler boundaries,
+quoted data, malformed source, and atomic saves. `tests/gui.py` exercises clipboard
+commands, grouped undo, completion, Unicode, large documents, search/replace,
+inline errors, stale-code protection, file safety,
 breakpoints, execution controls, scrolling, hardware rows, inspector values,
 and layout at two window sizes; it requires a
 display. On headless Linux, use `xvfb-run -a python tests/gui.py`. CI runs headless

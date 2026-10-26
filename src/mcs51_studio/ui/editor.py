@@ -2,57 +2,53 @@
 
 import re
 import tkinter as tk
-from contextlib import contextmanager
-from tkinter import simpledialog, ttk
+from tkinter import font, simpledialog, ttk
 
 from . import theme
+from .completion import CompletionPopup, completion_words
+from .editor_actions import EditorActions
+from .search import SearchPanel
 
 
-class AssemblyEditor(ttk.Frame):
+class AssemblyEditor(EditorActions, ttk.Frame):
     def __init__(self, parent, mono_font, on_change, on_breakpoint):
         super().__init__(parent)
         self.on_change = on_change
         self.on_breakpoint = on_breakpoint
         self.pending = None
+        self.highlight_top = None
         self.mono_font = mono_font
         self.breakpoint_lines = set()
         self.execution_line = None
-        self.search_term = tk.StringVar()
+        self.notice = tk.StringVar()
         self.position = tk.StringVar(value="Ln 1, Col 1")
-        self.searchbar = ttk.Frame(self, padding=(8, 5))
-        search_controls = ttk.Frame(self.searchbar)
-        search_controls.pack(fill="x")
-        ttk.Label(search_controls, text="Find").pack(side="left")
-        self.search = ttk.Entry(
-            search_controls, textvariable=self.search_term, width=24
-        )
-        self.search.pack(side="left", padx=8, fill="x", expand=True)
-        self.search.bind("<Return>", lambda e: self.find_next())
-        self.search.bind("<Escape>", lambda e: self.hide_find())
+        self.zoom = tk.StringVar(value="100%")
+        self.font_size = 13
+        self.editor_font = font.Font(family=mono_font, size=-self.font_size)
+        self.completion = None
+        self.error_line = None
+        self.action_buttons = {}
+        toolbar = ttk.Frame(self, padding=(8, 4))
+        toolbar.pack(fill="x")
+        for label, command in [
+            ("Undo", self.undo),
+            ("Redo", self.redo),
+            ("Cut", self.cut),
+            ("Copy", self.copy),
+            ("Paste", self.paste),
+        ]:
+            button = ttk.Button(
+                toolbar, text=label, command=command, width=0, style="Footer.TButton"
+            )
+            button.pack(side="left", padx=2)
+            self.action_buttons[label] = button
         ttk.Button(
-            search_controls, text="Previous", command=lambda: self.find_next(True)
-        ).pack(side="left", padx=2)
-        ttk.Button(search_controls, text="Next", command=self.find_next).pack(
-            side="left", padx=2
-        )
-        ttk.Button(search_controls, text="Close", command=self.hide_find).pack(
-            side="left", padx=2
-        )
-        self.search_result = ttk.Label(search_controls, style="Muted.TLabel")
-        self.search_result.pack(side="left", padx=6)
-        replace_controls = ttk.Frame(self.searchbar)
-        replace_controls.pack(fill="x", pady=(5, 0))
-        ttk.Label(replace_controls, text="With").pack(side="left")
-        self.replace_term = tk.StringVar()
-        ttk.Entry(replace_controls, textvariable=self.replace_term).pack(
-            side="left", fill="x", expand=True, padx=8
-        )
-        ttk.Button(replace_controls, text="Replace", command=self.replace_next).pack(
-            side="left", padx=2
-        )
-        ttk.Button(replace_controls, text="Replace all", command=self.replace_all).pack(
-            side="left", padx=2
-        )
+            toolbar,
+            text="Find / Replace",
+            command=self.show_find,
+            width=0,
+            style="Footer.TButton",
+        ).pack(side="right")
         self.body = ttk.Frame(self)
         self.body.pack(fill="both", expand=True)
         self.gutter = tk.Canvas(
@@ -65,7 +61,7 @@ class AssemblyEditor(ttk.Frame):
             maxundo=200,
             autoseparators=True,
             wrap="none",
-            font=(mono_font, -13),
+            font=self.editor_font,
             background=theme.INPUT,
             foreground=theme.TEXT,
             insertbackground=theme.MINT,
@@ -75,7 +71,7 @@ class AssemblyEditor(ttk.Frame):
             borderwidth=0,
             padx=12,
             pady=12,
-            tabs=(32,),
+            tabs=(self.editor_font.measure("    "),),
             spacing1=2,
             spacing3=2,
             exportselection=False,
@@ -87,20 +83,70 @@ class AssemblyEditor(ttk.Frame):
             self.body, orient="horizontal", command=self.text.xview
         )
         horizontal.grid(row=1, column=1, sticky="ew")
-        self.text.configure(
-            yscrollcommand=lambda a, b: (vertical.set(a, b), self.redraw()),
-            xscrollcommand=horizontal.set,
-        )
+
+        def scrolled(first, last):
+            vertical.set(first, last)
+            self.redraw()
+            top = self.text.index("@0,0 linestart")
+            if top != self.highlight_top:
+                self.highlight_top = top
+                self.schedule_highlight()
+
+        self.text.configure(yscrollcommand=scrolled, xscrollcommand=horizontal.set)
         self.body.columnconfigure(1, weight=1)
         self.body.rowconfigure(0, weight=1)
-        footer = ttk.Frame(self, padding=(12, 5))
-        footer.pack(fill="x")
+        self.search_panel = SearchPanel(self, self)
+        self.diagnostic = ttk.Frame(self, padding=(12, 7))
+        self.diagnostic_text = tk.StringVar()
         ttk.Label(
-            footer, text="8051 Assembly  ·  UTF-8  ·  4 spaces", style="Muted.TLabel"
-        ).pack(side="left")
+            self.diagnostic,
+            textvariable=self.diagnostic_text,
+            foreground=theme.ERROR,
+            wraplength=500,
+        ).pack(side="left", fill="x", expand=True)
+        ttk.Button(
+            self.diagnostic,
+            text="Go to error",
+            command=self.goto_error,
+            width=0,
+            style="Footer.TButton",
+        ).pack(side="right")
+        self.footer = ttk.Frame(self, padding=(12, 5))
+        footer = self.footer
+        footer.pack(fill="x")
+        ttk.Label(footer, text="8051 ASM · UTF-8", style="Muted.TLabel").pack(
+            side="left"
+        )
         ttk.Label(footer, textvariable=self.position, style="Muted.TLabel").pack(
             side="right"
         )
+        ttk.Button(
+            footer,
+            text="−",
+            command=lambda: self.change_zoom(-1),
+            width=0,
+            style="Footer.TButton",
+        ).pack(side="left", padx=(8, 0))
+        ttk.Button(
+            footer,
+            textvariable=self.zoom,
+            command=lambda: self.change_zoom(reset=True),
+            width=0,
+            style="Footer.TButton",
+        ).pack(side="left")
+        ttk.Button(
+            footer,
+            text="+",
+            command=lambda: self.change_zoom(1),
+            width=0,
+            style="Footer.TButton",
+        ).pack(side="left")
+        ttk.Label(footer, textvariable=self.notice, style="Muted.TLabel").pack(
+            side="left", padx=8
+        )
+        self.text.tag_configure("currentline", background="#172638")
+        self.text.tag_lower("currentline")
+        self.text.tag_configure("error", background="#4A2835")
         self.text.tag_configure("instruction", foreground=theme.MINT)
         self.text.tag_configure("number", foreground="#E9C887")
         self.text.tag_configure("label", foreground=theme.FOCUS)
@@ -108,11 +154,24 @@ class AssemblyEditor(ttk.Frame):
         self.text.tag_configure("string", foreground="#DBADDB")
         self.text.tag_configure("search", background=theme.SELECTION)
         self.text.tag_configure("pc", background="#23413E")
-        self.search_term.trace_add(
-            "write", lambda *_: self.text.tag_remove("search", "1.0", "end")
-        )
         self.text.bind("<<Modified>>", self.changed)
-        self.text.bind("<KeyRelease>", self.redraw, add=True)
+        self.text.bind("<KeyRelease>", self.key_released, add=True)
+        self.text.bind("<<Selection>>", self.redraw, add=True)
+        self.text.bind("<BackSpace>", self.backspace)
+        self.text.bind("<Home>", self.smart_home)
+        self.text.bind("<<Cut>>", self.cut)
+        self.text.bind("<<Copy>>", self.copy)
+        self.text.bind("<<Paste>>", self.paste)
+        self.text.bind("<<SelectAll>>", self.select_all)
+        self.text.bind("<Control-space>", self.complete)
+        self.text.bind(
+            "<Up>", lambda event: self.completion.move(-1) if self.completion else None
+        )
+        self.text.bind(
+            "<Down>", lambda event: self.completion.move(1) if self.completion else None
+        )
+        self.text.bind("<FocusOut>", lambda event: self.close_completion())
+        self.bind("<Destroy>", self.cleanup, add=True)
         self.text.bind("<ButtonRelease-1>", self.redraw, add=True)
         self.text.bind("<Configure>", self.redraw, add=True)
         self.text.bind("<Tab>", self.indent)
@@ -124,11 +183,14 @@ class AssemblyEditor(ttk.Frame):
         for label, action in [
             ("Undo", self.undo),
             ("Redo", self.redo),
-            ("Cut", lambda: self.text.event_generate("<<Cut>>")),
-            ("Copy", lambda: self.text.event_generate("<<Copy>>")),
-            ("Paste", lambda: self.text.event_generate("<<Paste>>")),
+            ("Cut", self.cut),
+            ("Copy", self.copy),
+            ("Paste", self.paste),
             ("Select all", self.select_all),
+            ("Duplicate lines", self.duplicate_lines),
+            ("Delete lines", self.delete_lines),
             ("Toggle comment", self.toggle_comment),
+            ("Complete symbol", self.complete),
             ("Find…", self.show_find),
             ("Go to line…", self.goto_line),
         ]:
@@ -138,28 +200,47 @@ class AssemblyEditor(ttk.Frame):
             self.text.bind("<Button-2>", self.context_menu)
 
     def context_menu(self, event):
+        self.close_completion()
+        for label in ("Cut", "Copy"):
+            self.menu.entryconfigure(
+                label, state="normal" if self.selection() else "disabled"
+            )
         self.menu.tk_popup(event.x_root, event.y_root)
         return "break"
 
     def changed(self, event=None):
         if not self.text.edit_modified():
             return
+        self.close_completion()
+        self.clear_diagnostic()
+        self.search_panel.invalidate()
         self.on_change()
         self.text.edit_modified(False)
+        self.schedule_highlight()
+        self.redraw()
+
+    def schedule_highlight(self):
         if self.pending:
             self.after_cancel(self.pending)
         self.pending = self.after(120, self.highlight)
-        self.redraw()
 
     def highlight(self):
+        if self.pending:
+            self.after_cancel(self.pending)
         self.pending = None
-        source = self.text.get("1.0", "end-1c")
+        start = self.text.index("@0,0 linestart")
+        end = self.text.index(
+            f"@0,{max(self.text.winfo_height(), 1)} lineend +200lines"
+        )
+        source = self.text.get(start, end)
         for tag in ("instruction", "number", "label", "comment", "string"):
-            self.text.tag_remove(tag, "1.0", "end")
-        pattern = r"(?P<comment>;[^\n]*)|(?P<string>'[^'\n]*'|\"[^\"\n]*\")|(?P<label>\b[A-Za-z_]\w*\s*:)|(?P<number>\b(?:[0-9][0-9A-Fa-f]*[Hh]|[01]+[Bb]|\d+)\b)|(?P<instruction>\b(?:MOVX?|MOVC|ADD|ADDC|SUBB|INC|DEC|MUL|DIV|DA|ANL|ORL|XRL|CLR|CPL|SETB|RL|RLC|RR|RRC|SWAP|PUSH|POP|XCHD?|NOP|AJMP|LJMP|SJMP|JMP|ACALL|LCALL|CALL|RET|RETI|JZ|JNZ|JC|JNC|JB|JNB|JBC|CJNE|DJNZ|ORG|END|EQU|DB|DW|DS|BIT|ACC|PSW|DPTR|SP|R[0-7])\b)"
+            self.text.tag_remove(tag, start, end)
+        pattern = r"(?P<comment>;[^\n]*)|(?P<string>'[^'\n]*'|\"[^\"\n]*\")|(?P<label>\b[A-Za-z_]\w*\s*:)|(?P<number>\b(?:[0-9][0-9A-Fa-f]*[Hh]|[01]+[Bb]|\d+)\b)|(?P<instruction>\b(?:MOVX?|MOVC|ADD|ADDC|SUBB|INC|DEC|MUL|DIV|DA|ANL|ORL|XRL|CLR|CPL|SETB|RL|RLC|RR|RRC|SWAP|PUSH|POP|XCHD?|NOP|AJMP|LJMP|SJMP|JMP|ACALL|LCALL|CALL|RET|RETI|JZ|JNZ|JC|JNC|JB|JNB|JBC|CJNE|DJNZ|ORG|END|EQU|SET|DB|USING|ACC|PSW|DPTR|SP|R[0-7])\b)"
         for match in re.finditer(pattern, source, re.IGNORECASE):
             self.text.tag_add(
-                match.lastgroup, f"1.0+{match.start()}c", f"1.0+{match.end()}c"
+                match.lastgroup,
+                self.index_after(start, source[: match.start()]),
+                self.index_after(start, source[: match.end()]),
             )
         self.text.tag_raise("sel")
 
@@ -182,6 +263,14 @@ class AssemblyEditor(ttk.Frame):
                 font=(self.mono_font, -11),
             )
             y = info[1] + info[3] / 2
+            if line == self.error_line:
+                self.gutter.create_text(
+                    10,
+                    y,
+                    text="!",
+                    fill=theme.ERROR,
+                    font=(self.mono_font, -12, "bold"),
+                )
             if line in self.breakpoint_lines:
                 self.gutter.create_oval(
                     5, y - 4, 13, y + 4, fill=theme.ERROR, outline=""
@@ -190,142 +279,48 @@ class AssemblyEditor(ttk.Frame):
                 self.gutter.create_polygon(16, y - 4, 22, y, 16, y + 4, fill=theme.MINT)
             index = self.text.index(f"{index}+1line")
         line, column = self.text.index("insert").split(".")
-        self.position.set(f"Ln {line}, Col {int(column) + 1}")
+        selected = self.selection()
+        count = len(self.text.get(*selected)) if selected else 0
+        self.position.set(
+            f"Ln {line}, Col {int(column) + 1}"
+            + (f" · {count} selected" if count else "")
+        )
+        self.text.tag_remove("currentline", "1.0", "end")
+        self.text.tag_add("currentline", f"{line}.0", f"{line}.0+1line")
+        for label in ("Cut", "Copy"):
+            self.action_buttons[label].configure(
+                state="normal" if selected else "disabled"
+            )
+        for label, query in (("Undo", "canundo"), ("Redo", "canredo")):
+            enabled = self.tk.getboolean(self.tk.call(self.text._w, "edit", query))
+            self.action_buttons[label].configure(
+                state="normal" if enabled else "disabled"
+            )
 
     def gutter_click(self, event):
         line = int(self.text.index(f"@0,{event.y}").split(".")[0])
         self.on_breakpoint(line)
 
-    def selected_lines(self):
-        try:
-            start = self.text.index("sel.first linestart")
-            end = self.text.index("sel.last")
-            if end.endswith(".0") and end != start:
-                end = self.text.index(f"{end}-1c")
-            end = self.text.index(f"{end} lineend")
-        except tk.TclError:
-            start, end = (
-                self.text.index("insert linestart"),
-                self.text.index("insert lineend"),
-            )
-        return start, end
-
-    @contextmanager
-    def edit_transaction(self):
-        self.text.edit_separator()
-        self.text.configure(autoseparators=False)
-        try:
-            yield
-        finally:
-            self.text.configure(autoseparators=True)
-            self.text.edit_separator()
-
-    def transform_lines(self, transform):
-        start, end = self.selected_lines()
-        content = self.text.get(start, end)
-        replacement = "\n".join(transform(line) for line in content.split("\n"))
-        with self.edit_transaction():
-            self.text.delete(start, end)
-            self.text.insert(start, replacement)
-        self.text.tag_remove("sel", "1.0", "end")
-        self.text.tag_add("sel", start, f"{start}+{len(replacement)}c")
-        return "break"
-
-    def indent(self, event=None, reverse=False):
-        if reverse:
-            return self.transform_lines(
-                lambda line: (
-                    line[1:]
-                    if line.startswith("\t")
-                    else line[min(len(line) - len(line.lstrip(" ")), 4) :]
-                )
-            )
-        if self.text.tag_ranges("sel"):
-            return self.transform_lines(lambda line: "    " + line)
-        column = int(self.text.index("insert").split(".")[1])
-        self.text.insert("insert", " " * (4 - column % 4))
-        return "break"
-
-    def newline(self, event=None):
-        if self.text.tag_ranges("sel"):
-            self.text.delete("sel.first", "sel.last")
-        line = self.text.get("insert linestart", "insert")
-        indent = re.match(r"[ \t]*", line).group()
-        self.text.insert("insert", "\n" + indent)
-        return "break"
-
-    def toggle_comment(self, event=None):
-        start, end = self.selected_lines()
-        lines = self.text.get(start, end).split("\n")
-        uncomment = all(
-            not line.strip() or line.lstrip().startswith(";") for line in lines
-        )
-
-        def change(line):
-            if uncomment:
-                return re.sub(r"^(\s*); ?", r"\1", line)
-            return "; " + line if line.strip() else line
-
-        return self.transform_lines(change)
-
-    def undo(self, event=None):
-        try:
-            self.text.edit_undo()
-        except tk.TclError:
-            pass
-        return "break"
-
-    def redo(self, event=None):
-        try:
-            self.text.edit_redo()
-        except tk.TclError:
-            pass
-        return "break"
-
-    def select_all(self, event=None):
-        self.text.tag_add("sel", "1.0", "end-1c")
-        return "break"
-
     def show_find(self, event=None):
-        self.searchbar.pack(before=self.body, fill="x")
-        self.search.focus_set()
-        self.search.selection_range(0, "end")
+        self.close_completion()
+        selected = self.selection()
+        if selected:
+            value = self.text.get(*selected)
+            if "\n" not in value and len(value) < 120:
+                self.search_panel.query.set(value)
+        self.search_panel.pack(before=self.body, fill="x")
+        self.search_panel.entry.focus_set()
+        self.search_panel.entry.selection_range(0, "end")
         return "break"
 
     def hide_find(self):
-        self.searchbar.pack_forget()
-        self.text.tag_remove("search", "1.0", "end")
+        if self.completion:
+            self.close_completion()
+            return "break"
+        self.search_panel.pack_forget()
+        self.search_panel.invalidate()
         self.text.focus_set()
         return "break"
-
-    def find_next(self, reverse=False):
-        term = self.search_term.get()
-        if not term:
-            return
-        start = self.text.index("insert-1c" if reverse else "insert")
-        index = self.text.search(
-            term,
-            start,
-            stopindex="1.0" if reverse else "end",
-            nocase=True,
-            backwards=reverse,
-        )
-        if not index:
-            index = self.text.search(
-                term,
-                "end-1c" if reverse else "1.0",
-                stopindex=start,
-                nocase=True,
-                backwards=reverse,
-            )
-        self.text.tag_remove("search", "1.0", "end")
-        self.search_result.configure(text="" if index else "No matches")
-        if index:
-            end = f"{index}+{len(term)}c"
-            self.text.tag_add("search", index, end)
-            self.text.mark_set("insert", index if reverse else end)
-            self.text.see(index)
-            self.redraw()
 
     def goto_line(self, event=None):
         line = simpledialog.askinteger(
@@ -342,32 +337,75 @@ class AssemblyEditor(ttk.Frame):
             self.redraw()
         return "break"
 
-    def replace_next(self):
-        ranges = self.text.tag_ranges("search")
-        if not ranges:
-            self.find_next()
-            ranges = self.text.tag_ranges("search")
-        if ranges:
-            start, end = ranges
-            with self.edit_transaction():
-                self.text.delete(start, end)
-                self.text.insert(start, self.replace_term.get())
-            self.text.mark_set("insert", f"{start}+{len(self.replace_term.get())}c")
-            self.find_next()
+    def flush_changes(self):
+        self.changed()
 
-    def replace_all(self):
-        term = self.search_term.get()
-        if not term:
-            return
-        source = self.text.get("1.0", "end-1c")
-        updated, count = re.subn(
-            re.escape(term),
-            lambda m: self.replace_term.get(),
-            source,
-            flags=re.IGNORECASE,
-        )
-        if count:
-            with self.edit_transaction():
-                self.text.delete("1.0", "end")
-                self.text.insert("1.0", updated)
-        self.search_result.configure(text=f"{count} replaced")
+    def key_released(self, event):
+        if self.completion and event.keysym not in (
+            "Up",
+            "Down",
+            "Control_L",
+            "Control_R",
+            "space",
+        ):
+            self.close_completion()
+        self.redraw()
+
+    def complete(self, event=None):
+        self.close_completion()
+        prefix = self.text.get("insert linestart", "insert")
+        if ";" in prefix or prefix.count("'") % 2 or prefix.count('"') % 2:
+            return "break"
+        match = re.search(r"[A-Za-z_]\w*$", prefix)
+        if not match:
+            self.notice.set("Type a mnemonic, register, or label first")
+            return "break"
+        words = completion_words(self.text.get("1.0", "end-1c"), match.group())
+        if not words:
+            self.notice.set("No matching symbols")
+            return "break"
+        start = self.text.index(f"insert-{len(match.group())}c")
+        self.completion = CompletionPopup(self, start, words)
+        return "break"
+
+    def close_completion(self):
+        if self.completion:
+            window = self.completion.window
+            self.completion = None
+            window.destroy()
+
+    def change_zoom(self, amount=0, reset=False):
+        self.font_size = 13 if reset else max(10, min(24, self.font_size + amount))
+        self.editor_font.configure(size=-self.font_size)
+        self.text.configure(tabs=(self.editor_font.measure("    "),))
+        self.zoom.set(f"{round(self.font_size / 13 * 100)}%")
+        self.redraw()
+        return "break"
+
+    def clear_diagnostic(self):
+        self.error_line = None
+        self.text.tag_remove("error", "1.0", "end")
+        self.diagnostic.pack_forget()
+
+    def show_diagnostic(self, message, line=None):
+        self.clear_diagnostic()
+        self.error_line = line
+        self.diagnostic_text.set(f"Line {line}: {message}" if line else message)
+        self.diagnostic.pack(before=self.footer, fill="x")
+        if line:
+            self.text.tag_add("error", f"{line}.0", f"{line}.0+1line")
+            self.goto_error()
+        self.redraw()
+
+    def goto_error(self):
+        if self.error_line:
+            self.text.mark_set("insert", f"{self.error_line}.0")
+            self.text.see("insert")
+            self.text.focus_set()
+        return "break"
+
+    def cleanup(self, event):
+        if event.widget is self:
+            if self.pending:
+                self.after_cancel(self.pending)
+            self.close_completion()
