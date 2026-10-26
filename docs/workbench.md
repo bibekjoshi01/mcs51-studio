@@ -19,7 +19,7 @@ Pane visibility and divider positions are saved with application settings.
 
 Use the workspace tabs for the editor and virtual board, and bottom tabs for
 the listing, memory explorer, and activity.
-**Pin Mappings** and **Oscilloscope** are in the top command row.
+**Wiring** and **Instruments → DAC Scope** are in the top command row.
 Open **Instruction Reference** from the footer for the 8051 instruction catalog.
 The inspector and board can be scrolled when their contents exceed the window.
 Board scrolling respects trackpad movement size; scrolling over the UART text
@@ -117,3 +117,48 @@ The processor inspector identifies **Classic 8051 · 12 MHz · 12 Clocks**.
 In Memory, select **XDATA** to inspect external RAM used by MOVX. Enter a hex
 address and choose **Go**; double-click a byte to edit it while paused. **RAM**
 contains only 00–7FH; **SFR** and **Code** are separate views.
+
+
+## Wiring And Experiment Presets
+
+Open **Wiring** in the header or click a peripheral’s title on the virtual board.
+The Wiring tab shows a labeled 40-pin MCU, enabled devices, and their connections.
+Select a device to highlight its pins in mint; amber marks pins shared by devices.
+Click a port pin to inspect every connected signal. Non-port package pins are
+labels, not simulated power or oscillator controls.
+
+Shared-pin explanations describe coupled outputs and input drivers that can pull
+a shared line low. These are wiring warnings, not an electrical contention model.
+Use **Edit Pin Mappings** to remap signals. Programs must use the new pin addresses.
+Built-in experiment presets enable only the relevant devices. **Save As** stores
+current wiring, device enables, and keypad gate state under your experiment name;
+custom presets persist across sessions. Applying a preset pauses execution and
+clears captures, but does not replace your program.
+
+## Logic Analyzer
+
+Open **Instruments → Logic Analyzer**. Enter 1–8 port pins separated by commas,
+then select **Apply**. Choose **Free Run**, or a trigger pin and Rising/Falling/Either
+edge, and a post-trigger duration. Select **Arm**, then run or step your program.
+Arm assembles first if necessary. Stop Capture stops recording without stopping
+the processor. Reset clears the capture.
+
+Capture records effective pin levels after each instruction, independently of UI
+batch size. It keeps up to 8,192 transition samples, with bounded pre-trigger
+history; a full buffer stops recording explicitly. These are instruction-boundary
+observations, not sub-cycle measurements or MOVX bus waveforms.
+
+Use **Fit**, **Zoom In/Out**, and **History** to inspect a time range. Click a lane
+to select its measurements and place cursor A, then click again for B. Complete
+observed pulses yield high/low width; complete rising-edge cycles yield period,
+frequency, and duty cycle. A dash means insufficient edges in the visible range.
+A/B cursors show Δt and its reciprocal; the reciprocal is only a frequency if you
+place the cursors one period apart. All times are simulated microseconds.
+
+## DAC Scope
+
+The **DAC Scope** tab retains the recent DAC output with a stepped waveform,
+labeled microsecond time axis, 0–5 V scale, zoom, and history navigation. Enable DAC
+in Hardware and run a program to record data. **Freeze** holds a snapshot while the
+simulation continues; **Live** resumes updates. Click twice for A/B cursors showing
+time, voltage, Δt, and ΔV. The DAC buffer retains the latest 600 samples.
