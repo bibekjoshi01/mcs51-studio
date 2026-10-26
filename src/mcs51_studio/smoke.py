@@ -8,7 +8,7 @@ from pathlib import Path
 from tkinter import Tk, messagebox
 from unittest.mock import patch
 
-from .app import App
+from .ui.application import App
 from .metadata import APP_NAME
 
 

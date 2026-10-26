@@ -2,9 +2,10 @@
 
 import unittest
 
-from mcs51_studio.assembler import AssemblyError, assemble, export_hex, import_hex
-from mcs51_studio.board import LCD, Board
-from mcs51_studio.core import CPU
+from mcs51_studio.engine.assembler import AssemblyError, assemble, export_hex, import_hex
+from mcs51_studio.hardware.board import Board
+from mcs51_studio.hardware.lcd import LCD
+from mcs51_studio.engine.cpu import CPU
 from mcs51_studio.resources import LED_COUNTER
 
 
