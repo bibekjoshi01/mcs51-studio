@@ -108,6 +108,9 @@ class AssemblyEditor(ttk.Frame):
         self.text.tag_configure("string", foreground="#DBADDB")
         self.text.tag_configure("search", background=theme.SELECTION)
         self.text.tag_configure("pc", background="#23413E")
+        self.search_term.trace_add(
+            "write", lambda *_: self.text.tag_remove("search", "1.0", "end")
+        )
         self.text.bind("<<Modified>>", self.changed)
         self.text.bind("<KeyRelease>", self.redraw, add=True)
         self.text.bind("<ButtonRelease-1>", self.redraw, add=True)
