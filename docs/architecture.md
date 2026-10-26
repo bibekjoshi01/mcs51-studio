@@ -3,7 +3,7 @@
 ```text
 src/mcs51_studio/
   engine/      Processor profile, CPU, assembler, interrupts, timers, serial
-  hardware/    Virtual board, LCD, external UART, and wiring
+  hardware/    Virtual board, LCD, UART, wiring presets, and signal capture
   ui/          Application, workspace, editor, inspector, board views, theme, icons, widgets
   data/        Instruction catalog, example assembly, runtime icon
   config.py    Platform settings paths
@@ -24,7 +24,9 @@ docs/          Development, usage, architecture, limits, and releases
 - `ui/application.py` owns machine state, files, and execution coordination.
   `workspace.py` arranges panes, navigation, menus, and document actions.
   `editor.py`, `inspector.py`, `board_view.py`, and `widgets.py` handle presentation
-  and interaction. The editor delegates grouped edits to `editor_actions.py`,
+  and interaction. `ui/instruments.py` presents the on-demand wiring window and tabs;
+  `ui/waveform.py` handles digital/DAC plots and controls; `hardware/analyzer.py` and `hardware/wiring.py` own capture, measurements,
+  connection analysis, and preset validation. The editor delegates grouped edits to `editor_actions.py`,
   literal search to `search.py`, and explicit completion to `completion.py`.
   `engine/source.py` handles source normalization and quoted data parsing.
 - Shared resources, metadata, and platform settings stay outside these layers.
