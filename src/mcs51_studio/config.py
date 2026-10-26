@@ -12,7 +12,15 @@ def settings_path():
     if sys.platform == "darwin":
         base = Path.home() / "Library" / "Application Support"
     elif sys.platform == "win32":
-        base = Path(os.environ.get("APPDATA", str(Path.home() / "AppData" / "Roaming")))
+        base = (
+            Path(os.environ["APPDATA"])
+            if "APPDATA" in os.environ
+            else Path.home() / "AppData" / "Roaming"
+        )
     else:
-        base = Path(os.environ.get("XDG_CONFIG_HOME", str(Path.home() / ".config")))
+        base = (
+            Path(os.environ["XDG_CONFIG_HOME"])
+            if "XDG_CONFIG_HOME" in os.environ
+            else Path.home() / ".config"
+        )
     return base / "mcs51-studio" / "settings.json"
