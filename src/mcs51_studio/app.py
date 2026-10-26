@@ -5,11 +5,11 @@ import math
 import time
 import tkinter as tk
 from pathlib import Path
-from tkinter import filedialog, messagebox, simpledialog, ttk
+from tkinter import filedialog, font, messagebox, simpledialog, ttk
 
 from .assembler import AssemblyError, assemble, export_hex, import_hex
 from .board import DEFAULT_MAPPING, Board, pin
-from .config import settings_path
+from .config import save_shortcut, settings_path
 from .core import CPU, ISA, SFR
 from .metadata import APP_NAME, VERSION
 from .resources import LED_COUNTER
@@ -19,8 +19,12 @@ class App:
     def __init__(self, root):
         self.root = root
         root.title(f"{APP_NAME} — 8051 Workbench")
-        root.geometry("1370x900")
-        root.minsize(1120, 750)
+        width = max(800, min(1370, root.winfo_screenwidth() - 80))
+        height = max(600, min(900, root.winfo_screenheight() - 100))
+        root.geometry(f"{width}x{height}")
+        root.minsize(min(1120, width), min(750, height))
+        self.ui_font = font.nametofont("TkDefaultFont").actual("family")
+        self.mono_font = font.nametofont("TkFixedFont").actual("family")
         self.cpu = CPU()
         self.board = Board(self.cpu)
         self.program = None
@@ -45,7 +49,7 @@ class App:
             "TLabelframe.Label",
             background="#f2f4f7",
             foreground="#172b42",
-            font=("Helvetica", 11, "bold"),
+            font=(self.ui_font, 11, "bold"),
         )
         style.configure("TButton", padding=5)
         self.build_menu()
@@ -62,11 +66,16 @@ class App:
         root.protocol("WM_DELETE_WINDOW", self.close)
         root.bind("<F5>", lambda e: self.toggle_run())
         root.bind("<F7>", lambda e: self.step())
-        root.bind("<Command-s>", lambda e: self.save_source())
-        root.bind("<Control-s>", lambda e: self.save_source())
+        root.bind(
+            save_shortcut(root.tk.call("tk", "windowingsystem")), self.save_shortcut
+        )
         self.editor.insert("1.0", LED_COUNTER)
         self.editor.edit_modified(False)
         self.refresh()
+
+    def save_shortcut(self, event=None):
+        self.save_source()
+        return "break"
 
     def build_menu(self):
         menu = tk.Menu(self.root)
@@ -94,7 +103,7 @@ class App:
     def build_toolbar(self):
         bar = ttk.Frame(self.root, padding=10)
         bar.pack(fill="x")
-        ttk.Label(bar, text=APP_NAME.upper(), font=("Helvetica", 15, "bold")).pack(
+        ttk.Label(bar, text=APP_NAME.upper(), font=(self.ui_font, 15, "bold")).pack(
             side="left", padx=(0, 25)
         )
         for text, command in [
@@ -121,7 +130,7 @@ class App:
             box,
             undo=True,
             wrap="none",
-            font=("Menlo", 12),
+            font=(self.mono_font, 12),
             background="#ffffff",
             foreground="#152b42",
             insertbackground="#152b42",
@@ -163,7 +172,9 @@ class App:
             ttk.Label(registers, text=name).grid(row=row, column=col, padx=5)
             var = tk.StringVar()
             self.reg_vars[name] = var
-            entry = ttk.Entry(registers, textvariable=var, width=5, font=("Menlo", 11))
+            entry = ttk.Entry(
+                registers, textvariable=var, width=5, font=(self.mono_font, 11)
+            )
             entry.grid(row=row + 1, column=col, padx=5, pady=2)
             entry.bind("<Return>", lambda e, n=name: self.edit_register(n))
         self.flags = ttk.Label(registers, text="")
@@ -279,7 +290,7 @@ class App:
         self.lcd_text = tk.Label(
             lcd,
             text=" " * 16 + "\n" + " " * 16,
-            font=("Menlo", 20),
+            font=(self.mono_font, 20),
             background="#dce7ba",
             foreground="#263522",
             padx=10,
@@ -294,7 +305,11 @@ class App:
         ).grid(row=4, column=0, columnspan=2, sticky="ew")
         peripherals.columnconfigure(1, weight=1)
         self.uart_output = tk.Text(
-            terminal, height=14, font=("Menlo", 12), state="disabled", wrap="word"
+            terminal,
+            height=14,
+            font=(self.mono_font, 12),
+            state="disabled",
+            wrap="word",
         )
         self.uart_output.pack(fill="both", expand=True)
         send = ttk.Frame(terminal)
@@ -346,7 +361,7 @@ class App:
             hardware, text="Configure pin mappings…", command=self.mapping_dialog
         ).pack(anchor="w", pady=10)
         for n in range(4):
-            label = ttk.Label(hardware, text="", font=("Menlo", 11))
+            label = ttk.Label(hardware, text="", font=(self.mono_font, 11))
             label.pack(anchor="w", pady=2)
             self.port_labels[n] = label
 
@@ -615,7 +630,7 @@ class App:
                 outline="",
             )
             canvas.create_text(
-                x + 11, 39, text=f"LED{bit}", fill="#34465a", font=("Helvetica", 9)
+                x + 11, 39, text=f"LED{bit}", fill="#34465a", font=(self.ui_font, 9)
             )
         self.draw_segments()
         self.draw_motor()
@@ -681,7 +696,7 @@ class App:
                 x + 23,
                 83,
                 text=f"Display {3 - digit}",
-                font=("Helvetica", 9),
+                font=(self.ui_font, 9),
                 fill="#34465a",
             )
 
@@ -746,7 +761,7 @@ class App:
         if not path:
             return
         try:
-            text = Path(path).read_text()
+            text = Path(path).read_text(encoding="utf-8-sig")
             if path.lower().endswith(".hex"):
                 self.program = import_hex(text)
                 self.dirty = False
@@ -771,7 +786,7 @@ class App:
                 return
             self.path = Path(path)
         try:
-            self.path.write_text(self.editor.get("1.0", "end-1c"))
+            self.path.write_text(self.editor.get("1.0", "end-1c"), encoding="utf-8")
             self.status.set(f"Saved {self.path.name}")
         except OSError as e:
             messagebox.showerror("Save failed", str(e))
@@ -785,7 +800,7 @@ class App:
         )
         if path:
             try:
-                Path(path).write_text(export_hex(self.program))
+                Path(path).write_text(export_hex(self.program), encoding="ascii")
                 self.status.set("Intel HEX exported")
             except OSError as e:
                 messagebox.showerror("Export failed", str(e))
@@ -882,7 +897,7 @@ class App:
         w = tk.Toplevel(self.root)
         w.title("Recovered instruction inventory")
         w.geometry("670x500")
-        text = tk.Text(w, font=("Menlo", 11))
+        text = tk.Text(w, font=(self.mono_font, 11))
         text.pack(fill="both", expand=True)
         text.insert("end", "Opcode  Bytes  Cycles  Instruction\n\n")
         for row in ISA:
@@ -894,7 +909,7 @@ class App:
 
     def load_settings(self):
         try:
-            data = json.loads(self.settings_path.read_text())
+            data = json.loads(self.settings_path.read_text(encoding="utf-8"))
             if set(data.get("mapping", {})) == set(DEFAULT_MAPPING):
                 for key, values in data["mapping"].items():
                     if len(values) != len(DEFAULT_MAPPING[key]):
@@ -917,7 +932,8 @@ class App:
         self.settings_path.write_text(
             json.dumps(
                 {"mapping": self.board.mapping, "enabled": self.board.enabled}, indent=2
-            )
+            ),
+            encoding="utf-8",
         )
 
     def about(self):
@@ -946,6 +962,15 @@ class App:
 
 
 def main():
+    import argparse
+
+    parser = argparse.ArgumentParser(description=f"{APP_NAME}: 8051 desktop workbench")
+    parser.add_argument("--smoke-test", action="store_true", help=argparse.SUPPRESS)
+    args = parser.parse_args()
+    if args.smoke_test:
+        from .smoke import run_smoke_test
+
+        raise SystemExit(run_smoke_test())
     root = tk.Tk()
     App(root)
     root.mainloop()
