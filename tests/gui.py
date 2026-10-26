@@ -70,6 +70,8 @@ class WorkbenchUI(unittest.TestCase):
         app.workspace.select(app.board_tab)
         root.update()
         scroll = app.board_scroll
+        scroll.canvas.focus_force()
+        root.update()
         self.assertGreater(
             scroll.content.winfo_reqheight(), scroll.canvas.winfo_height()
         )
@@ -86,7 +88,13 @@ class WorkbenchUI(unittest.TestCase):
         self.assertEqual(scroll.canvas.canvasy(0), start)
         scroll.windowing_system = "aqua"
         event.delta = -1
-        scroll.wheel(event)
+        self.assertEqual(
+            scroll.wheel(event),
+            "break",
+            f"mapped={scroll.canvas.winfo_ismapped()}, "
+            f"tab={app.workspace.select()}, "
+            f"heights={scroll.content.winfo_reqheight()}/{scroll.canvas.winfo_height()}",
+        )
         self.assertEqual(scroll.canvas.canvasy(0) - start, 1)
         start = scroll.canvas.canvasy(0)
         scroll.windowing_system = "win32"
@@ -195,6 +203,26 @@ class WorkbenchUI(unittest.TestCase):
         app.restore_layout()
         self.assertEqual(len(app.horizontal.panes()), 1)
         self.assertFalse(app.inspector_visible.get())
+
+    def test_native_popup_focus(self):
+        root, app = self.root, self.app
+        root.deiconify()
+        # Tcl-created popup windows are absent from Tkinter's widget registry,
+        # just like the list inside a ttk combobox's native popdown.
+        popup = ".native_focus_popup"
+        root.tk.call("toplevel", popup)
+        self.addCleanup(root.tk.call, "destroy", popup)
+        root.update()
+        root.tk.call("focus", "-force", popup)
+        root.update()
+        with self.assertRaises(KeyError):
+            root.focus_get()
+        app.cpu.a = 42
+        app.refresh()
+        self.assertEqual(app.reg_vars["ACC"].get(), "2A")
+        with patch.object(app.editor_view, "paste") as paste:
+            app.edit_action("<<Paste>>")
+            paste.assert_not_called()
 
     def test_clipboard_paste_and_execution(self):
         app, view = self.app, self.app.editor_view
