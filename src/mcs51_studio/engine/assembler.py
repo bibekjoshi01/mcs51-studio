@@ -262,7 +262,12 @@ def assemble(source):
                     if any(p in used for p in range(pc, pc + len(values))):
                         raise AssemblyError("Overlapping code")
                     code[pc : pc + len(values)] = bytes(values)
-                    locations[pc] = {"line": number, "source": raw, "size": len(values)}
+                    locations[pc] = {
+                        "line": number,
+                        "source": raw,
+                        "size": len(values),
+                        "instruction": directive != "DB",
+                    }
                     used.update(range(pc, pc + len(values)))
                 pc += len(values)
             except (ValueError, ZeroDivisionError, OverflowError) as error:

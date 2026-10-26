@@ -27,7 +27,7 @@ class BoardView:
             badge.pack(side="right")
             self.board_badges[device] = badge
         description = ttk.Label(
-            card, text=subtitle, style="BoardMuted.TLabel", wraplength=300
+            card, text=subtitle, style="BoardMuted.TLabel", wraplength=300, width=1
         )
         description.pack(fill="x", pady=(0, 10))
         card.bind(
@@ -109,7 +109,10 @@ class BoardView:
         devices = FlowGrid(peripherals, min_width=220, max_columns=2)
         devices.pack(fill="x")
         card, keypad = self.board_card(
-            devices, "Keypad", "Hold a key with the mouse or Space.", "keypad"
+            devices,
+            "Keypad",
+            "Choose Hold, Toggle, or Radio in Experiment Settings.",
+            "keypad",
         )
         devices.add(card)
         self.keypad_buttons = []
@@ -178,17 +181,15 @@ class BoardView:
             peripherals, "LCD", "16 × 2 character display · enable in Hardware", "lcd"
         )
         card.pack(fill="x")
-        self.lcd_text = tk.Label(
-            lcd,
-            text=" " * 16 + "\n" + " " * 16,
-            font=(self.mono_font, -21),
-            background="#233C37",
-            foreground="#A9E7C9",
-            padx=10,
-            pady=10,
-            anchor="w",
+        self.lcd_canvas = tk.Canvas(
+            lcd, height=78, background="#233C37", highlightthickness=0
         )
-        self.lcd_text.pack(fill="x")
+        self.lcd_canvas.pack(fill="x")
+        self.lcd_canvas.bind("<Configure>", lambda event: self.draw_lcd())
+        self.lcd_status = ttk.Label(
+            lcd, text="Ready", style="Muted.TLabel", wraplength=400
+        )
+        self.lcd_status.pack(fill="x", pady=5)
         ttk.Button(
             terminal,
             text="Serial Terminal",
@@ -247,6 +248,28 @@ class BoardView:
             width=7,
             state="readonly",
         ).pack(side="left")
+        framing = ttk.Frame(terminal)
+        framing.pack(fill="x", pady=6)
+        self.data_bits = tk.StringVar(value="8")
+        self.stop_bits = tk.StringVar(value="1")
+        for label, var, values in [
+            ("Data Bits", self.data_bits, ["7", "8"]),
+            ("Stop Bits", self.stop_bits, ["1", "2"]),
+        ]:
+            ttk.Label(framing, text=label).pack(side="left", padx=(0, 4))
+            ttk.Combobox(
+                framing, textvariable=var, values=values, width=3, state="readonly"
+            ).pack(side="left", padx=(0, 8))
+        ttk.Button(framing, text="Apply Framing", command=self.apply_uart).pack(
+            side="left"
+        )
+        ttk.Button(framing, text="Reset Link", command=self.reset_uart_link).pack(
+            side="left", padx=6
+        )
+        self.uart_status = ttk.Label(
+            terminal, text="", style="Muted.TLabel", wraplength=420
+        )
+        self.uart_status.pack(anchor="w")
         ttk.Label(
             terminal,
             text="Sending enables UART. Text appends CR; {41,42} sends hexadecimal bytes.",
@@ -256,6 +279,9 @@ class BoardView:
             hardware,
             text="Enable the peripherals used by your program. Shared pins can affect each other.",
             wraplength=420,
+        ).pack(anchor="w", pady=(0, 10))
+        ttk.Button(
+            hardware, text="Experiment Settings…", command=self.experiment_window
         ).pack(anchor="w", pady=(0, 10))
         self.hardware_toggles = FlowGrid(hardware)
         self.hardware_toggles.pack(fill="x", pady=(0, 12))
@@ -349,14 +375,18 @@ class BoardView:
             button.state(
                 ["!disabled" if self.board.enabled["switches"] else "disabled"]
             )
-        for button in self.keypad_buttons:
+        for index, button in enumerate(self.keypad_buttons):
+            key = (3 - index // 3, 2 - index % 3)
+            button.state(["pressed" if key in self.board.keys else "!pressed"])
             button.state(["!disabled" if self.board.enabled["keypad"] else "disabled"])
         self.draw_leds()
         self.draw_segments()
         self.draw_motor()
-        self.lcd_text.configure(
-            text="\n".join(self.board.lcd.lines()),
-            foreground="#A9E7C9" if self.board.enabled["lcd"] else theme.MUTED,
+        self.draw_lcd()
+        uart = self.board.uart
+        self.uart_status.configure(
+            text=f"{uart.baud} Baud · {uart.framing} · Errors {sum(uart.errors.values())}"
+            + (f" · {uart.last_error}" if uart.last_error else "")
         )
         adc = (
             f"{self.board.adc_value:02X} · {'Converting' if self.board.adc_remaining else 'Idle'}"

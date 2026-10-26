@@ -35,12 +35,14 @@ shortcuts. Resize panes by dragging dividers; **View → Reset Layout** restores
 ## Capabilities
 
 - Assembly editor with syntax highlighting, completion, and find/replace.
-- Classic 12-clock 8051 with stepping, breakpoints, registers, and flags.
+- Classic 12-clock 8051 with Step Over/Out, Run To Cursor, watches, and change breakpoints.
+- Instruction explanations, tracked call stacks, and changed-register highlighting.
 - 128-byte internal RAM and 64 KB external RAM with MOVX and XDATA inspection.
 - LEDs, switches, multiplexed displays, keypad, LCD, ADC/DAC, motor, and UART.
 - Visible wiring, shared-pin explanations, and saved experiment presets.
 - Digital logic analyzer with edge triggers and pulse measurements; DAC scope with cursors.
-- Assembly source files and Intel HEX import/export.
+- Portable experiment projects, autosave recovery, and Intel HEX import/export.
+- Keypad modes, switch bounce, interrupt pulses, LCD timing/custom glyphs, and UART diagnostics.
 
 See [supported features and limits](docs/compatibility.md) for the processor model
 and peripheral behavior supported by this version.

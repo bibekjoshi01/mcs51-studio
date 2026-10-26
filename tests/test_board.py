@@ -207,6 +207,7 @@ class BoardBehavior(unittest.TestCase):
             board.update()
 
         def byte(value, rs=0):
+            cpu.cycles = max(cpu.cycles, board.lcd.busy_until)
             nibble(value & 240, rs)
             nibble((value & 15) << 4, rs)
 
@@ -274,6 +275,7 @@ class BoardBehavior(unittest.TestCase):
         uart.start("{41}")
         uart.start("{42}")
         self.assertEqual(uart.pending, [65, 66])
+        uart.reset_link()
         for parity in (1, 2):
             uart.configure(4800, parity)
             for value in range(256):

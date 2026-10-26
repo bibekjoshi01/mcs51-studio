@@ -18,7 +18,7 @@ Inspector and Bottom controls, or the View menu, to hide them.
 Pane visibility and divider positions are saved with application settings.
 
 Use the workspace tabs for the editor and virtual board, and bottom tabs for
-the listing, memory explorer, and activity.
+the listing, memory explorer, execution debugger, and activity.
 **Wiring** and **Instruments → DAC Scope** are in the top command row.
 Open **Instruction Reference** from the footer for the 8051 instruction catalog.
 The inspector and board can be scrolled when their contents exceed the window.
@@ -50,13 +50,14 @@ The bottom tools contain:
 - **Listing:** addresses, encoded bytes, and corresponding source statements.
 - **Memory:** internal RAM, SFRs, and code memory. Select a region or enter a code
   address and press Enter. Double-click a RAM byte to edit it.
+- **Debug:** Last Instruction, Watches, and Stack, with execution controls.
 - **Activity:** assembly results and diagnostics. Assembly errors open this tab.
 
 ## Editor And Files
 
 New/Open check for unsaved source and offer Save, Discard, or Cancel. Assembling
 never marks a modified file as saved. A dot on the editor tab indicates unsaved
-source. Editing pauses execution and requires assembly before the next run.
+source or project settings. Editing pauses execution and requires assembly before the next run.
 
 The editor toolbar and context menu provide Undo, Redo, Cut, Copy, Paste, and
 Find/Replace. Editing supports assembly highlighting, line numbers, indentation,
@@ -99,6 +100,7 @@ Fn depending on your keyboard settings.
 - Tab / Shift+Tab: Indent / unindent. Enter preserves leading indentation.
 - Ctrl+J: Toggle bottom tools.
 - F6: Assemble. F7: Step one instruction. F5: Run or pause.
+- F8: Step Over. Shift+F8: Step Out. F9: Run To Cursor.
 - Shift+F5: Reset machine state. F1: Shortcut reference.
 
 After assembly, click an editor line number or double-click a listing row to
@@ -162,3 +164,88 @@ labeled microsecond time axis, 0–5 V scale, zoom, and history navigation. Enab
 in Hardware and run a program to record data. **Freeze** holds a snapshot while the
 simulation continues; **Live** resumes updates. Click twice for A/B cursors showing
 time, voltage, Δt, and ΔV. The DAC buffer retains the latest 600 samples.
+
+
+## Explain Execution
+
+Open **Debug** in the bottom panel. **Step Over (F8)** runs a call and stops at
+its return; other instructions execute once. **Step Out (Shift+F8)** returns from
+the current tracked call or interrupt. **Run To Cursor (F9)** stops before the
+assembled instruction on the editor cursor's line. Blank lines and DB data are
+not execution targets. All three respect ordinary and change breakpoints. Pause,
+editing, or Reset cancels a temporary run; an unreached target stops after one
+million instructions. Step Out requires a call frame observed since Reset.
+
+**Last Instruction** shows address/bytes, observed data inputs, register results,
+CY/AC/OV/P before and after, memory changes, and instruction/interrupt-entry costs.
+Changed register values are mint. Costs use simulated time, not UI playback time.
+The result includes timer and peripheral updates during that instruction.
+**Stack** separates raw internal RAM below SP from tracked calls and interrupts.
+A mismatched return stops execution with a stack explanation. Manually editing
+registers or memory clears tracked frames; watches remain.
+
+Add watches for `ACC`, `R0`, `DPTR`, `CY`, or `RAM[30]`, `SFR[90]`, `BIT[90]`,
+`XDATA[1234]`, and `CODE[0100]`. Addresses are hexadecimal; RAM means indirect
+internal RAM, 00–7F. Register/SFR watches show latch values; BIT port watches show
+resolved pin levels. **Break On Change** compares values before/after each complete
+instruction, including timer/peripheral changes. It does not stop on a write of
+the same value. Double-click a watch to toggle its change breakpoint. Expressions
+are explicit locations, not arbitrary calculations. Up to 64 watches are supported.
+Execution history and reverse stepping are not available yet.
+
+## Teaching Peripheral Controls
+
+Open **Tools → Experiment Settings**, also available in **Virtual Board → Hardware**.
+Keypad **Standard** toggles independent keys, **Pulse** closes while held, and
+**Radio** permits one latched key; pressing that key again releases it. Changing
+mode releases all keys. Held keys are visually pressed. Optional switch bounce
+uses a repeatable ten-phase contact pattern over the chosen duration, then settles.
+It advances only with simulated time. Bounce applies to switches, not the keypad.
+
+Choose **P3.2 / INT0** or **P3.3 / INT1** and a low-pulse width, then **Apply And Pulse**.
+Configure TCON/IE in your program to observe an interrupt. Pulses hold the resolved
+pin low without changing its latch. Shared devices can also hold it low. Pulses
+and bounce are observed at instruction boundaries; sub-instruction widths and
+analogue electrical behavior are not modeled.
+
+The LCD renders eight programmable 5×8 CGRAM glyphs (codes 0–7, aliased at 8–15),
+a cursor underline, and simulated-time blinking. ASCII text is supported; other
+controller-ROM glyphs appear as placeholders. With busy timing enabled, Clear/Home
+need 1,520 µs and other completed commands/data writes need 37 µs. Writes during
+busy time are ignored and counted visibly. R/W is grounded, so programs must wait;
+they cannot read a busy flag. Disabling timing is an explicit teaching option.
+
+The UART tab exposes baud, 7/8 data bits, None/Odd/Even parity, and 1/2 stop bits.
+**Apply Framing** validates settings; changing an active link requires **Reset Link**,
+which discards queued/in-flight data. It retains the transcript and error counts;
+Reset Machine clears those. Invalid hex lists or values outside the selected data
+width are rejected without sending partial data. Receive diagnostics count short
+start pulses, parity mismatch, and low stop bits; invalid frames are discarded.
+Match the MCU configuration and baud generator to the terminal. The fixed 1 µs
+sampling grid rounds external bit periods; this is not an arbitrary electrical link.
+Instantaneous pin/display state is independent of the **Show Transitions** playback
+option; there is no hidden display-persistence effect.
+
+## Portable Projects And Recovery
+
+Use **File → Save Project** to create one `.mcs51` file. It contains assembly source,
+the exact processor/clock profile, pin mappings, enabled peripherals, keypad gate,
+switch/key/analogue inputs, teaching settings, UART framing, watches, and logic
+analyzer probe/trigger settings. No absolute paths or external source files are
+required. Send this file to students; **File → Open Project** restores the experiment,
+then **F6** assembles it. The supported processor is Classic 8051 at 12 MHz with
+12 clocks per cycle; unsupported profiles/clocks and malformed settings are
+rejected before replacing the current experiment.
+
+Once a project is open, **Save / Ctrl+S** saves the complete project. **Save Project As**
+creates a copy. Ordinary assembly files still use ordinary source Save. Projects
+store experiment configuration, not a paused-machine snapshot: RAM, active pulses,
+serial queues, and captured waveforms are reset. HEX-only imports cannot become
+source projects; export HEX or open assembly source first.
+
+Changed experiments are autosaved every 15 seconds to an independent recovery file
+in the application settings directory. A startup status message points to
+**File → Recover Autosave** when files exist. Recovery opens an unsaved experiment;
+save it as a project to keep it. Successful saves and confirmed normal closing
+remove that session's recovery file. Writes are atomic; a failed save leaves the
+previous file intact. Layout and platform fonts remain local preferences.

@@ -9,6 +9,7 @@ from tkinter import filedialog, messagebox, simpledialog, ttk
 from ..config import settings_path
 from ..engine.assembler import AssemblyError, assemble, export_hex, import_hex
 from ..engine.cpu import CPU, ISA, SFR
+from ..engine.debugger import Debugger
 from ..hardware.analyzer import LogicCapture, port_mask
 from ..hardware.board import DEFAULT_MAPPING, Board, pin
 from ..hardware.wiring import validate_preset
@@ -16,13 +17,18 @@ from ..metadata import APP_NAME, DESCRIPTION, PROJECT_URL, TAGLINE, VERSION
 from ..resources import LED_COUNTER
 from ..source_files import write_source
 from .board_view import BoardView
+from .debug_view import DebugView
+from .experiment_view import ExperimentView
 from .icon import apply_icon, prepare_process_identity
 from .inspector import InspectorView
+from .project_view import ProjectView
 from .theme import apply_theme
 from .workspace import WorkspaceView
 
 
-class App(WorkspaceView, BoardView, InspectorView):
+class App(
+    ProjectView, DebugView, ExperimentView, WorkspaceView, BoardView, InspectorView
+):
     def __init__(self, root):
         self.root = root
         apply_icon(root)
@@ -33,9 +39,16 @@ class App(WorkspaceView, BoardView, InspectorView):
         root.minsize(960, 640)
         self.ui_font, self.mono_font = apply_theme(root)
         self.cpu = CPU()
+        self.debugger = Debugger(self.cpu)
         self.board = Board(self.cpu)
         self.capture = LogicCapture()
         self.board.on_sample = self.record_signals
+        self.instrument_settings = {
+            "probes": ["P1.0", "P1.1", "P3.0", "P3.1"],
+            "trigger": "Free Run",
+            "edge": "Rising",
+            "duration": 1000,
+        }
         self.instruments = None
         self.wiring_presets = {}
         self.program = None
@@ -54,6 +67,7 @@ class App(WorkspaceView, BoardView, InspectorView):
         self.status = tk.StringVar(value="Ready · assemble the example to begin")
         self.speed = tk.StringVar(value="1000")
         self.reg_vars = {}
+        self.reg_entries = {}
         self.port_labels = {}
         self.enabled_vars = {}
         self.build_workspace()
@@ -64,8 +78,10 @@ class App(WorkspaceView, BoardView, InspectorView):
         self.editor_view.highlight()
         self.refresh()
         self.root.after_idle(self.restore_layout)
+        self.init_projects()
 
     def pause_execution(self):
+        self.debugger.target = None
         self.running = False
         if self.run_after is not None:
             self.root.after_cancel(self.run_after)
@@ -73,6 +89,7 @@ class App(WorkspaceView, BoardView, InspectorView):
 
     def edited(self, event=None):
         self.dirty = True
+        self.hex_loaded = False
         self.pause_execution()
         self.breakpoints.clear()
         self.document_modified = self.editor.get("1.0", "end-1c") != self.saved_source
@@ -125,8 +142,18 @@ class App(WorkspaceView, BoardView, InspectorView):
         self.pause_execution()
         mapping = self.board.mapping
         enabled = self.board.enabled.copy()
+        keys = set(self.board.keys)
+        experiment = self.board.experiment
+        uart = {
+            k: getattr(self.board.uart, k)
+            for k in ("baud", "parity", "data_bits", "stop_bits")
+        }
         self.cpu.reset()
+        self.debugger.reset()
         self.board = Board(self.cpu, mapping)
+        self.board.experiment = experiment
+        self.board.keys = keys
+        self.board.uart.configure(**uart)
         self.capture.clear()
         self.board.on_sample = self.record_signals
         if self.instruments is not None:
@@ -142,14 +169,14 @@ class App(WorkspaceView, BoardView, InspectorView):
         self.board.analogue = self.analogue.get()
         self.board.key_gate = self.key_gate_var.get()
         self.board.switches = [v.get() for v in self.switch_vars]
+        self.board.stimulus.previous_switches = list(self.board.switches)
         self.board.update()
         self.refresh()
         self.status.set("Reset · PC 0000")
 
     def step_once(self):
-        op = self.cpu.step()
-        self.board.update()
-        return op
+        location = self.program.locations.get(self.cpu.pc, {}) if self.program else {}
+        return self.debugger.step(self.board, location.get("source", ""))
 
     def step(self):
         self.pause_execution()
@@ -187,7 +214,7 @@ class App(WorkspaceView, BoardView, InspectorView):
             deadline = time.monotonic() + 0.025
             for _ in range(int(self.speed.get())):
                 self.step_once()
-                if self.cpu.pc in self.breakpoints:
+                if self.debugger.reason or self.cpu.pc in self.breakpoints:
                     self.pause_execution()
                     break
                 if (
@@ -199,7 +226,7 @@ class App(WorkspaceView, BoardView, InspectorView):
                 if time.monotonic() > deadline:
                     break
             self.status.set(
-                f"{'Running' if self.running else 'Breakpoint'} · PC {self.cpu.pc:04X} · {self.cpu.instructions:,} instructions · {self.cpu.cycles:,} machine cycles"
+                f"{'Running' if self.running else self.debugger.reason or 'Breakpoint'} · PC {self.cpu.pc:04X} · {self.cpu.instructions:,} instructions · {self.cpu.cycles:,} machine cycles"
             )
         except Exception as e:
             self.pause_execution()
@@ -258,6 +285,7 @@ class App(WorkspaceView, BoardView, InspectorView):
                     self.cpu.set_reg(int(name[1:]), value)
                 else:
                     self.cpu.write(SFR[name], value)
+            self.debugger.reset()
             self.board.update()
             self.refresh()
         except ValueError:
@@ -290,6 +318,7 @@ class App(WorkspaceView, BoardView, InspectorView):
                 self.cpu.xram[address] = n
             else:
                 self.cpu.write(address, n)
+            self.debugger.reset()
             self.board.update()
             self.refresh()
         except ValueError as error:
@@ -396,6 +425,7 @@ class App(WorkspaceView, BoardView, InspectorView):
                 self.listing.see(str(self.cpu.pc))
         self.editor_view.redraw()
         self.update_board()
+        self.refresh_debug()
         if self.uart_position < len(self.board.uart.received):
             data = self.board.uart.received[self.uart_position :]
             self.uart_position = len(self.board.uart.received)
@@ -416,12 +446,7 @@ class App(WorkspaceView, BoardView, InspectorView):
         self.refresh()
 
     def key(self, key, pressed):
-        if pressed and not self.board.enabled["keypad"]:
-            return
-        if pressed:
-            self.board.keys.add(key)
-        else:
-            self.board.keys.discard(key)
+        self.board.key_event(key, pressed)
         self.board.update()
         self.refresh()
 
@@ -429,6 +454,7 @@ class App(WorkspaceView, BoardView, InspectorView):
         self.board.enabled.update({k: v.get() for k, v in self.enabled_vars.items()})
         if not self.board.enabled["keypad"]:
             self.board.keys.clear()
+            self.board.held_keys.clear()
         self.board.update()
         self.refresh()
 
@@ -439,15 +465,16 @@ class App(WorkspaceView, BoardView, InspectorView):
         self.refresh()
 
     def uart_receive(self):
+        if not self.apply_uart():
+            return
+        text = self.uart_input.get()
+        try:
+            self.board.receive(text)
+        except ValueError as error:
+            messagebox.showerror("UART Transmission", str(error), parent=self.root)
+            return
         self.board.enabled["uart"] = True
         self.enabled_vars["uart"].set(True)
-        self.board.uart.configure(
-            int(self.baud.get()),
-            ["None", "Odd", "Even"].index(self.parity.get()),
-            self.board.cycle_us,
-        )
-        text = self.uart_input.get()
-        self.board.receive(text)
         if text:
             self.uart_input.delete(0, "end")
         self.refresh()
@@ -468,6 +495,7 @@ class App(WorkspaceView, BoardView, InspectorView):
                 self.replace_source(
                     "; Intel HEX image loaded. Original assembly source is unavailable.\n; Use Listing and Memory to inspect the executable.\n"
                 )
+                self.hex_loaded = True
                 self.program = program
                 self.assembled_source = self.editor.get("1.0", "end-1c")
                 self.dirty = False
@@ -482,6 +510,8 @@ class App(WorkspaceView, BoardView, InspectorView):
             messagebox.showerror("Open Failed", str(e))
 
     def save_source(self, save_as=False):
+        if getattr(self, "project_path", None) is not None:
+            return self.save_project_file(save_as)
         self.editor_view.flush_changes()
         path = self.path
         if path is None or save_as:
@@ -499,6 +529,8 @@ class App(WorkspaceView, BoardView, InspectorView):
             return False
         self.path = path
         self.saved_source = source
+        if getattr(self, "saved_project", None) is not None:
+            self.saved_project["source"] = source
         self.document_modified = False
         self.update_document_title()
         self.status.set(f"Saved {self.path.name}")
@@ -754,6 +786,9 @@ class App(WorkspaceView, BoardView, InspectorView):
             pass
         if self.instruments is not None:
             self.instruments.close()
+        if getattr(self, "autosave_after", None) is not None:
+            self.root.after_cancel(self.autosave_after)
+        self.clear_recovery()
         self.root.destroy()
 
 

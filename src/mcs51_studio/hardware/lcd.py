@@ -15,8 +15,16 @@ class LCD:
         self.blink = False
         self.four_bit = False
         self.nibble = None
+        self.busy_until = 0
+        self.ignored_writes = 0
+        self.last_error = ""
 
-    def accept(self, value, rs):
+    def accept(self, value, rs, now=None, enforce_timing=True):
+        if now is not None and enforce_timing and now < self.busy_until:
+            self.ignored_writes += 1
+            self.nibble = None
+            self.last_error = f"LCD write while busy; wait until {self.busy_until} µs. R/W is grounded on this board."
+            return False
         if self.four_bit:
             if self.nibble is None:
                 self.nibble = value & 240
@@ -25,6 +33,24 @@ class LCD:
         elif not rs and value >> 4 == 2:
             self.four_bit = True
         self.byte(value, rs)
+        if now is not None:
+            self.busy_until = now + (1520 if not rs and value in (1, 2, 3) else 37)
+        return True
+
+    def cursor_cell(self):
+        if not self.display or self.cg:
+            return None
+        for row, base in enumerate((0, 64)):
+            for column in range(16):
+                if base + (column + self.shift) % 40 == self.address:
+                    return row, column
+        return None
+
+    def glyph(self, code):
+        if 0 <= code < 16:
+            start = (code & 7) * 8
+            return tuple(self.cgram[start : start + 8])
+        return None
 
     def byte(self, value, rs):
         if rs:

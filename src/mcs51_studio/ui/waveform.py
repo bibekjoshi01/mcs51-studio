@@ -91,6 +91,14 @@ class Waveform:
         ).pack(anchor="w")
         self.channels = ["P1.0", "P1.1", "P3.0", "P3.1"]
         self.bounds = (0, 1)
+        if digital:
+            config = app.instrument_settings
+            self.channels = list(config["probes"])
+            self.probes.set(", ".join(self.channels))
+            self.trigger.set(config["trigger"])
+            self.edge.set(config["edge"])
+            self.duration.set(str(config["duration"]))
+            self.measure_pin.set(self.channels[0])
 
     def apply_probes(self):
         channels = [

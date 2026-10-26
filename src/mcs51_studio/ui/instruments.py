@@ -49,6 +49,7 @@ class Instruments:
         self.window.lift()
 
     def close(self):
+        self.app.instrument_settings = self.app.instrument_data()
         if self.after:
             self.window.after_cancel(self.after)
         self.window.destroy()

@@ -41,6 +41,14 @@ class WorkbenchUI(unittest.TestCase):
         from mcs51_studio.resources import LED_COUNTER
 
         self.root.withdraw()
+        if self.app.instruments is not None:
+            self.app.instruments.close()
+        self.app.instrument_settings = {
+            "probes": ["P1.0", "P1.1", "P3.0", "P3.1"],
+            "trigger": "Free Run",
+            "edge": "Rising",
+            "duration": 1000,
+        }
         view = self.app.editor_view
         view.close_completion()
         view.hide_find()
@@ -581,6 +589,179 @@ class WorkbenchUI(unittest.TestCase):
             app.pause_execution()
         self.assertEqual(app.cpu.instructions, 1007)
         app.observe_outputs.set(True)
+
+    def test_debugger_controls_watches_and_stack(self):
+        app = self.app
+        app.debugger.watches.clear()
+        app.observe_outputs.set(False)
+        app.replace_source("LCALL sub\nINC A\nSJMP $\nsub: INC A\nRET")
+        self.assertTrue(app.assemble())
+        app.debug_run("over")
+        self.assertFalse(app.running)
+        self.assertEqual((app.cpu.pc, app.cpu.a), (3, 1))
+        self.assertIn("Target reached", app.status.get())
+        self.assertIn("Cost:", app.debug_explanation.get("1.0", "end"))
+        app.reset()
+        app.step()
+        self.assertIn("Return 0003", app.stack_text.get("1.0", "end"))
+        app.debug_run("out")
+        self.assertEqual(app.cpu.pc, 3)
+        app.watch_expression.insert(0, "ACC")
+        app.watch_stop.set(True)
+        app.add_watch()
+        app.toggle_run()
+        self.assertFalse(app.running)
+        self.assertEqual(app.cpu.a, 2)
+        self.assertIn("ACC changed", app.status.get())
+        self.assertEqual(app.reg_entries["ACC"].cget("style"), "Changed.TEntry")
+        app.reset()
+        app.editor.mark_set("insert", "2.0")
+        app.debugger.watches.clear()
+        app.debug_run("cursor")
+        self.assertEqual(app.cpu.pc, 3)
+        app.reset()
+        app.speed.set("1")
+        app.debug_run("over")
+        self.assertTrue(app.running)
+        self.assertIsNotNone(app.debugger.target)
+        app.pause_execution()
+        self.assertIsNone(app.debugger.target)
+        self.assertIsNone(app.run_after)
+        app.speed.set("1000")
+        app.observe_outputs.set(True)
+
+    def test_portable_project_recovery_and_invalid_open(self):
+        from mcs51_studio.project import read_project
+
+        app = self.app
+        app.debugger.watches.clear()
+        app.replace_source("MOV A,#42H\nSJMP $")
+        app.board.experiment.keypad_mode = "Standard"
+        app.board.experiment.switch_bounce = True
+        app.board.keys = {(1, 2)}
+        app.board.mapping["leds"] = [f"P2.{i}" for i in range(8)]
+        app.board.enabled["lcd"] = True
+        app.enabled_vars["lcd"].set(True)
+        app.board.analogue = 2.5
+        app.analogue.set(2.5)
+        app.board.uart.reset_link()
+        app.board.uart.configure(9600, 2, data_bits=8, stop_bits=2)
+        app.debugger.add_watch("RAM[30]", True)
+        expected = app.project_data()
+        path = Path(self.temporary.name) / "lesson.mcs51"
+        with patch.object(filedialog, "asksaveasfilename", return_value=str(path)):
+            self.assertTrue(app.save_project_file())
+        self.assertEqual(read_project(path), expected)
+        app.reset()
+        app.board.experiment.keypad_mode = "Pulse"
+        app.board.analogue = 0
+        with patch.object(messagebox, "askyesnocancel", return_value=False):
+            self.assertTrue(app.open_project_file(path))
+        self.assertEqual(app.project_data(), expected)
+        self.assertEqual(app.data_bits.get(), "8")
+        self.assertEqual(app.parity.get(), "Even")
+        self.assertEqual(app.stop_bits.get(), "2")
+        app.editor.insert("end-1c", "\n; unsaved edit")
+        self.root.update()
+        app.autosave()
+        recovery = app.recovery_path
+        self.assertTrue(recovery.exists())
+        self.assertIn("unsaved edit", read_project(recovery)["source"])
+        bad = Path(self.temporary.name) / "invalid.mcs51"
+        bad.write_text('{"version":999}')
+        before = app.project_data()
+        with patch.object(messagebox, "showerror") as error:
+            self.assertFalse(app.open_project_file(bad))
+            error.assert_called_once()
+        self.assertEqual(app.project_data(), before)
+        # Loading recovery must not erase its source before it is safely saved.
+        with patch.object(messagebox, "askyesnocancel", return_value=False):
+            self.assertTrue(app.open_project_file(recovery, recovery=True))
+        self.assertIsNone(app.project_path)
+        self.assertTrue(app.document_modified)
+        self.assertEqual(app.project_data(), before)
+        with patch.object(filedialog, "asksaveasfilename", return_value=str(path)):
+            self.assertTrue(app.save_project_file())
+        self.assertFalse(recovery.exists())
+        self.assertFalse(app.project_changed())
+        # Restore defaults for other tests sharing this workbench.
+        from mcs51_studio.hardware.board import DEFAULT_MAPPING
+        from mcs51_studio.hardware.experiment import ExperimentSettings
+
+        app.board.mapping = {k: list(v) for k, v in DEFAULT_MAPPING.items()}
+        app.board.experiment = ExperimentSettings()
+        app.board.keys.clear()
+        app.debugger.watches.clear()
+        app.board.enabled["lcd"] = False
+        app.enabled_vars["lcd"].set(False)
+        app.analogue.set(0)
+        app.board.uart.reset_link()
+        app.board.uart.configure(4800, 0, data_bits=8)
+        app.sync_uart_controls()
+        app.replace_source("NOP")
+
+    def test_cursor_data_rejection_and_project_instrument_settings(self):
+        app = self.app
+        app.replace_source("NOP\nbytes: DB 22H\nSJMP $")
+        app.assemble()
+        app.editor.mark_set("insert", "2.0")
+        app.debug_run("cursor")
+        self.assertEqual(app.cpu.instructions, 0)
+        self.assertIn("assembled instruction", app.status.get())
+        app.show_instruments()
+        app.instruments.logic.probes.set("P0.0, P3.2")
+        self.assertTrue(app.instruments.logic.apply_probes())
+        app.instruments.logic.trigger.set("P3.2")
+        app.instruments.logic.edge.set("Falling")
+        app.instruments.logic.duration.set("10000")
+        data = app.project_data()
+        app.instruments.close()
+        self.assertEqual(app.project_data(), data)
+        app.apply_project(data)
+        app.show_instruments()
+        self.assertEqual(app.instruments.logic.channels, ["P0.0", "P3.2"])
+        self.assertEqual(app.instruments.logic.trigger.get(), "P3.2")
+        self.assertEqual(app.instruments.logic.duration.get(), "10000")
+        app.instruments.close()
+        app.editor.insert("end-1c", "\n; recover me")
+        with patch(
+            "mcs51_studio.ui.project_view.save_project",
+            side_effect=OSError("Full Disk"),
+        ):
+            app.autosave()
+        self.assertIn("Autosave unavailable", app.status.get())
+        self.assertIsNotNone(app.autosave_after)
+
+    def test_teaching_controls_and_lcd_rendering(self):
+        app = self.app
+        app.experiment_window()
+        self.root.update()
+        self.assertTrue(app.experiment_dialog.winfo_exists())
+        app.experiment_dialog.destroy()
+        app.board.lcd.byte(0x0F, 0)
+        app.board.lcd.byte(0x40, 0)
+        for _ in range(8):
+            app.board.lcd.byte(31, 1)
+        app.board.lcd.byte(0x80, 0)
+        app.board.lcd.byte(0, 1)
+        app.refresh()
+        self.assertGreater(len(app.lcd_canvas.find_all()), 40)
+        app.data_bits.set("7")
+        app.parity.set("Odd")
+        app.stop_bits.set("2")
+        self.assertTrue(app.apply_uart())
+        self.assertIn("7O2", app.uart_status.cget("text"))
+        app.uart_input.insert(0, "{FF}")
+        with patch.object(messagebox, "showerror") as error:
+            app.uart_receive()
+            error.assert_called_once()
+        self.assertEqual(app.uart_input.get(), "{FF}")
+        app.uart_input.delete(0, "end")
+        app.reset_uart_link()
+        app.data_bits.set("8")
+        app.parity.set("None")
+        app.stop_bits.set("1")
+        self.assertTrue(app.apply_uart())
 
 
 def verify_editor_workflow(app, root, temporary):

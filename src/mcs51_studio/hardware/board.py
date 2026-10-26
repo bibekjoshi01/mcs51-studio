@@ -2,6 +2,7 @@
 
 from collections import deque
 
+from .experiment import ExperimentSettings, InputStimulus
 from .lcd import LCD
 from .uart import UARTEndpoint
 
@@ -57,6 +58,9 @@ class Board:
         )
         self.switches = [True] * 8
         self.keys = set()
+        self.held_keys = set()
+        self.experiment = ExperimentSettings()
+        self.stimulus = InputStimulus()
         self.key_gate = False
         self.analogue = 0.0
         self.adc_value = 255
@@ -100,9 +104,13 @@ class Board:
         for a in c.port_inputs:
             c.port_inputs[a] = 255
         if self.enabled["switches"]:
-            for i, high in enumerate(self.switches):
+            for i, high in enumerate(
+                self.stimulus.switch_levels(self.switches, c.cycles, self.experiment)
+            ):
                 if not high:
                     self.hold_low(self.mapping["switches"][i])
+        for name in self.stimulus.active_pins(c.cycles):
+            self.hold_low(name)
         self.settle_keys()
         if self.enabled["adc"]:
             if self.adc_remaining and elapsed:
@@ -163,7 +171,12 @@ class Board:
         if self.enabled["lcd"]:
             e = bool(self.get("lcd_e"))
             if self.previous_e and not e:
-                self.lcd.accept(self.data("lcd_data"), self.get("lcd_rs"))
+                self.lcd.accept(
+                    self.data("lcd_data"),
+                    self.get("lcd_rs"),
+                    c.cycles,
+                    self.experiment.lcd_timing,
+                )
             self.previous_e = e
         else:
             self.previous_e = False
@@ -210,6 +223,40 @@ class Board:
             not self.read_pin(p) for p in self.mapping["key_rows"]
         ):
             self.hold_low(self.mapping["key_gate"][0])
+
+    def key_event(self, key, pressed):
+        if pressed and not self.enabled["keypad"]:
+            return
+        if pressed and key in self.held_keys:
+            return
+        if pressed:
+            self.held_keys.add(key)
+        else:
+            self.held_keys.discard(key)
+        if not self.enabled["keypad"]:
+            return
+        mode = self.experiment.keypad_mode
+        if mode == "Pulse":
+            if pressed:
+                self.keys.add(key)
+            else:
+                self.keys.discard(key)
+        elif pressed:
+            active = key in self.keys
+            if mode == "Radio":
+                self.keys.clear()
+            if active:
+                self.keys.discard(key)
+            else:
+                self.keys.add(key)
+
+    def set_keypad_mode(self, mode):
+        if mode not in ("Standard", "Pulse", "Radio"):
+            raise ValueError("Unknown keypad mode")
+        if mode != self.experiment.keypad_mode:
+            self.keys.clear()
+            self.held_keys.clear()
+        self.experiment.keypad_mode = mode
 
     def receive(self, text):
         self.uart.start(text)

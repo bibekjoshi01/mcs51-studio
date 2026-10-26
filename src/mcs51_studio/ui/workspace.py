@@ -136,12 +136,13 @@ class WorkspaceView:
         self.tools = ttk.Notebook(self.bottom)
         self.tools.pack(fill="both", expand=True)
         self.tool_tabs = {}
-        for name in ("Listing", "Memory", "Activity"):
+        for name in ("Listing", "Memory", "Debug", "Activity"):
             frame = ttk.Frame(self.tools, padding=8)
             self.tools.add(frame, text=name)
             self.tool_tabs[name] = frame
         self.build_listing(self.tool_tabs["Listing"])
         self.build_memory(self.tool_tabs["Memory"])
+        self.build_debug(self.tool_tabs["Debug"])
         self.activity = tk.Text(
             self.tool_tabs["Activity"],
             height=5,
@@ -255,6 +256,10 @@ class WorkspaceView:
         )
         for label, action, accelerator in [
             ("New Program", self.new_file, modifier + "N"),
+            ("Open Project…", self.open_project_file, ""),
+            ("Save Project…", self.save_project_file, ""),
+            ("Save Project As…", lambda: self.save_project_file(True), ""),
+            ("Recover Autosave…", self.recover_project, ""),
             ("Open Assembly / HEX…", self.open_file, modifier + "O"),
             ("Save", self.save_source, modifier + "S"),
             ("Save As…", lambda: self.save_source(True), modifier + "Shift+S"),
@@ -314,6 +319,9 @@ class WorkspaceView:
             ("Assemble", self.assemble, "F6"),
             ("Run / Pause", self.toggle_run, "F5"),
             ("Step Instruction", self.step, "F7"),
+            ("Step Over", lambda: self.debug_run("over"), "F8"),
+            ("Step Out", lambda: self.debug_run("out"), "Shift+F8"),
+            ("Run To Cursor", lambda: self.debug_run("cursor"), "F9"),
             ("Reset Machine", self.reset, "Shift+F5"),
         ]:
             run.add_command(label=label, command=action, accelerator=key)
@@ -321,6 +329,7 @@ class WorkspaceView:
         menu.add_cascade(label="Tools", menu=tools)
         for label, action in [
             ("Wiring…", self.wiring_window),
+            ("Experiment Settings…", self.experiment_window),
             ("Logic Analyzer…", self.show_instruments),
             ("DAC Scope…", self.scope_window),
             ("8051 Instruction Reference", self.isa_window),
@@ -368,6 +377,9 @@ class WorkspaceView:
             "F5": self.toggle_run,
             "F6": self.assemble,
             "F7": self.step,
+            "F8": lambda: self.debug_run("over"),
+            "Shift-F8": lambda: self.debug_run("out"),
+            "F9": lambda: self.debug_run("cursor"),
             "Shift-F5": self.reset,
         }.items():
             self.root.bind(f"<{key}>", invoke(action))
@@ -474,24 +486,42 @@ class WorkspaceView:
         self.activity.configure(state="disabled")
 
     def update_document_title(self):
-        name = self.path.name if self.path else "untitled.asm"
+        project = getattr(self, "project_path", None)
+        name = (
+            project.name if project else self.path.name if self.path else "untitled.asm"
+        )
         self.workspace.tab(
-            self.editor_tab, text=("● " if self.document_modified else "") + name
+            self.editor_tab,
+            text=("● " if self.document_modified or self.project_changed() else "")
+            + name,
         )
 
     def confirm_discard(self):
         # Compare the buffer too: Tk's modified event can still be queued.
-        if self.editor.get("1.0", "end-1c") == self.saved_source:
+        if (
+            self.editor.get("1.0", "end-1c") == self.saved_source
+            and not self.project_changed()
+        ):
             return True
         answer = messagebox.askyesnocancel(
-            "Unsaved Program", "Save your program before continuing?", parent=self.root
+            "Unsaved Experiment",
+            "Save your changes before continuing?",
+            parent=self.root,
         )
         if answer is None:
             return False
-        return self.save_source() if answer else True
+        if answer:
+            return (
+                self.save_project_file()
+                if self.project_changed()
+                else self.save_source()
+            )
+        return True
 
     def replace_source(self, source, name=None):
         source = normalize_source(source)
+        self.project_path = None
+        self.hex_loaded = False
         self.pause_execution()
         self.editor_view.close_completion()
         self.editor_view.clear_diagnostic()
@@ -514,6 +544,8 @@ class WorkspaceView:
         self.workspace.select(self.editor_tab)
         self.editor.focus_set()
         self.refresh()
+        if hasattr(self, "saved_project"):
+            self.saved_project = self.project_data()
 
     def new_file(self):
         if self.confirm_discard():
@@ -549,7 +581,7 @@ class WorkspaceView:
         replace_key = "Command+Option+F" if modifier == "Command" else "Ctrl+H"
         messagebox.showinfo(
             "Keyboard Shortcuts",
-            f"{modifier}+N / O / S     New / Open / Save\n{modifier}+Shift+S       Save As\n{modifier}+X / C / V     Cut / Copy / Paste\n{modifier}+Z / Shift+Z   Undo / Redo\n{modifier}+F / G         Find / Go To Line\n{modifier}+/             Toggle Line Comments\n{replace_key}             Find And Replace\nTab / Shift+Tab         Indent / Unindent\n{modifier}+D             Duplicate Lines\n{modifier}+Shift+K       Delete Lines\nAlt+Up / Down           Move Lines\nCtrl+Space              Complete Symbol\n{modifier}++ / − / 0     Zoom In / Out / Reset\n{modifier}+J             Toggle Bottom Panel\nF6                      Assemble\nF5                      Run / Pause\nF7                      Step Instruction\nShift+F5                Reset Machine\n\nClick a line number to toggle a breakpoint after assembly.\nDrag dividers to resize panes. View → Reset Layout restores them.",
+            f"{modifier}+N / O / S     New / Open / Save\n{modifier}+Shift+S       Save As\n{modifier}+X / C / V     Cut / Copy / Paste\n{modifier}+Z / Shift+Z   Undo / Redo\n{modifier}+F / G         Find / Go To Line\n{modifier}+/             Toggle Line Comments\n{replace_key}             Find And Replace\nTab / Shift+Tab         Indent / Unindent\n{modifier}+D             Duplicate Lines\n{modifier}+Shift+K       Delete Lines\nAlt+Up / Down           Move Lines\nCtrl+Space              Complete Symbol\n{modifier}++ / − / 0     Zoom In / Out / Reset\n{modifier}+J             Toggle Bottom Panel\nF6                      Assemble\nF5                      Run / Pause\nF7                      Step Instruction\nF8 / Shift+F8           Step Over / Step Out\nF9                      Run To Cursor\nShift+F5                Reset Machine\n\nClick a line number to toggle a breakpoint after assembly.\nDrag dividers to resize panes. View → Reset Layout restores them.",
             parent=self.root,
         )
 

@@ -141,6 +141,7 @@ class InspectorView:
             entry = ttk.Entry(
                 cell, textvariable=var, width=5, font=(self.mono_font, -12)
             )
+            self.reg_entries[name] = entry
             entry.pack(fill="x", pady=(5, 0))
             entry.bind("<Return>", lambda event, n=name: self.edit_register(n))
         ttk.Label(

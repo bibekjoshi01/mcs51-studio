@@ -103,6 +103,8 @@ class CPU:
         self.interrupt_stack = []
         self.reti = False
         self.on_write = None
+        self.on_frame = None
+        self.on_read = None
         self.executing = False
         self.interrupt_access = False
 
@@ -120,7 +122,9 @@ class CPU:
 
     def read_indirect(self, address):
         self.check_indirect(address)
-        return self.ram[address]
+        value = self.ram[address]
+        self.observe_read("RAM", address, value)
+        return value
 
     def write_indirect(self, address, value):
         self.check_indirect(address)
@@ -130,10 +134,21 @@ class CPU:
         address &= 255
         self.check_direct(address)
         if address in self.port_inputs and not latch:
-            return self.ram[address] & self.port_inputs[address]
-        if address == 0x99 and not latch:
-            return self.serial.sbuf
-        return self.ram[address]
+            value = self.ram[address] & self.port_inputs[address]
+        elif address == 0x99 and not latch:
+            value = self.serial.sbuf
+        else:
+            value = self.ram[address]
+        self.observe_read("RAM" if address < 128 else "SFR", address, value)
+        return value
+
+    def observe_read(self, space, address, value):
+        if self.executing and self.on_read:
+            self.on_read(space, address, value)
+
+    def frame_event(self, kind, return_pc):
+        if self.on_frame:
+            self.on_frame(kind, return_pc, self.ram[0x81])
 
     def write(self, address, value):
         address &= 255
@@ -154,7 +169,7 @@ class CPU:
 
     @property
     def a(self):
-        return self.ram[0xE0]
+        return self.read(0xE0, True)
 
     @a.setter
     def a(self, value):
@@ -162,7 +177,7 @@ class CPU:
 
     @property
     def carry(self):
-        return self.ram[0xD0] >> 7
+        return self.read(0xD0, True) >> 7
 
     @carry.setter
     def carry(self, value):
@@ -170,7 +185,7 @@ class CPU:
 
     @property
     def dptr(self):
-        return self.ram[0x82] | self.ram[0x83] << 8
+        return self.read(0x82, True) | self.read(0x83, True) << 8
 
     @dptr.setter
     def dptr(self, value):
@@ -245,15 +260,18 @@ class CPU:
             if op & 31 == 17:
                 self.push(next_pc & 255)
                 self.push(next_pc >> 8)
+                self.frame_event("call", next_pc)
             next_pc = (next_pc & 0xF800) | ((op & 0xE0) << 3) | x
         elif op in (0x02, 0x12):
             if op == 0x12:
                 self.push(next_pc & 255)
                 self.push(next_pc >> 8)
+                self.frame_event("call", next_pc)
             next_pc = x << 8 | y
         elif op in (0x22, 0x32):
             hi = self.pop()
             next_pc = hi << 8 | self.pop()
+            self.frame_event("reti" if op == 0x32 else "return", next_pc)
             if op == 0x32:
                 self.reti = True
                 if self.interrupt_stack:
@@ -344,9 +362,11 @@ class CPU:
         elif 0x78 <= op <= 0x7F:
             self.set_reg(op & 7, x)
         elif op in (0x83, 0x93):
-            self.a = self.code[((next_pc if op == 0x83 else self.dptr) + a) & 65535]
+            address = ((next_pc if op == 0x83 else self.dptr) + a) & 65535
+            self.observe_read("Code", address, self.code[address])
+            self.a = self.code[address]
         elif op == 0x84:
-            b = self.ram[0xF0]
+            b = self.read(0xF0, True)
             if b:
                 self.a = a // b
                 self.write(0xF0, a % b)
@@ -367,7 +387,7 @@ class CPU:
         elif op == 0xA3:
             self.dptr = self.dptr + 1
         elif op == 0xA4:
-            result = a * self.ram[0xF0]
+            result = a * self.read(0xF0, True)
             self.a = result
             self.write(0xF0, result >> 8)
             self.flag(2, result > 255)
@@ -446,6 +466,7 @@ class CPU:
                 else (self.ram[0xA0] << 8 | self.reg(op & 1))
             )
             if op < 0xF0:
+                self.observe_read("XDATA", address, self.xram[address])
                 self.a = self.xram[address]
             else:
                 self.xram[address] = a
@@ -554,6 +575,7 @@ class CPU:
                 self.check_indirect((self.ram[0x81] + 2) & 255)
                 self.push(self.pc & 255)
                 self.push(self.pc >> 8)
+                self.frame_event("interrupt", self.pc)
                 self.pc = (3, 11, 19, 27, 35)[n]
                 self.interrupt_stack.append(level)
                 if n in (1, 3):
