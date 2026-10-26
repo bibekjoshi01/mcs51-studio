@@ -18,7 +18,7 @@ Baseline regression fixtures cover all 256 opcode values over 8,192 sampled CPU
 states, 1,024 timer cases, 192 serial cases, and 260 assembly inputs. Integration
 tests exercise assembly, Intel HEX round trips, interrupts, and selected board
 interactions. These detect unintended changes; they do not prove hardware
-correctness. Fixture origins are recorded in [provenance.md](provenance.md).
+correctness. Independent hardware-spec validation is still needed.
 
 GUI smoke tests assemble the bundled example, step and run it, and save settings.
 Windows/Linux native installer and GUI validation is configured in CI; successful
@@ -35,6 +35,7 @@ runs on those systems and a complete visual review remain pending.
 - Shared-pin timing, keypad modes, switch/key bounce, LCD busy timing and custom
   glyph rendering, and varied-clock UART framing need further work.
 - Broader assembler syntax and clearer diagnostics are planned.
-- Guided lessons, exercise assessment, and the redesigned UI are not implemented.
+- Guided lessons and exercise assessment are not implemented. The redesigned
+  workbench is available; Windows/Linux visual review remains pending.
 
 See [architecture.md](architecture.md) for the development direction.

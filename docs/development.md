@@ -51,7 +51,8 @@ Substitute `.venv/bin/python` on Linux/macOS or `.\.venv\Scripts\python.exe` on
 Windows if the environment is not activated. Headless tests do not need Tk or a
 display and cover the baseline regression fixtures plus platform settings.
 
-For a real GUI startup and debugger check, run `python -m mcs51_studio --smoke-test`.
+For real GUI checks covering startup, editor transactions, search/replace,
+unsaved-file protection, debugger controls, and pane recovery, run `python -m mcs51_studio --smoke-test`.
 On headless Linux, use `xvfb-run -a python -m mcs51_studio --smoke-test`.
 GitHub Actions runs tests on all three operating systems and performs GUI smoke
 checks on Python 3.12.
