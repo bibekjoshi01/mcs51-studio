@@ -4,7 +4,7 @@
 src/mcs51_studio/
   engine/      CPU, assembler, interrupts, timers, on-chip serial
   hardware/    Virtual board, LCD, external UART, and wiring
-  ui/          Application, workspace, editor, board views, theme, icons, widgets
+  ui/          Application, workspace, editor, inspector, board views, theme, icons, widgets
   data/        Instruction catalog, example assembly, runtime icon
   config.py    Platform settings paths
   metadata.py  Application name, ID, and version
@@ -22,7 +22,8 @@ docs/          Development, usage, architecture, limits, and releases
 - `hardware` models devices against CPU state and pins; it does not import UI code.
 - `ui/application.py` owns machine state, files, and execution coordination.
   `workspace.py` arranges panes, navigation, menus, and document actions.
-  `editor.py`, `board_view.py`, and `widgets.py` handle presentation and interaction.
+  `editor.py`, `inspector.py`, `board_view.py`, and `widgets.py` handle presentation
+  and interaction.
 - Shared resources, metadata, and platform settings stay outside these layers.
 - Detailed editor and layout checks live in `tests/gui.py`. Installed apps keep
   only a small self-check for release validation.

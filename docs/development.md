@@ -40,7 +40,8 @@ python tests/gui.py
 ```
 
 The first command is headless. `tests/gui.py` exercises the editor, file safety,
-breakpoints, execution controls, and layout at two window sizes; it requires a
+breakpoints, execution controls, scrolling, hardware rows, inspector values,
+and layout at two window sizes; it requires a
 display. On headless Linux, use `xvfb-run -a python tests/gui.py`. CI runs headless
 checks on Windows/Linux/macOS with Python 3.10, 3.12, and 3.13, and desktop checks
 on Python 3.12. Frozen release builds run their own minimal startup check.

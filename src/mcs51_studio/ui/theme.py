@@ -63,6 +63,15 @@ def apply_theme(root):
     )
     style.configure("TFrame", background=PANEL)
     style.configure("TLabel", background=PANEL, foreground=TEXT)
+    style.configure("Card.TFrame", background=INPUT, borderwidth=1, relief="solid")
+    style.configure("Card.TLabel", background=INPUT)
+    style.configure("Hardware.TCheckbutton", background=INPUT, padding=(12, 10))
+    style.map(
+        "Hardware.TCheckbutton",
+        background=[("selected", "#23413E"), ("active", SELECTION)],
+        foreground=[("selected", MINT)],
+        indicatorbackground=[("selected", MINT)],
+    )
     style.configure("Muted.TLabel", foreground=MUTED)
     style.configure("Section.TLabel", foreground=MUTED, font=(interface, -10, "bold"))
     style.configure("Mono.TLabel", font=(technical, -12))
