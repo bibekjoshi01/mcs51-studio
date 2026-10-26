@@ -4,7 +4,6 @@ import tkinter as tk
 from tkinter import messagebox, ttk
 
 from ..metadata import APP_NAME
-from ..resources import LED_COUNTER
 from . import theme
 from .editor import AssemblyEditor
 
@@ -224,17 +223,6 @@ class WorkspaceView:
         ]:
             ttk.Button(parent, text=label, command=action).pack(fill="x", pady=3)
         ttk.Separator(parent).pack(fill="x", pady=18)
-        ttk.Label(parent, text="STARTER PROGRAM", style="Section.TLabel").pack(
-            anchor="w", pady=(0, 8)
-        )
-        ttk.Button(parent, text="LED counter", command=self.load_example).pack(fill="x")
-        ttk.Label(
-            parent,
-            text="Observe the ports and\nstep through a loop.",
-            style="Muted.TLabel",
-            justify="left",
-        ).pack(anchor="w", pady=8)
-        ttk.Separator(parent).pack(fill="x", pady=12)
         ttk.Button(parent, text="Pin mappings…", command=self.mapping_dialog).pack(
             fill="x", pady=3
         )
@@ -605,11 +593,6 @@ class WorkspaceView:
             self.status.set(
                 "New program · write assembly or open the LED counter example"
             )
-
-    def load_example(self):
-        if self.confirm_discard():
-            self.replace_source(LED_COUNTER)
-            self.status.set("LED counter example loaded")
 
     def breakpoint_at_line(self, line):
         if self.dirty or not self.program:
