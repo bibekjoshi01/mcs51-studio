@@ -1,58 +1,55 @@
 # MCS51 Studio
 
-A Python desktop workbench for writing, stepping through, and inspecting 8051 assembly programs.
+A desktop workbench for writing, stepping through, and inspecting 8051 assembly
+programs on **Windows, Linux, and macOS**.
 
-Includes an assembler, register and memory views, breakpoints, Intel HEX import/export,
+Includes an assembler, register and memory views, breakpoints, Intel HEX files,
 and a virtual board with LEDs, switches, keypad, displays, ADC/DAC, motor, and UART.
-The processor runs in Python; Java is not required.
 
-## Run
+## Install and run
 
-Requires **Python 3.10+ with Tk**. Check Tk with `python3 -m tkinter`.
+Download the installer for your computer from [Releases](../../releases).
+**The installers include Python and Tk. You do not need to install Python or Java.**
+Public installers have not been published yet; native builds are prepared by the
+release workflow and remain drafts until reviewed.
+
+### Windows
+
+1. Download `*-windows-x64-setup.exe` for Windows 10 or 11 (64-bit).
+2. Run the installer and follow the setup wizard.
+3. Open **MCS51 Studio** from the Start menu.
+
+### macOS
+
+1. Download `*-macos-arm64.pkg` for Apple Silicon or `*-macos-x64.pkg` for Intel.
+2. Open the package and follow the installer.
+3. Open **MCS51 Studio** from Applications.
+
+### Linux
+
+Debian/Ubuntu packages are provided for `amd64` (x64) and `arm64` desktops.
+The build baseline is Ubuntu 22.04; a graphical X11 or XWayland session is required.
+
+Download the matching `.deb`, open a terminal in its folder, and install it:
 
 ```sh
-python3 launch.py
+sudo apt install ./MCS51-Studio-*-linux-amd64.deb
 ```
 
-On macOS, you can also double-click **MCS51 Studio.command**.
-Click **Assemble**, then **Step** (F7) or **Run / Pause** (F5) to try the included LED counter.
-Double-click a listing row to toggle a breakpoint.
+For ARM64, replace `amd64` with `arm64`. Open **MCS51 Studio** from the applications
+menu, or run `mcs51-studio` in a terminal. Other Linux package formats are not yet provided.
 
-For an installed command:
+## First program
 
-```sh
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install -e .
-mcs51-studio
-```
+The app opens with an LED counter example. Click **Assemble**, then **Step** (F7)
+or **Run / Pause** (F5). Double-click a listing row to toggle a breakpoint.
+Save with **Ctrl+S** on Windows/Linux or **Command+S** on macOS.
 
-On Windows, activate the environment with `.venv\Scripts\activate`.
+## Project status
 
-## Develop
+MCS51 Studio is an experimental reconstruction informed by EdSim51, created by
+James Rogers. The processor has reference coverage; full peripheral and interface
+parity is still in progress. See [compatibility](docs/compatibility.md).
 
-```sh
-python -m unittest discover -s tests -v
-```
-
-The tests compare the Python engine with preserved reference fixtures, covering
-8,192 instruction cases, 1,024 timer cases, 192 serial cases, and 260 assembler inputs.
-They run without a display, Tk, or the original Java app.
-
-```text
-src/mcs51_studio/   Application, simulator, and bundled data
-tests/             Reference fixtures and integration tests
-docs/              Compatibility and development notes
-scripts/           Native app packaging
-```
-
-See [development](docs/development.md) for packaging and settings.
-
-## Status
-
-This is an experimental reconstruction informed by EdSim51. The processor has
-reference coverage; full peripheral and interface parity is still in progress.
-See [compatibility](docs/compatibility.md) for the verified scope and remaining work.
-
-EdSim51 was created by James Rogers. Attribution and rights details are preserved
-in [NOTICE.txt](NOTICE.txt).
+For running from Python and contributing, see [development](docs/development.md).
+Maintainers can find native packaging and signing details in [releases](docs/releases.md).

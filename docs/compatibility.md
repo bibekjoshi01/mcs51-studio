@@ -26,7 +26,7 @@ Finite fixtures do not establish complete equivalence.
 - Original wiring-editor and floating-panel features.
 - Import of legacy Java serialized settings.
 - Full oscillator settings in the interface.
-- Windows/Linux GUI validation and complete visual review.
+- Native Windows/Linux installer and GUI runs are configured in CI; their first successful runs and complete visual review remain pending.
 
 The current simulated machine cycle is one microsecond. MOVX and the reserved
 A5 opcode preserve the original simulator's no-op behavior. Some additional DB
