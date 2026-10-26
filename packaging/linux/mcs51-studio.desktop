@@ -2,7 +2,7 @@
 Version=1.0
 Type=Application
 Name=MCS51 Studio
-Comment=8051 assembly editor, debugger, and virtual training board
+Comment=8051 assembly editor, debugger, and simulator
 Exec=/opt/mcs51-studio/mcs51-studio
 TryExec=/opt/mcs51-studio/mcs51-studio
 Icon=mcs51-studio

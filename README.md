@@ -1,14 +1,16 @@
 # MCS51 Studio
 
-A desktop 8051 learning workbench for **Windows, Linux, and macOS**. Write assembly,
-inspect registers and memory, step through instructions, and explore a virtual
-board with LEDs, switches, displays, keypad, ADC/DAC, motor, and UART.
+**8051 development and simulation for Windows, Linux, and macOS.**
+
+MCS51 Studio brings assembly editing, debugging, and peripheral simulation into
+one desktop application. Inspect registers and memory, trace program execution,
+and work with a configurable virtual board.
 
 ## Install and Run
 
 Get the installer from [Releases](https://github.com/bibekjoshi01/mcs51-studio/releases).
-Python and Tk are included. Public installers are not yet published; automated
-builds produce test artifacts and draft releases.
+Installers include everything needed to run the application; no separate runtime
+installation is required. Public installers are not yet published.
 
 - **Windows 10/11, x64:** run `*-windows-x64-setup.exe`, then open MCS51 Studio
   from the Start menu.
@@ -30,13 +32,20 @@ The editor opens with an LED counter. **F6** assembles, **F7** steps, and **F5**
 runs or pauses. Save with **Ctrl+S**, or **Command+S** on macOS. Press **F1** for
 shortcuts. Resize panes by dragging dividers; **View → Reset layout** restores them.
 
-The app is under active development. Guided lessons are planned, and some CPU
-and peripheral behavior still needs hardware validation. Read the
-[supported features and limits](docs/compatibility.md) before designing exercises.
+## Capabilities
+
+- Assembly editor with syntax highlighting, completion, and find/replace.
+- Instruction stepping, breakpoints, registers, flags, and memory inspection.
+- LEDs, switches, multiplexed displays, keypad, LCD, ADC/DAC, motor, and UART.
+- Configurable pin mappings, output playback, and DAC waveform inspection.
+- Assembly source files and Intel HEX import/export.
+
+See [supported features and limits](docs/compatibility.md) for the processor model
+and peripheral behavior supported by this version.
 
 ## Development and Documentation
 
-- [Development](docs/development.md): run from Python, test, and contribute.
+- [Development](docs/development.md): source setup, testing, and contribution.
 - [Workbench guide](docs/workbench.md): editor, debugger, panels, and shortcuts.
 - [Architecture](docs/architecture.md): code layout and dependency boundaries.
 - [Releases](docs/releases.md): native builds, artwork, and signing.
