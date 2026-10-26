@@ -1,64 +1,49 @@
 # MCS51 Studio
 
-A desktop workbench for writing, stepping through, and inspecting 8051 assembly
-programs on **Windows, Linux, and macOS**.
-
-Includes an assembler, register and memory views, breakpoints, Intel HEX files,
-and a virtual board with LEDs, switches, keypad, displays, ADC/DAC, motor, and UART.
+A desktop 8051 learning workbench for **Windows, Linux, and macOS**. Write assembly,
+inspect registers and memory, step through instructions, and explore a virtual
+board with LEDs, switches, displays, keypad, ADC/DAC, motor, and UART.
 
 ## Install and Run
 
-Download the installer for your computer from [Releases](https://github.com/bibekjoshi01/mcs51-studio/releases).
-**The installers include Python and Tk. You do not need to install Python.**
-Public installers have not been published yet; native builds are prepared by the
-release workflow and remain drafts until reviewed.
+Get the installer from [Releases](https://github.com/bibekjoshi01/mcs51-studio/releases).
+Python and Tk are included. Public installers are not yet published; automated
+builds produce test artifacts and draft releases.
 
-### Windows
+- **Windows 10/11, x64:** run `*-windows-x64-setup.exe`, then open MCS51 Studio
+  from the Start menu.
+- **macOS:** install `*-macos-arm64.pkg` for Apple Silicon or `*-macos-x64.pkg`
+  for Intel, then open MCS51 Studio from Applications.
+- **Debian/Ubuntu:** install the matching `amd64` or `arm64` package, then open
+  MCS51 Studio from the applications menu or run `mcs51-studio`:
 
-1. Download `*-windows-x64-setup.exe` for Windows 10 or 11 (64-bit).
-2. Run the installer and follow the setup wizard.
-3. Open **MCS51 Studio** from the Start menu.
+  ```sh
+  sudo apt install ./MCS51-Studio-*-linux-amd64.deb
+  ```
 
-### macOS
-
-1. Download `*-macos-arm64.pkg` for Apple Silicon or `*-macos-x64.pkg` for Intel.
-2. Open the package and follow the installer.
-3. Open **MCS51 Studio** from Applications.
-
-### Linux
-
-Debian/Ubuntu packages are provided for `amd64` (x64) and `arm64` desktops.
-The build baseline is Ubuntu 22.04; a graphical X11 or XWayland session is required.
-
-Download the matching `.deb`, open a terminal in its folder, and install it:
-
-```sh
-sudo apt install ./MCS51-Studio-*-linux-amd64.deb
-```
-
-For ARM64, replace `amd64` with `arm64`. Open **MCS51 Studio** from the applications
-menu, or run `mcs51-studio` in a terminal. Other Linux package formats are not yet provided.
+  Replace `amd64` with `arm64` when needed. The Linux baseline is Ubuntu 22.04
+  with an X11 or XWayland desktop.
 
 ## First Program
 
-The app opens with an LED counter example. Click **Assemble**, then **Step** (F7)
-or **Run / Pause** (F5). Double-click a listing row to toggle a breakpoint.
-Save with **Ctrl+S** on Windows/Linux or **Command+S** on macOS.
+The editor opens with an LED counter. **F6** assembles, **F7** steps, and **F5**
+runs or pauses. Save with **Ctrl+S**, or **Command+S** on macOS. Press **F1** for
+shortcuts. Resize panes by dragging dividers; **View → Reset layout** restores them.
 
-Use the sidebar to switch between the editor and virtual board. Drag the dividers
-to resize the workspace and inspector. Hide supporting panes with the status-bar
-toggles, or use **Focus editor**; **View → Reset layout** restores the default.
-The bottom panel contains the listing, memory explorer, and build activity.
+The app is under active development. Guided lessons are planned, and some CPU
+and peripheral behavior still needs hardware validation. Read the
+[supported features and limits](docs/compatibility.md) before designing exercises.
 
-The editor includes line numbers, assembly highlighting, find/replace, go-to-line,
-undo/redo, and indentation. Press **F1** for shortcuts or see the
-[workbench guide](docs/workbench.md).
+## Development and Documentation
 
-## Project Status
+- [Development](docs/development.md): run from Python, test, and contribute.
+- [Workbench guide](docs/workbench.md): editor, debugger, panels, and shortcuts.
+- [Architecture](docs/architecture.md): code layout and dependency boundaries.
+- [Releases](docs/releases.md): native builds, artwork, and signing.
 
-MCS51 Studio is an early-stage 8051 learning workbench. The current focus is a
-clear debugger and virtual board; guided lessons are planned. See [supported features and limits](docs/compatibility.md) and the
-[code structure and learning roadmap](docs/architecture.md).
+## License
 
-For running from Python and contributing, see [development](docs/development.md).
-Maintainers can find native packaging and signing details in [releases](docs/releases.md).
+Source is available for free educational use and private modification under the
+[educational license](LICENSE). Redistribution is restricted. Commercial use
+requires a separate written license, which may involve a fee. Contact
+[Bibek Joshi](https://github.com/bibekjoshi01) to request commercial permission.

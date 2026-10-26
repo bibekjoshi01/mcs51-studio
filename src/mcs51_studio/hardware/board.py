@@ -59,7 +59,6 @@ class Board:
         self.keys = set()
         self.key_gate = False
         self.analogue = 0.0
-        self.comparator_reference = 2.5
         self.adc_value = 255
         self.adc_snapshot = 0
         self.adc_remaining = 0

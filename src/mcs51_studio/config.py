@@ -16,8 +16,3 @@ def settings_path():
     else:
         base = Path(os.environ.get("XDG_CONFIG_HOME", str(Path.home() / ".config")))
     return base / "mcs51-studio" / "settings.json"
-
-
-def save_shortcut(windowing_system):
-    """Command belongs to Aqua; Windows and X11 use Control."""
-    return "<Command-s>" if windowing_system == "aqua" else "<Control-s>"

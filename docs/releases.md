@@ -1,6 +1,8 @@
 # Native releases
 
-The installer bundles the Python interpreter, Tk, application code, and data.
+The installer bundles the Python interpreter, Tk, application code, data, and
+project license. Windows setup displays the license; Linux also installs it in
+`/usr/share/doc/mcs51-studio/copyright`.
 Build each OS/architecture on its own native machine; PyInstaller is not a
 cross-compiler. The release workflow covers Windows x64, Linux amd64/arm64, and
 macOS Intel/Apple Silicon.

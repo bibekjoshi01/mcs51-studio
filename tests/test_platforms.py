@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from mcs51_studio.config import save_shortcut, settings_path
+from mcs51_studio.config import settings_path
 
 
 class PlatformSettings(unittest.TestCase):
@@ -42,8 +42,3 @@ class PlatformSettings(unittest.TestCase):
         file = Path("portable") / "settings.json"
         with patch.dict(os.environ, {"MCS51_STUDIO_SETTINGS": str(file)}):
             self.assertEqual(settings_path(), file)
-
-    def test_native_save_shortcut(self):
-        self.assertEqual(save_shortcut("aqua"), "<Command-s>")
-        self.assertEqual(save_shortcut("win32"), "<Control-s>")
-        self.assertEqual(save_shortcut("x11"), "<Control-s>")
