@@ -38,7 +38,8 @@ shortcuts. Resize panes by dragging dividers; **View → Reset Layout** restores
 - Classic 12-clock 8051 with stepping, breakpoints, registers, and flags.
 - 128-byte internal RAM and 64 KB external RAM with MOVX and XDATA inspection.
 - LEDs, switches, multiplexed displays, keypad, LCD, ADC/DAC, motor, and UART.
-- Configurable pin mappings, output playback, and DAC waveform inspection.
+- Visible wiring, shared-pin explanations, and saved experiment presets.
+- Digital logic analyzer with edge triggers and pulse measurements; DAC scope with cursors.
 - Assembly source files and Intel HEX import/export.
 
 See [supported features and limits](docs/compatibility.md) for the processor model
