@@ -15,7 +15,8 @@ Sidebar, Inspector, and Bottom controls, or the View menu, to hide them.
 **View → Reset layout** restores the standard layout if a pane becomes too small.
 Pane visibility and divider positions are saved with application settings.
 
-The sidebar opens the editor, board, listing, memory explorer, and tools.
+The sidebar opens the editor, board, listing, and memory explorer.
+**Pin Mappings** and **Oscilloscope** are in the top command row.
 Open **Instruction Reference** from the footer for the 8051 instruction catalog.
 Narrow or short sidebar, inspector, and board views can be scrolled.
 
