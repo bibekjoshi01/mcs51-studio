@@ -6,10 +6,14 @@ import re
 from dataclasses import dataclass
 
 from .cpu import BITS, ISA, SFR
+from .source import normalize_source, quoted_value, split_values, strip_comment
 
 
 class AssemblyError(ValueError):
-    pass
+    def __init__(self, message, line=None):
+        self.message = message
+        self.line = line
+        super().__init__(f"Line {line}: {message}" if line is not None else message)
 
 
 @dataclass
@@ -18,10 +22,6 @@ class Program:
     locations: dict
     symbols: dict
     used: set
-
-
-def split_values(text):
-    return re.findall(r"'(?:[^']|'')*'|\"[^\"]*\"|[^,]+", text)
 
 
 def expression(text, symbols, pc=0, unresolved=False):
@@ -128,19 +128,28 @@ def encode(line, symbols, pc, first=False):
             for n in symbols.get("__labels__", set())
         )
         offset = value - pc - 2 if is_label else value
-        normalized = ("SJMP" if first or -128 < offset < 127 else "AJMP") + target
+        normalized = ("SJMP" if first or -128 <= offset <= 127 else "AJMP") + target
     reserved = {"A", "C", "AB", "DPTR"} | {f"R{i}" for i in range(8)}
     for _, regex, entry in TEMPLATES:
         match = regex.fullmatch(normalized)
         if not match:
             continue
         fields = match.groups()
-        if any(s in reserved or "@" in s or "#" in s or "," in s for s in fields):
+        if any(
+            (
+                field.upper() in reserved
+                or any(character in field for character in "@#,")
+            )
+            and not (len(field) == 3 and field[0] == field[-1] == "'")
+            for field in fields
+        ):
             continue
         values = [expression(s, symbols, pc, first) for s in fields]
         op, size = entry["opcode"], entry["size"]
         if op in (1, 17):
             dest = values[0]
+            if not first and not 0 <= dest <= 65535:
+                raise AssemblyError("16-bit address out of range")
             if not first and ((pc + 2) & 0xF800) != (dest & 0xF800):
                 raise AssemblyError("AJMP/ACALL crosses a 2 KiB page")
             return [op | ((dest >> 3) & 0xE0), dest & 255]
@@ -175,17 +184,18 @@ def encode(line, symbols, pc, first=False):
 
 
 def assemble(source):
+    source = normalize_source(source)
     symbols = {**SFR, **BITS, **{f"AR{i}": i for i in range(8)}, "__labels__": set()}
     code, locations, used = bytearray(65536), {}, set()
+    mutable_symbols = set()
     for first in (True, False):
         symbols.update({f"AR{i}": i for i in range(8)})
         pc = 0
         for number, raw in enumerate(source.splitlines(), 1):
             try:
-                # Comments can contain semicolons inside quoted DB strings.
-                line = re.split(
-                    r";(?=(?:[^\'\"]|\'[^\']*\'|\"[^\"]*\")*$)", raw, maxsplit=1
-                )[0].strip()
+                if "\0" in raw:
+                    raise AssemblyError("NUL characters are not allowed")
+                line = strip_comment(raw).strip()
                 if not line:
                     continue
                 label = re.match(r"^([A-Za-z_]\w*):", line)
@@ -202,7 +212,16 @@ def assemble(source):
                     r"([A-Za-z_]\w*)\s+(EQU|SET)\s+(.+)", line, re.IGNORECASE
                 )
                 if equ:
-                    symbols[equ[1].upper()] = expression(equ[3], symbols, pc, first)
+                    name, directive = equ[1].upper(), equ[2].upper()
+                    if (
+                        first
+                        and name in symbols
+                        and not (directive == "SET" and name in mutable_symbols)
+                    ):
+                        raise AssemblyError(f"Duplicate symbol: {name}")
+                    if directive == "SET":
+                        mutable_symbols.add(name)
+                    symbols[name] = expression(equ[3], symbols, pc, first)
                     continue
                 parts = line.split(None, 1)
                 directive = parts[0].upper()
@@ -229,7 +248,7 @@ def assemble(source):
                             and value[0] == value[-1]
                             and value[0] in "'\""
                         ):
-                            values.extend(value[1:-1].encode("latin1"))
+                            values.extend(quoted_value(value).encode("latin1"))
                         else:
                             v = expression(value, symbols, pc, first)
                             if not first and not -128 <= v <= 255:
@@ -247,7 +266,7 @@ def assemble(source):
                     used.update(range(pc, pc + len(values)))
                 pc += len(values)
             except (ValueError, ZeroDivisionError, OverflowError) as error:
-                raise AssemblyError(f"Line {number}: {error}") from None
+                raise AssemblyError(str(error), line=number) from None
     return Program(code, locations, symbols, used)
 
 
