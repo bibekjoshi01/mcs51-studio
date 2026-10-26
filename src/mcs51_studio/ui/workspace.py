@@ -190,6 +190,13 @@ class WorkspaceView:
                 variable=getattr(self, f"{name}_visible"),
                 command=lambda n=name: self.apply_pane(n),
             ).pack(side="right", padx=4)
+        ttk.Button(
+            statusbar,
+            text="Instruction Reference",
+            command=self.isa_window,
+            style="Footer.TButton",
+            width=0,
+        ).pack(side="right", padx=(4, 10))
         self.state_label = ttk.Label(
             statusbar, textvariable=self.machine_state, foreground=theme.MINT
         )
@@ -214,7 +221,6 @@ class WorkspaceView:
             ("Virtual board", lambda: self.workspace.select(self.board_tab)),
             ("Program listing", lambda: self.show_bottom("Listing")),
             ("Memory explorer", lambda: self.show_bottom("Memory")),
-            ("Instruction reference", self.isa_window),
         ]:
             ttk.Button(parent, text=label, command=action).pack(fill="x", pady=3)
         ttk.Separator(parent).pack(fill="x", pady=18)
