@@ -21,6 +21,7 @@ src/mcs51_studio/
     editor.py       Assembly editing, syntax, line gutter, search, and edit transactions
     board_view.py   Virtual board widgets and drawing
     theme.py        Shared colors, typography, and ttk styles
+    icon.py         Window icon loading and native application identity
   data/             Instruction catalog and runnable example
   config.py         Platform settings paths and keyboard conventions
   resources.py      Bundled data loading

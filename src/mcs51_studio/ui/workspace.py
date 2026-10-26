@@ -70,21 +70,27 @@ class WorkspaceView:
         self.machine_state = tk.StringVar(value="EDITING")
         self.current_instruction = tk.StringVar(value="0000  NOP")
         self.build_menu()
-        header = ttk.Frame(self.root, padding=(18, 12))
-        header.pack(fill="x")
-        ttk.Label(header, text=APP_NAME, style="Title.TLabel").pack(side="left")
-        ttk.Label(header, text="8051 LEARNING WORKBENCH", style="Section.TLabel").pack(
-            side="left", padx=18
+        header = ttk.Frame(self.root, padding=(12, 8))
+        self.header = header
+        header.pack(fill="x", pady=(0, 6))
+        brand = ttk.Frame(header)
+        brand.pack(side="left", padx=(0, 14))
+        self.header_icon = self.root._app_icon.subsample(16, 16)
+        ttk.Label(brand, image=self.header_icon).pack(side="left", padx=(0, 8))
+        identity = ttk.Frame(brand)
+        identity.pack(side="left")
+        ttk.Label(identity, text=APP_NAME, font=(self.ui_font, -17, "bold")).pack(
+            anchor="w"
         )
-        ttk.Button(header, text="Shortcuts", command=self.shortcuts_help).pack(
-            side="right"
-        )
-        self.state_label = ttk.Label(
-            header, textvariable=self.machine_state, foreground=theme.MINT
-        )
-        self.state_label.pack(side="right", padx=16)
-        toolbar = ttk.Frame(self.root, padding=(12, 7))
-        toolbar.pack(fill="x", pady=(1, 8))
+        ttk.Label(
+            identity,
+            text="8051 learning workbench",
+            foreground=theme.MUTED,
+            font=(self.ui_font, -9),
+        ).pack(anchor="w")
+        toolbar = ttk.Frame(header)
+        self.commandbar = toolbar
+        toolbar.pack(side="left", fill="x", expand=True)
         for label, action, primary in [
             ("Open", self.open_file, False),
             ("Save", self.save_source, False),
@@ -95,13 +101,18 @@ class WorkspaceView:
                 toolbar,
                 text=label,
                 command=action,
+                width=0,
                 style="Primary.TButton" if primary else "TButton",
-            ).pack(side="left", padx=3)
-        self.run_button = ttk.Button(toolbar, text="Run  F5", command=self.toggle_run)
-        self.run_button.pack(side="left", padx=3)
-        ttk.Button(toolbar, text="Reset", command=self.reset).pack(side="left", padx=3)
+            ).pack(side="left", padx=2)
+        self.run_button = ttk.Button(
+            toolbar, text="Run  F5", command=self.toggle_run, width=0
+        )
+        self.run_button.pack(side="left", padx=2)
+        ttk.Button(toolbar, text="Reset", command=self.reset, width=0).pack(
+            side="left", padx=2
+        )
         ttk.Label(toolbar, text="Batch", style="Muted.TLabel").pack(
-            side="left", padx=(16, 6)
+            side="left", padx=(10, 6)
         )
         ttk.Combobox(
             toolbar,
@@ -110,9 +121,9 @@ class WorkspaceView:
             width=7,
             state="readonly",
         ).pack(side="left")
-        ttk.Button(toolbar, text="Focus editor", command=self.focus_editor).pack(
-            side="right", padx=3
-        )
+        ttk.Button(
+            toolbar, text="Focus editor", command=self.focus_editor, width=0
+        ).pack(side="right", padx=2)
         self.vertical = ttk.Panedwindow(self.root, orient="vertical")
         self.vertical.pack(fill="both", expand=True, padx=10)
         self.horizontal = ttk.Panedwindow(self.vertical, orient="horizontal")
@@ -172,9 +183,6 @@ class WorkspaceView:
         statusbar = ttk.Frame(self.root, padding=(12, 5))
         self.statusbar = statusbar
         statusbar.pack(side="bottom", fill="x", before=self.vertical)
-        ttk.Label(statusbar, textvariable=self.status, style="Muted.TLabel").pack(
-            side="left", fill="x", expand=True
-        )
         for name in ("sidebar", "inspector", "bottom"):
             ttk.Checkbutton(
                 statusbar,
@@ -182,6 +190,13 @@ class WorkspaceView:
                 variable=getattr(self, f"{name}_visible"),
                 command=lambda n=name: self.apply_pane(n),
             ).pack(side="right", padx=4)
+        self.state_label = ttk.Label(
+            statusbar, textvariable=self.machine_state, foreground=theme.MINT
+        )
+        self.state_label.pack(side="left", padx=(0, 12))
+        ttk.Label(statusbar, textvariable=self.status, style="Muted.TLabel").pack(
+            side="left", fill="x", expand=True
+        )
         self.log_activity(
             "Ready. Assemble the example, then step through the instructions. F1 opens keyboard shortcuts."
         )
@@ -500,7 +515,7 @@ class WorkspaceView:
         self.root.update_idletasks()
         self.horizontal.sashpos(0, 175)
         self.horizontal.sashpos(1, max(600, self.horizontal.winfo_width() - 255))
-        self.vertical.sashpos(0, max(300, self.vertical.winfo_height() - 220))
+        self.vertical.sashpos(0, max(300, self.vertical.winfo_height() - 260))
 
     def capture_layout(self):
         return {

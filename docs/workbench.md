@@ -1,5 +1,7 @@
 # Using the workbench
 
+The logo, small learning-workbench tagline, and file/debugger commands share one
+compact top row, leaving more vertical space for the editor and bottom tools.
 The workspace keeps source, machine state, and peripherals in separate areas.
 The editor and virtual board share the central tab area. The processor inspector
 shows the next instruction, registers, and flags; register values are hexadecimal.

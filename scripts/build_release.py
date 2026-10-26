@@ -13,7 +13,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from mcs51_studio.metadata import APP_NAME, VERSION
+from mcs51_studio.metadata import APP_ID, APP_NAME, VERSION
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -73,10 +73,17 @@ def freeze():
         f"{ROOT / 'src/mcs51_studio/data'}:mcs51_studio/data",
     ]
     if sys.platform == "darwin":
-        arguments += ["--osx-bundle-identifier", "org.mcs51studio.desktop"]
+        arguments += [
+            "--icon",
+            str(ROOT / "packaging/icons/mcs51-studio.icns"),
+            "--osx-bundle-identifier",
+            APP_ID,
+        ]
         identity = os.environ.get("MCS51_MAC_APPLICATION_IDENTITY")
         if identity:
             arguments += ["--codesign-identity", identity]
+    if sys.platform == "win32":
+        arguments += ["--icon", str(ROOT / "packaging/icons/mcs51-studio.ico")]
     arguments.append(str(ROOT / "launch.py"))
     run(*arguments, cwd=ROOT)
     bundle = ROOT / "dist" / name
@@ -121,6 +128,8 @@ def windows_installer(bundle, output, arch):
         f"/DBundleDir={bundle}",
         f"/DOutputDir={output}",
         f"/DOutputName={name}",
+        f"/DIconFile={ROOT / 'packaging/icons/mcs51-studio.ico'}",
+        f"/DAppUserModelID={APP_ID}",
         ROOT / "packaging/windows/setup.iss",
     )
     return output / f"{name}.exe"
@@ -171,6 +180,13 @@ def linux_installer(bundle, output, arch):
         applications = staging / "usr/share/applications"
         applications.mkdir(parents=True)
         shutil.copy2(ROOT / "packaging/linux/mcs51-studio.desktop", applications)
+        for size, source in (
+            ("512x512", ROOT / "src/mcs51_studio/data/icon.png"),
+            ("scalable", ROOT / "packaging/icons/mcs51-studio.svg"),
+        ):
+            icons = staging / "usr/share/icons/hicolor" / size / "apps"
+            icons.mkdir(parents=True)
+            shutil.copy2(source, icons / f"mcs51-studio{source.suffix}")
         control = staging / "DEBIAN"
         control.mkdir()
         maintainer = os.environ.get("MCS51_DEB_MAINTAINER", "MCS51 Studio contributors")
