@@ -1,7 +1,7 @@
-"""8051 instruction interpreter reconstructed against the installed EdSim51.
+"""8051 CPU state, instruction execution, interrupts, and timer stepping.
 
-The Java instruction descriptor inventory is in isa.json. Instruction execution
-is Python; no JVM, Java bridge, or original JAR is needed by this module.
+Opcode sizes and cycle counts are loaded from the bundled instruction catalog.
+Known simulation limits are documented in docs/compatibility.md.
 """
 
 from ..resources import ISA
@@ -168,7 +168,7 @@ class CPU:
     def set_bit(self, bit, value):
         a, n = self.bit_address(bit)
         if bit == 0xD0:
-            return  # EdSim51 exposes parity as read-only.
+            return  # The simulator treats the computed parity bit as read-only.
         if bit in (0x9E, 0x9F) and self.bit(bit) != bool(value):
             self.serial.reset()
         self.ram[a] = (self.ram[a] & ~(1 << n)) | (bool(value) << n)
@@ -255,7 +255,7 @@ class CPU:
             v = self.source(op, x) + self.carry
             self.a = a - v
             self.carry = a < v
-            # Preserve EdSim51's operand-plus-carry overflow/AC calculation.
+            # Calculate overflow and auxiliary carry using the operand plus carry.
             self.flag(2, not -128 <= signed(a) - signed(v) <= 127)
             self.flag(6, (v & 15) > (a & 15))
         elif op in (0x10, 0x20, 0x30):
@@ -395,7 +395,7 @@ class CPU:
             self.write(addr, (value & 240) | (a & 15))
             self.a = (a & 240) | (value & 15)
         elif op in (0xE0, 0xE2, 0xE3, 0xF0, 0xF2, 0xF3):
-            pass  # Original MOVX is explicitly a no-op.
+            pass  # External data memory is not implemented; MOVX currently does nothing.
         elif op == 0xE4:
             self.a = 0
         elif op == 0xE5:
@@ -418,8 +418,8 @@ class CPU:
         return next_pc
 
     def tick_timers(self, count):
-        # Ported from recovered Timer0/Timer1, including the original split-mode
-        # and 13-bit overflow behavior rather than substituting ideal hardware.
+        # Timer modes retain baseline behavior pending hardware-spec validation;
+        # see docs/compatibility.md for simulation limits.
         for _ in range(count):
             for t in (0, 1):
                 mode = self.ram[0x89] >> (t * 4) & 15

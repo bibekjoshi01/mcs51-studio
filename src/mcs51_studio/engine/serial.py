@@ -1,4 +1,4 @@
-"""8051 serial engine ported from recovered edsim51sh.Serial."""
+"""On-chip 8051 serial state, framing, and clock-driven transfers."""
 
 
 class Serial:

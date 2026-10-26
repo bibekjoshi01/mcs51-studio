@@ -1,4 +1,4 @@
-"""Compare simulator behavior with preserved Java oracle fixtures."""
+"""Guard established simulator behavior with baseline regression fixtures."""
 
 import gzip
 import hashlib
@@ -17,8 +17,8 @@ def fixtures(name):
         return json.load(stream)
 
 
-class ReferenceConformance(unittest.TestCase):
-    def test_all_opcodes_against_original(self):
+class BaselineRegression(unittest.TestCase):
+    def test_all_opcodes_against_baseline(self):
         cpu = CPU()
         cpu.code[:] = bytes((p * 17 + 3) & 255 for p in range(65536))
         for name in ("instructions", "instructions-wide"):
@@ -38,7 +38,7 @@ class ReferenceConformance(unittest.TestCase):
                     self.assertEqual(cpu.pc, case["nextPc"])
                     self.assertEqual(list(cpu.ram), case["after"])
 
-    def test_timer_modes_against_original(self):
+    def test_timer_modes_against_baseline(self):
         for case in fixtures("timers"):
             with self.subTest(mode=case["before"][0x89], steps=case["steps"]):
                 cpu = CPU()
@@ -46,7 +46,7 @@ class ReferenceConformance(unittest.TestCase):
                 cpu.tick_timers(case["steps"])
                 self.assertEqual(list(cpu.ram), case["after"])
 
-    def test_serial_modes_against_original(self):
+    def test_serial_modes_against_baseline(self):
         for case in fixtures("serial"):
             with self.subTest(mode=case["before"][0x98], steps=case["steps"]):
                 cpu = CPU()
@@ -58,7 +58,7 @@ class ReferenceConformance(unittest.TestCase):
                 self.assertEqual(list(cpu.ram), case["after"])
                 self.assertEqual(cpu.serial.sbuf, case["sbuf"])
 
-    def test_assembler_against_original(self):
+    def test_assembler_against_baseline(self):
         cases = json.loads((FIXTURES / "assembler.json").read_text(encoding="utf-8"))
         for case in cases:
             with self.subTest(source=case["source"]):

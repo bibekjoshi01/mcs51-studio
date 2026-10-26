@@ -99,7 +99,7 @@ def expression(text, symbols, pc=0, unresolved=False):
     return visit(tree)
 
 
-# Match the real app's recovered display templates, with more specific forms first.
+# Match instruction templates, with more specific operand forms first.
 TEMPLATES = []
 for entry in ISA:
     op = entry["opcode"]
@@ -117,7 +117,7 @@ def encode(line, symbols, pc, first=False):
         p if p.startswith("'") else re.sub(r"\s+", "", p.upper())
         for p in re.split(r"('[^']*')", line)
     )
-    # The original generic JMP/CALL reserve two bytes and select short/page forms.
+    # Generic JMP/CALL reserve two bytes and select short/page forms.
     if normalized.startswith("CALL"):
         normalized = "ACALL" + normalized[4:]
     if normalized.startswith("JMP") and normalized != "JMP@A+DPTR":

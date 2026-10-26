@@ -1,4 +1,4 @@
-"""Local Python/Tk desktop workbench for the reconstructed simulator."""
+"""MCS51 Studio desktop editor, debugger, and virtual board views."""
 
 import json
 import math
@@ -7,10 +7,10 @@ import tkinter as tk
 from pathlib import Path
 from tkinter import filedialog, font, messagebox, simpledialog, ttk
 
-from ..engine.assembler import AssemblyError, assemble, export_hex, import_hex
-from ..hardware.board import DEFAULT_MAPPING, Board, pin
 from ..config import save_shortcut, settings_path
+from ..engine.assembler import AssemblyError, assemble, export_hex, import_hex
 from ..engine.cpu import CPU, ISA, SFR
+from ..hardware.board import DEFAULT_MAPPING, Board, pin
 from ..metadata import APP_NAME, VERSION
 from ..resources import LED_COUNTER
 
@@ -250,7 +250,7 @@ class App:
             for col in range(3):
                 button = ttk.Button(keypad, text=labels[row][col], width=4)
                 button.grid(row=row, column=col, padx=3, pady=3)
-                # Physical row/column order in the recovered board is reversed.
+                # Map visual keypad order to the board row/column wiring.
                 key = (3 - row, 2 - col)
                 button.bind("<ButtonPress-1>", lambda e, k=key: self.key(k, True))
                 button.bind("<ButtonRelease-1>", lambda e, k=key: self.key(k, False))
@@ -895,7 +895,7 @@ class App:
 
     def isa_window(self):
         w = tk.Toplevel(self.root)
-        w.title("Recovered instruction inventory")
+        w.title("8051 instruction reference")
         w.geometry("670x500")
         text = tk.Text(w, font=(self.mono_font, 11))
         text.pack(fill="both", expand=True)
@@ -941,11 +941,9 @@ class App:
             f"About {APP_NAME}",
             f"{APP_NAME} {VERSION}\n"
             "A Python desktop workbench for the 8051.\n\n"
-            "Reference-tested processor, assembler, timers, and serial engine. "
-            "Peripheral and interface compatibility is still in progress.\n\n"
-            "See docs/compatibility.md for scope and verification.\n\n"
-            "Based on investigation of EdSim51 by James Rogers. "
-            "See NOTICE.txt for attribution.",
+            "Explore assembly, registers, memory, and virtual peripherals.\n\n"
+            "An evolving learning workbench. See docs/compatibility.md "
+            "for supported features and simulation limits.",
         )
 
     def close(self):

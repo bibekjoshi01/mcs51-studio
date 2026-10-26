@@ -1,41 +1,40 @@
-# Compatibility
+# Supported features and simulation limits
 
-MCS51 Studio is an independent Python desktop reconstruction informed by
-EdSim51DI 2.1.39 and EdSim51SH 1.2.32. It is not an official EdSim51 release.
+MCS51 Studio is an educational simulator under active development. It is not yet
+a cycle-accurate hardware model. Use the limits below when designing exercises.
 
-## Verified scope
+## Available now
 
-Preserved fixtures from the original Java application compare:
+- Assembly editor, two-pass assembler, source listing, and Intel HEX import/export.
+- CPU stepping, running, breakpoints, registers, internal memory, and interrupts.
+- Timer and on-chip serial models.
+- Configurable virtual board: LEDs, switches, keypad, seven-segment displays,
+  character LCD, ADC/DAC, motor, comparator, and external UART.
+- Native installer build targets for Windows, Linux, and macOS.
 
-- All 256 opcode values over 8,192 sampled states, including PC and all memory bytes.
-- Timer behavior over 1,024 cases.
-- Serial behavior over 192 cases across serial modes and SMOD settings.
-- The full code-memory digest for 260 assembly inputs.
+## Validation
 
-Integration tests exercise the example program, Intel HEX round trips, invalid
-programs, ADC, switches, LCD commands, and interrupt/RETI behavior.
-Finite fixtures do not establish complete equivalence.
+Baseline regression fixtures cover all 256 opcode values over 8,192 sampled CPU
+states, 1,024 timer cases, 192 serial cases, and 260 assembly inputs. Integration
+tests exercise assembly, Intel HEX round trips, interrupts, and selected board
+interactions. These detect unintended changes; they do not prove hardware
+correctness. Fixture origins are recorded in [provenance.md](provenance.md).
 
-## Remaining work
+GUI smoke tests assemble the bundled example, step and run it, and save settings.
+Windows/Linux native installer and GUI validation is configured in CI; successful
+runs on those systems and a complete visual review remain pending.
 
-- Differential tests for shared pins and peripheral timing.
-- Switch/key bounce and additional keypad modes.
-- LCD busy timing and custom glyph rendering.
-- External UART framing over varied clocks.
-- Broader assembler syntax and diagnostics compatibility.
-- Original wiring-editor and floating-panel features.
-- Import of legacy Java serialized settings.
-- Full oscillator settings in the interface.
-- Native Windows/Linux installer and GUI runs are configured in CI; their first successful runs and complete visual review remain pending.
+## Known limits
 
-The current simulated machine cycle is one microsecond. MOVX and the reserved
-A5 opcode preserve the original simulator's no-op behavior. Some additional DB
-syntax is accepted by Python that the reference application rejects.
+- External data memory is not modeled: MOVX currently does nothing. Reserved A5
+  also does nothing. This must be made explicit in lessons using external memory.
+- Some arithmetic flags, parity writes, split timer modes, and 13-bit timer
+  overflows retain baseline behavior and need independent hardware-spec checks.
+- The simulated machine cycle is fixed at one microsecond; oscillator selection
+  is not exposed in the interface.
+- Shared-pin timing, keypad modes, switch/key bounce, LCD busy timing and custom
+  glyph rendering, and varied-clock UART framing need further work.
+- Broader assembler syntax and clearer diagnostics are planned.
+- Guided lessons, exercise assessment, and the redesigned UI are not implemented.
 
-## Provenance
-
-REA 6.8.0 provided artifact inventory. CFR 0.152 and javap were used to inspect
-the original Java application. The Python code and tests were developed from
-that investigation; REA did not automatically generate or validate the app.
-The recovered Java source, original binaries, and historical build outputs are
-kept outside this Python repository.
+See [architecture.md](architecture.md) for the development direction.
