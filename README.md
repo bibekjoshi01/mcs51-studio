@@ -6,7 +6,7 @@ programs on **Windows, Linux, and macOS**.
 Includes an assembler, register and memory views, breakpoints, Intel HEX files,
 and a virtual board with LEDs, switches, keypad, displays, ADC/DAC, motor, and UART.
 
-## Install and run
+## Install and Run
 
 Download the installer for your computer from [Releases](https://github.com/bibekjoshi01/mcs51-studio/releases).
 **The installers include Python and Tk. You do not need to install Python.**
@@ -39,13 +39,13 @@ sudo apt install ./MCS51-Studio-*-linux-amd64.deb
 For ARM64, replace `amd64` with `arm64`. Open **MCS51 Studio** from the applications
 menu, or run `mcs51-studio` in a terminal. Other Linux package formats are not yet provided.
 
-## First program
+## First Program
 
 The app opens with an LED counter example. Click **Assemble**, then **Step** (F7)
 or **Run / Pause** (F5). Double-click a listing row to toggle a breakpoint.
 Save with **Ctrl+S** on Windows/Linux or **Command+S** on macOS.
 
-## Project status
+## Project Status
 
 MCS51 Studio is an early-stage 8051 learning workbench. The current focus is a
 clear debugger and virtual board; guided lessons and a redesigned interface are
