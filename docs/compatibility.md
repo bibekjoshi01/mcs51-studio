@@ -12,6 +12,8 @@ complete cycle-accurate or electrical circuit simulation.
 - Timer and on-chip serial models.
 - Configurable virtual board: LEDs, switches, keypad, seven-segment displays,
   character LCD, ADC/DAC, motor, comparator, and external UART.
+- Wiring diagrams, shared-pin explanations, and persistent experiment presets.
+- Instruction-boundary digital capture with edge triggers and measurements; DAC cursors.
 - Native installer build targets for Windows, Linux, and macOS.
 
 ## Validation
