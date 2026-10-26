@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mcs51-studio"
+dynamic = ["version"]
+description = "A Python desktop workbench for the 8051 microcontroller"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["ruff==0.17.2"]
+build = ["pyinstaller==6.20.0"]
+
+[project.gui-scripts]
+mcs51-studio = "mcs51_studio.app:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.dynamic]
+version = {attr = "mcs51_studio.metadata.VERSION"}
+
+[tool.setuptools.package-data]
+mcs51_studio = ["data/*.json", "data/*.asm"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E4", "E9", "F", "I"]

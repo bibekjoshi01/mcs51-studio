@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+build/
+dist/
+reports/
+*.spec
+.DS_Store
+.idea/
+.vscode/
+.env
+.env.*
+settings.json
+.ruff_cache/

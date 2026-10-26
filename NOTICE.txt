@@ -1,0 +1,14 @@
+EdSim51 and EdSim51DI were created by James Rogers.
+Original application resources and recovered Java retain their original rights.
+
+The official distribution is free of charge. Its published notice restricts
+selling the application/documentation, or including them in a paid package,
+without the author's written authorization. Recovery and local compilation here
+do not grant additional distribution rights or an open-source license.
+
+Official source of the notice:
+https://edsim51.com/installation-instructions/
+
+The Python files are a new implementation informed by the installed program's
+behavior and recovered code. They are not an official EdSim51 release or endorsed
+by its author. No general redistribution license is asserted for this bundle.
