@@ -444,6 +444,33 @@ class WorkbenchUI(unittest.TestCase):
         self.assertTrue(app.assemble())
         self.assertEqual(len(app.program.used), 5000)
 
+    def test_visible_output_transitions(self):
+        app = self.app
+        app.replace_source("loop: CPL P1.0\nSJMP loop")
+        app.assemble()
+        app.speed.set("1000")
+        app.observe_outputs.set(True)
+        masks = []
+        for _ in range(4):
+            app.running = True
+            app.run_batch()
+            app.pause_execution()
+            masks.append(app.board.led_mask)
+        self.assertEqual(masks, [1, 0, 1, 0])
+        app.cpu.write(0x90, 0xFC)
+        app.board.update()
+        app.refresh()
+        self.assertIn("0000 0011", app.led_readout.cget("text"))
+        self.assertIn("3 decimal", app.led_readout.cget("text"))
+        self.assertEqual(app.cpu.instructions, 7)
+        app.observe_outputs.set(False)
+        with patch("mcs51_studio.ui.application.time.monotonic", return_value=0):
+            app.running = True
+            app.run_batch()
+            app.pause_execution()
+        self.assertEqual(app.cpu.instructions, 1007)
+        app.observe_outputs.set(True)
+
 
 def verify_editor_workflow(app, root, temporary):
     """Check editing, unsaved-file safety, debugger controls, and pane recovery."""

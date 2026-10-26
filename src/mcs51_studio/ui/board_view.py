@@ -37,6 +37,10 @@ class BoardView:
         ttk.Label(heading, text="Virtual board", font=(self.ui_font, -18, "bold")).pack(
             side="left"
         )
+        self.observe_outputs = tk.BooleanVar(value=True)
+        ttk.Checkbutton(
+            heading, text="Show transitions", variable=self.observe_outputs
+        ).pack(side="right", padx=(10, 0))
         self.board_summary = ttk.Label(heading, style="Muted.TLabel")
         self.board_summary.pack(side="right")
         card, top = self.board_card(
@@ -46,10 +50,12 @@ class BoardView:
             "leds",
         )
         card.pack(fill="x", pady=(0, 10))
+        self.led_readout = ttk.Label(top, style="BoardValue.TLabel", anchor="center")
         self.led_canvas = tk.Canvas(
             top, height=60, background=theme.INPUT, highlightthickness=0
         )
         self.led_canvas.pack(fill="x")
+        self.led_readout.pack(fill="x", pady=(6, 4))
         self.led_canvas.bind("<Configure>", lambda event: self.draw_leds())
         switch = ttk.Frame(top, style="Board.TFrame")
         switch.pack(fill="x", pady=(4, 0))
@@ -71,7 +77,7 @@ class BoardView:
         card, top = self.board_card(
             parent,
             "7-segment display",
-            "Four latched digits · active-low segments",
+            "Four multiplexed digits · only the selected digit is driven",
             "display",
         )
         card.pack(fill="x", pady=(0, 12))
@@ -361,12 +367,14 @@ class BoardView:
         canvas = self.led_canvas
         canvas.delete("all")
         width = max(canvas.winfo_width(), 1)
+        pattern = self.board.led_mask
+        bits = f"{pattern:08b}"
+        self.led_readout.configure(
+            text=f"Lit LEDs  {bits[:4]} {bits[4:]}  ·  {pattern} decimal"
+        )
         for column, bit in enumerate(range(7, -1, -1)):
             x = (column + 0.5) * width / 8
-            active = (
-                not self.board.read_pin(self.board.mapping["leds"][bit])
-                and self.board.enabled["leds"]
-            )
+            active = bool(self.board.led_mask & (1 << bit))
             canvas.create_oval(
                 x - 10,
                 3,

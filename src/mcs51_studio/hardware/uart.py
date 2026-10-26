@@ -19,9 +19,16 @@ class UARTEndpoint:
         self.received = []
 
     def configure(self, baud, parity=0, cycle_us=1):
+        if baud <= 0 or cycle_us <= 0 or parity not in (0, 1, 2):
+            raise ValueError(
+                "Use a positive baud rate and clock period, and valid parity"
+            )
+        period = max(1, int(1_000_000 / cycle_us / baud + 0.5))
+        if (baud, parity, period) == (self.baud, self.parity, self.period):
+            return
         self.baud = baud
         self.parity = parity
-        self.period = max(1, int(1_000_000 / cycle_us / baud + 0.5))
+        self.period = period
         self.rx_clock = self.tx_clock = self.period
 
     def start(self, text):
@@ -29,15 +36,21 @@ class UARTEndpoint:
             return
         if text.startswith("{") and text.endswith("}"):
             try:
-                self.pending = [
-                    int(x.strip(), 16) & 255 for x in text[1:-1].split(",") if x.strip()
-                ]
+                self.pending.extend(
+                    [
+                        int(x.strip(), 16) & 255
+                        for x in text[1:-1].split(",")
+                        if x.strip()
+                    ]
+                )
             except ValueError:
-                self.pending = list((text + "\r").encode("latin1", "replace"))
+                self.pending.extend((text + "\r").encode("latin1", "replace"))
         else:
-            self.pending = list((text + "\r").encode("latin1", "replace"))
+            self.pending.extend((text + "\r").encode("latin1", "replace"))
 
     def parity_byte(self, value):
+        if self.parity:
+            value &= 127
         even = value.bit_count() % 2 == 0
         if self.parity == 1 and even or self.parity == 2 and not even:
             value |= 128

@@ -16,8 +16,12 @@ a cycle-accurate hardware model. Use the limits below when designing exercises.
 
 Baseline regression fixtures cover all 256 opcode values over 8,192 sampled CPU
 states, 1,024 timer cases, 192 serial cases, and 260 assembly inputs. Integration
-tests exercise assembly, Intel HEX round trips, interrupts, and selected board
-interactions. These detect unintended changes; they do not prove hardware
+tests exercise assembly, Intel HEX round trips, interrupts, and every board
+peripheral. Additional binary-reference fixtures cover 2,048 LED/display states,
+150 ADC steps, and a 30,000-instruction LED-counter trace. Checks include all
+switch patterns, keypad connections, DAC hold/scope behavior, comparator thresholds,
+motor sensing, LCD bus/address handling, and 512 UART byte/parity combinations.
+See [fixture notes](../tests/fixtures/README.md) for evidence and intentional differences. These detect unintended changes; they do not prove hardware
 correctness. Independent hardware-spec validation is still needed.
 
 GUI smoke tests assemble the bundled example, step and run it, and save settings.
@@ -32,9 +36,11 @@ runs on those systems and a complete visual review remain pending.
   overflows retain baseline behavior and need independent hardware-spec checks.
 - The simulated machine cycle is fixed at one microsecond; oscillator selection
   is not exposed in the interface.
-- Shared-pin timing, keypad modes, switch/key bounce, LCD busy timing and custom
+- Sub-instruction shared-pin timing, keypad modes, switch/key bounce, LCD busy timing and custom
   glyph rendering, and varied-clock UART framing need further work.
-- Broader assembler syntax and clearer diagnostics are planned.
+- The external UART uses 8 data bits without parity and 7 data bits plus odd/even
+  parity. It does not model all framing errors or an arbitrary physical link.
+- Broader assembler syntax remains planned.
 - Guided lessons and exercise assessment are not implemented. The redesigned
   workbench is available; Windows/Linux visual review remains pending.
 

@@ -161,9 +161,9 @@ class CPU:
         a = 0x20 + bit // 8 if bit < 128 else bit & 0xF8
         return a, bit & 7
 
-    def bit(self, bit):
+    def bit(self, bit, latch=False):
         a, n = self.bit_address(bit)
-        return self.read(a) >> n & 1
+        return self.read(a, latch) >> n & 1
 
     def set_bit(self, bit, value):
         a, n = self.bit_address(bit)
@@ -259,7 +259,7 @@ class CPU:
             self.flag(2, not -128 <= signed(a) - signed(v) <= 127)
             self.flag(6, (v & 15) > (a & 15))
         elif op in (0x10, 0x20, 0x30):
-            b = self.bit(x)
+            b = self.bit(x, latch=op == 0x10)
             take = b if op != 0x30 else not b
             if take:
                 if op == 0x10:
@@ -336,7 +336,7 @@ class CPU:
         elif 0xA8 <= op <= 0xAF:
             self.set_reg(op & 7, self.read(x))
         elif op in (0xB2, 0xC2, 0xD2):
-            self.set_bit(x, 1 - self.bit(x) if op == 0xB2 else op == 0xD2)
+            self.set_bit(x, 1 - self.bit(x, latch=True) if op == 0xB2 else op == 0xD2)
         elif op in (0xB3, 0xC3, 0xD3):
             self.carry = 1 - self.carry if op == 0xB3 else op == 0xD3
         elif 0xB4 <= op <= 0xBF:

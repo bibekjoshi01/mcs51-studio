@@ -27,8 +27,16 @@ area moves the text without also moving the board. Hardware enables are arranged
 in horizontal rows that wrap to fit the available width.
 
 The board separates digital I/O, the four-digit display, and peripheral cards.
-Mint LEDs indicate active-low outputs; each LED shows its mapped pin. Switches
-show their bit number and current 0/1 level. Device badges distinguish disabled
+Mint LEDs indicate active-low outputs; each LED shows its mapped pin. The readout
+shows illuminated bits (1 = lit) and their decimal value. In the default counter,
+LED 0 means 1, LED 1 means 2, and both mean 3. The 7-segment display shares P1;
+this program produces segment patterns, not decimal digits, on that display. Switches
+show their bit number and current 0/1 level. **Show transitions** is enabled by default: execution yields briefly after each
+LED or display change so fast loops remain visible. Turn it off for throughput;
+then the screen shows snapshots and can skip intermediate patterns. This affects
+wall-clock playback speed, not instruction order or simulated cycle counts.
+
+Device badges distinguish disabled
 hardware from an enabled device that is idle. Keypad keys support mouse hold or
 Space while focused. Keypad and motor cards stack when space is limited.
 
