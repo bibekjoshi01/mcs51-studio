@@ -6,7 +6,7 @@ import tempfile
 import time
 import unittest
 from pathlib import Path
-from tkinter import filedialog, messagebox, simpledialog, ttk
+from tkinter import BooleanVar, Toplevel, filedialog, messagebox, simpledialog, ttk
 from unittest.mock import patch
 
 import gui
@@ -169,15 +169,32 @@ class StressWorkbench(unittest.TestCase):
         for _ in range(30):
             app.isa_window()
             self.assertIs(app.reference_window, reference)
+        if app.instruments is not None:
+            app.instruments.close()
+        for window in root.winfo_children():
+            if isinstance(window, Toplevel):
+                window.destroy()
         app.replace_source("NOP\nSJMP $")
         root.deiconify()
-        root.focus_force()
-        root.update()
-        root.event_generate("<F6>")
-        root.update()
+        root.lift()
+
+        def send_key(key):
+            # Native window activation is asynchronous on macOS. Let Tk run
+            # its event loop before injecting a key, after closing tool windows.
+            delivered = BooleanVar(root, value=False)
+            root.focus_force()
+
+            def dispatch():
+                root.event_generate(f"<{key}>")
+                delivered.set(True)
+
+            root.after(100, dispatch)
+            root.wait_variable(delivered)
+            root.update()
+
+        send_key("F6")
         self.assertIsNotNone(app.program)
-        root.event_generate("<F7>")
-        root.update()
+        send_key("F7")
         self.assertEqual(app.cpu.instructions, 1)
         print(
             json.dumps(
