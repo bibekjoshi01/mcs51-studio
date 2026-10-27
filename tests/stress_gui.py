@@ -1,5 +1,6 @@
 """Native desktop stress acceptance tests; run separately from headless discovery."""
 
+import faulthandler
 import json
 import tempfile
 import time
@@ -290,4 +291,10 @@ class StressWorkbench(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    # A blocked native dialog or Tk event loop must leave a traceback in CI.
+    faulthandler.enable()
+    faulthandler.dump_traceback_later(180, exit=True)
+    try:
+        unittest.main(verbosity=2)
+    finally:
+        faulthandler.cancel_dump_traceback_later()
