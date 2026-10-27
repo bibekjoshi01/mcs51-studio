@@ -10,10 +10,13 @@ and work with a configurable virtual board.
 
 Get the installer from [Releases](https://github.com/bibekjoshi01/mcs51-studio/releases).
 Installers include everything needed to run the application; no separate runtime
-installation is required. Public installers are not yet published.
+installation is required.
 
-- **Windows 10/11, x64:** run `*-windows-x64-setup.exe`, then open MCS51 Studio
-  from the Start menu.
+- **Windows 10/11, x64:** download and run `*-windows-x64-setup.exe`. Choose
+  the installation folder and Start-menu folder, optionally add a desktop shortcut,
+  then select **Install**. Launch from the final setup page or the Start menu.
+  The default location installs for your account without administrator access.
+  The `.sha256` file is an optional checksum, not an installer.
 - **macOS:** install `*-macos-arm64.pkg` for Apple Silicon or `*-macos-x64.pkg`
   for Intel, then open MCS51 Studio from Applications.
 - **Debian/Ubuntu:** install the matching `amd64` or `arm64` package, then open

@@ -63,6 +63,31 @@ jobs:
       - name: Build and smoke-test Windows/macOS installer
         if: runner.os != 'Linux'
         run: python scripts/build_release.py
+      - name: Verify Windows installation and shutdown
+        if: runner.os == 'Windows'
+        timeout-minutes: 5
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $installer = Get-ChildItem release/*-windows-x64-setup.exe | Select-Object -First 1
+          $installDir = Join-Path $env:RUNNER_TEMP 'MCS51 Installer Test'
+          $env:MCS51_STUDIO_SMOKE_REPORT = Join-Path $env:RUNNER_TEMP 'installed-smoke.json'
+          try {
+            $setup = Start-Process -FilePath $installer.FullName -ArgumentList @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', "/DIR=`"$installDir`"") -Wait -PassThru
+            if ($setup.ExitCode -ne 0) { throw "Installer failed: $($setup.ExitCode)" }
+            $app = Join-Path $installDir 'MCS51 Studio.exe'
+            if (!(Test-Path $app)) { throw 'Custom installation directory was ignored' }
+            $process = Start-Process -FilePath $app -ArgumentList '--smoke-test' -Wait -PassThru
+            if ($process.ExitCode -ne 0) { throw "Installed application failed: $($process.ExitCode)" }
+            $report = Get-Content $env:MCS51_STUDIO_SMOKE_REPORT -Raw | ConvertFrom-Json
+            if (!$report.ok -or $report.shutdown -ne 'clean') { throw 'Installed app did not close cleanly' }
+          } finally {
+            $uninstaller = Join-Path $installDir 'unins000.exe'
+            if (Test-Path $uninstaller) {
+              $remove = Start-Process -FilePath $uninstaller -ArgumentList @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART') -Wait -PassThru
+              if ($remove.ExitCode -ne 0) { throw "Uninstaller failed: $($remove.ExitCode)" }
+            }
+          }
       - name: Upload installer and checksum
         uses: actions/upload-artifact@v7
         with:

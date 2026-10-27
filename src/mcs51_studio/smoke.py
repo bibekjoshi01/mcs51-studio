@@ -5,7 +5,7 @@ import os
 import tempfile
 import traceback
 from pathlib import Path
-from tkinter import Tk, messagebox
+from tkinter import TclError, Tk, messagebox
 
 from .metadata import APP_NAME
 from .ui.application import App
@@ -27,8 +27,12 @@ def run_smoke_test():
             messagebox.showerror = fail
             prepare_process_identity()
             root = Tk(className="MCS51Studio")
-            root.withdraw()
+            callback_errors = []
+            root.report_callback_exception = lambda *error: callback_errors.append(
+                error
+            )
             app = App(root)
+            app.workspace.select(app.board_tab)
             root.update()
             if (
                 root.title() != f"{APP_NAME} — 8051 Workbench"
@@ -43,17 +47,27 @@ def run_smoke_test():
             if app.cpu.instructions <= 1:
                 raise RuntimeError("Debugger did not run")
             app.save_settings()
+            windowing_system = root.tk.call("tk", "windowingsystem")
+            instructions = app.cpu.instructions
+            app.close()
+            root = None
+            if callback_errors:
+                raise RuntimeError(f"Desktop callback failed: {callback_errors!r}")
             report = {
                 "ok": True,
+                "shutdown": "clean",
                 "application": APP_NAME,
-                "windowing_system": root.tk.call("tk", "windowingsystem"),
-                "instructions": app.cpu.instructions,
+                "windowing_system": windowing_system,
+                "instructions": instructions,
             }
     except Exception:
         report["error"] = traceback.format_exc()
     finally:
         if root is not None:
-            root.destroy()
+            try:
+                root.destroy()
+            except TclError:
+                pass
         messagebox.showerror = previous_error
         if previous_settings is None:
             os.environ.pop("MCS51_STUDIO_SETTINGS", None)

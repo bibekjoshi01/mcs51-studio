@@ -67,6 +67,33 @@ class WorkbenchUI(unittest.TestCase):
         self.app.peripheral_tabs.select(0)
         self.root.update()
 
+    def test_scroll_container_preserves_tk_methods_and_cleans_up(self):
+        from mcs51_studio.ui.widgets import ScrollableFrame
+
+        root = self.root
+        errors = []
+        previous = root.report_callback_exception
+        root.report_callback_exception = lambda *error: errors.append(error)
+        self.addCleanup(setattr, root, "report_callback_exception", previous)
+        unrelated = root.bind("<MouseWheel>", lambda event: None, add=True)
+        self.addCleanup(root.unbind, "<MouseWheel>", unrelated)
+        for _ in range(5):
+            frame = ScrollableFrame(root)
+            frame.pack()
+            self.assertTrue(callable(frame._root))
+            self.assertIs(frame.nametowidget(str(root)), root)
+            self.assertIs(frame._root(), root)
+            # Exercise event substitution and destruction, including pending work.
+            frame.event_generate("<Configure>", width=400, height=300)
+            bindings = dict(frame._bindings)
+            frame._schedule_extent()
+            frame.destroy()
+            root.update()
+            for sequence, binding in bindings.items():
+                self.assertNotIn(binding, root.bind(sequence))
+            self.assertIn(unrelated, root.bind("<MouseWheel>"))
+        self.assertEqual(errors, [])
+
     def test_external_memory_and_processor_errors(self):
         app = self.app
         app.replace_source(

@@ -44,9 +44,9 @@ class ScrollableFrame(ttk.Frame):
         self._window = self.canvas.create_window(0, 0, anchor="nw", window=self.content)
         self.canvas.bind("<Configure>", self._resize)
         self.content.bind("<Configure>", self._schedule_extent)
-        self._root = self.winfo_toplevel()
+        self._wheel_window = self.winfo_toplevel()
         self._bindings = {
-            sequence: self._root.bind(sequence, self.wheel, add=True)
+            sequence: self._wheel_window.bind(sequence, self.wheel, add=True)
             for sequence in ("<MouseWheel>", "<Button-4>", "<Button-5>")
         }
         self.bind("<Destroy>", self._cleanup, add=True)
@@ -70,8 +70,19 @@ class ScrollableFrame(ttk.Frame):
             return
         if self._layout_job is not None:
             self.after_cancel(self._layout_job)
+            self._layout_job = None
         for sequence, binding in self._bindings.items():
-            self._root.unbind(sequence, binding)
+            # Older Tkinter releases clear all callbacks even with a function ID.
+            # Remove only our script and preserve other scrollable views.
+            script = self._wheel_window.bind(sequence)
+            remaining = "\n".join(
+                line
+                for line in script.splitlines()
+                if not line.startswith(f'if {{"[{binding} ')
+            )
+            self.tk.call("bind", self._wheel_window._w, sequence, remaining)
+            self._wheel_window.deletecommand(binding)
+        self._bindings.clear()
 
     def wheel(self, event):
         widget_path = str(event.widget)
