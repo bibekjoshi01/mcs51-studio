@@ -461,8 +461,8 @@ class WorkspaceView:
     @staticmethod
     def bounded_sash(value, extent, leading, trailing):
         # Keep both panes usable, even when the available size is unusually small.
-        low = min(leading, extent // 2)
-        high = max(low, extent - min(trailing, extent // 3) - 8)
+        high = max(0, extent - min(trailing, extent // 3) - 8)
+        low = min(leading, high)
         return max(low, min(value, high))
 
     def clamp_layout(self):

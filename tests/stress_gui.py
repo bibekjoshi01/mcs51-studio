@@ -140,6 +140,7 @@ class StressWorkbench(unittest.TestCase):
             patch.object(messagebox, "showinfo"),
             patch.object(messagebox, "askyesnocancel", return_value=None),
             patch.object(simpledialog, "askstring", return_value=None),
+            patch.object(simpledialog, "askinteger", return_value=None),
             patch.object(filedialog, "asksaveasfilename", return_value=""),
             patch.object(filedialog, "askopenfilename", return_value=""),
             patch("webbrowser.open"),
@@ -220,6 +221,7 @@ class StressWorkbench(unittest.TestCase):
         with (
             patch.object(messagebox, "showinfo"),
             patch.object(simpledialog, "askstring", return_value=None),
+            patch.object(simpledialog, "askinteger", return_value=None),
             patch.object(filedialog, "asksaveasfilename", return_value=""),
             patch.object(filedialog, "askopenfilename", return_value=""),
             patch("webbrowser.open"),
