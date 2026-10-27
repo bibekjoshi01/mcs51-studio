@@ -49,7 +49,15 @@ runs on those systems and a complete visual review remain pending.
 - Change breakpoints compare complete instruction boundaries. Stack frames are
   tracked from execution, not reconstructed from arbitrary RAM. History/reverse
   stepping are future work. Projects preserve configuration, not live CPU snapshots.
-- Broader assembler syntax remains planned.
+- Broader assembler syntax remains planned. Source is limited to 512 KiB of
+  characters; instructions/expressions to 4,096 characters, expression trees to
+  256 nodes and integers to 64 bits, and forward EQU dependency depth to 128.
+  Layout directives need already resolved values. Numeric relative operands are
+  signed offsets; labels and label aliases are absolute destinations.
+- The terminal retains up to 65,536 received bytes, evicting in 1,024-byte blocks;
+  its visible transcript retains 131,072 characters. The internal transmit trace
+  retains up to 8,192 bytes. Activity retains approximately 1,000 lines. These
+  bounds keep long simulations from growing memory indefinitely.
 - Guided lessons and exercise assessment are not implemented. Windows/Linux visual review remains pending.
 
 See [architecture.md](architecture.md) for the development direction.

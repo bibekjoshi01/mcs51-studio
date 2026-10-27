@@ -1,7 +1,7 @@
 """Application identity shared by the package and desktop interface."""
 
 APP_NAME = "MCS51 Studio"
-VERSION = "0.2.0"
+VERSION = "0.2.1"
 
 APP_ID = "org.mcs51studio.desktop"
 

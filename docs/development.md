@@ -37,6 +37,7 @@ python -m unittest discover -s tests -v
 python -m ruff check .
 python -m ruff format --check .
 python tests/gui.py
+python tests/stress_gui.py
 ```
 
 The first command is headless, covering CPU regression cases, assembler boundaries,
@@ -48,6 +49,20 @@ and layout at two window sizes; it requires a
 display. On headless Linux, use `xvfb-run -a python tests/gui.py`. CI runs headless
 checks on Windows/Linux/macOS with Python 3.10, 3.12, and 3.13, and desktop checks
 on Python 3.12. Frozen release builds run their own minimal startup check.
+
+`tests/test_qa.py` adds 1,000 deterministic generated programs with independently
+calculated bytes/results, 3,000 mutated inputs, full-memory HEX round trips,
+10,000-symbol assembly, resource limits, a 50,000-instruction LED/debugger run,
+motor elapsed-time invariance, shared-pin consistency, and timer-driven UART
+transmission/reception. Existing CPU tests exhaustively check arithmetic flags,
+MUL/DIV and BCD, plus timer modes and interrupt behavior.
+
+`tests/stress_gui.py` runs in a separate process: 1,000 control actions, all main
+menu commands, keyboard dispatch, repeated tool windows, a 65,536-row listing,
+event-loop heartbeat measurements, failed/canceled project saves, corrupted
+settings, and bounded serial/activity output. Both desktop suites run in CI and
+native installer jobs. Timings are measurements, not promises of real-time speed;
+simulated machine cycles remain independent of UI throughput.
 
 ## Contributing
 

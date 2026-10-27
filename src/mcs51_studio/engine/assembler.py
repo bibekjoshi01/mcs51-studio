@@ -24,10 +24,21 @@ class Program:
     used: set
 
 
+def names_in(text):
+    """Symbol tokens outside character literals, used for dependency checks."""
+    text = re.sub(r"'(?:''|[^'])*'", "", text)
+    return set(re.findall(r"\b[A-Z_]\w*\b", text.upper()))
+
+
 def expression(text, symbols, pc=0, unresolved=False):
     text = text.strip()
-    if len(text) == 3 and text[0] == text[-1] == "'":
-        return ord(text[1])
+    if len(text) > 4096:
+        raise AssemblyError("Expression exceeds 4096 characters")
+    if len(text) >= 2 and text[0] == text[-1] == "'":
+        character = quoted_value(text)
+        if len(character) != 1:
+            raise AssemblyError("Character operands require exactly one character")
+        return ord(character)
     text = text.upper().replace("$", str(pc))
     match = re.fullmatch(r"(HIGH|LOW)\s*(?:\((.+)\)|\s+(.+))", text)
     if match:
@@ -69,12 +80,20 @@ def expression(text, symbols, pc=0, unresolved=False):
         ast.RShift: operator.rshift,
     }
 
+    if sum(1 for _ in ast.walk(tree)) > 256:
+        raise AssemblyError("Expression is too complex (maximum 256 syntax nodes)")
+
+    def checked(value):
+        if type(value) is not int or value.bit_length() > 64:
+            raise AssemblyError("Expression exceeds the 64-bit integer limit")
+        return value
+
     def visit(node):
         if isinstance(node, ast.Constant) and type(node.value) is int:
-            return node.value
+            return checked(node.value)
         if isinstance(node, ast.Name):
             if node.id in symbols:
-                return symbols[node.id]
+                return checked(symbols[node.id])
             if unresolved:
                 return 0
             raise AssemblyError(f"Unknown symbol: {node.id}")
@@ -93,7 +112,7 @@ def expression(text, symbols, pc=0, unresolved=False):
             a, b = visit(node.left), visit(node.right)
             if isinstance(node.op, (ast.LShift, ast.RShift)) and not 0 <= b <= 64:
                 raise AssemblyError("Shift out of range")
-            return binary[type(node.op)](a, b)
+            return checked(binary[type(node.op)](a, b))
         raise AssemblyError(f"Unsupported expression: {text}")
 
     return visit(tree)
@@ -106,35 +125,44 @@ for entry in ISA:
     if op & 31 in (1, 17) and op not in (1, 17):
         continue
     template = entry["display"].upper()
-    chunks = [re.sub(r"\s+", "", c) for c in re.split(r"\b[0-9A-F]+H\b", template)]
-    pattern = "^" + "(.+?)".join(re.escape(c) for c in chunks) + "$"
+    chunks = re.split(r"\b[0-9A-F]+H\b", template)
+    literals = [
+        r"\s*".join(re.escape(char) for char in re.sub(r"\s+", "", c)) for c in chunks
+    ]
+    pattern = r"^\s*" + "(.+?)".join(literals) + r"\s*$"
     TEMPLATES.append((len(chunks) - 1, re.compile(pattern), entry))
 TEMPLATES.sort(key=lambda item: (item[0], -len(item[1].pattern)))
+BY_MNEMONIC = {}
+for template in TEMPLATES:
+    BY_MNEMONIC.setdefault(template[2]["display"].split()[0].upper(), []).append(
+        template
+    )
 
 
 def encode(line, symbols, pc, first=False):
+    if len(line) > 4096:
+        raise AssemblyError("Instruction exceeds 4096 characters")
     normalized = "".join(
-        p if p.startswith("'") else re.sub(r"\s+", "", p.upper())
-        for p in re.split(r"('[^']*')", line)
-    )
-    # Generic JMP/CALL reserve two bytes and select short/page forms.
-    if normalized.startswith("CALL"):
-        normalized = "ACALL" + normalized[4:]
-    if normalized.startswith("JMP") and normalized != "JMP@A+DPTR":
-        target = normalized[3:]
-        value = expression(target, symbols, pc, first)
-        is_label = target == "$" or any(
-            re.search(r"\b" + re.escape(n) + r"\b", target)
-            for n in symbols.get("__labels__", set())
+        p if p.startswith("'") else p.upper() for p in re.split(r"('[^']*')", line)
+    ).strip()
+    parts = normalized.split(None, 1)
+    mnemonic, operand = parts[0], parts[1] if len(parts) > 1 else ""
+    if mnemonic == "CALL":
+        normalized = "ACALL " + operand
+    if mnemonic == "JMP" and re.sub(r"\s+", "", operand) != "@A+DPTR":
+        value = expression(operand, symbols, pc, first)
+        is_label = "$" in operand or bool(
+            names_in(operand) & symbols.get("__labels__", set())
         )
         offset = value - pc - 2 if is_label else value
-        normalized = ("SJMP" if first or -128 <= offset <= 127 else "AJMP") + target
+        normalized = ("SJMP " if first or -128 <= offset <= 127 else "AJMP ") + operand
     reserved = {"A", "C", "AB", "DPTR"} | {f"R{i}" for i in range(8)}
-    for _, regex, entry in TEMPLATES:
+    candidates = BY_MNEMONIC.get(normalized.split(None, 1)[0], ())
+    for _, regex, entry in candidates:
         match = regex.fullmatch(normalized)
         if not match:
             continue
-        fields = match.groups()
+        fields = tuple(field.strip() for field in match.groups())
         if any(
             (
                 field.upper() in reserved
@@ -163,16 +191,24 @@ def encode(line, symbols, pc, first=False):
             or 0xD8 <= op <= 0xDF
         ):
             target = fields[-1]
-            is_label = target == "$" or any(
-                re.search(r"\b" + re.escape(n) + r"\b", target)
-                for n in symbols.get("__labels__", set())
+            is_label = "$" in target or bool(
+                names_in(target) & symbols.get("__labels__", set())
             )
-            offset = ((values[-1] - pc - size) if is_label else values[-1]) & 65535
-            if offset >= 32768:
-                offset -= 65536
+            if not first and is_label and not 0 <= values[-1] <= 65535:
+                raise AssemblyError("Branch address out of range")
+            offset = values[-1]
+            if is_label:
+                offset = (offset - pc - size) & 65535
+                if offset >= 32768:
+                    offset -= 65536
             if not first and not -128 <= offset <= 127:
                 raise AssemblyError("Relative branch is outside -128..127 bytes")
             values[-1] = offset & 255
+        if not first:
+            chunks = re.split(r"\b[0-9A-F]+H\b", entry["display"].upper())
+            for index, value in enumerate(values):
+                if value < 0 and not chunks[index].rstrip().endswith("#"):
+                    raise AssemblyError("Address must be from 00H to FFH")
         if op == 0x85:
             values.reverse()
         if not first and any(not -128 <= v <= 255 for v in values):
@@ -185,10 +221,16 @@ def encode(line, symbols, pc, first=False):
 
 def assemble(source):
     source = normalize_source(source)
+    if len(source) > 524288:
+        raise AssemblyError("Source exceeds 512 KiB")
     symbols = {**SFR, **BITS, **{f"AR{i}": i for i in range(8)}, "__labels__": set()}
     code, locations, used = bytearray(65536), {}, set()
     mutable_symbols = set()
+    pending = {}
     for first in (True, False):
+        if not first:
+            for name in mutable_symbols:
+                symbols.pop(name, None)
         symbols.update({f"AR{i}": i for i in range(8)})
         pc = 0
         for number, raw in enumerate(source.splitlines(), 1):
@@ -221,20 +263,46 @@ def assemble(source):
                         raise AssemblyError(f"Duplicate symbol: {name}")
                     if directive == "SET":
                         mutable_symbols.add(name)
-                    symbols[name] = expression(equ[3], symbols, pc, first)
+                    if first and directive == "EQU":
+                        context = {
+                            k: symbols[k]
+                            for k in names_in(equ[3])
+                            if k in symbols and k not in pending and k != name
+                        }
+                        try:
+                            symbols[name] = expression(equ[3], context, pc)
+                        except AssemblyError as error:
+                            if not str(error).startswith("Unknown symbol:"):
+                                raise
+                            pending[name] = (equ[3], pc, number, context)
+                            symbols[name] = 0
+                    else:
+                        symbols[name] = expression(equ[3], symbols, pc)
+                    if "$" in equ[3] or names_in(equ[3]) & symbols["__labels__"]:
+                        symbols["__labels__"].add(name)
                     continue
                 parts = line.split(None, 1)
                 directive = parts[0].upper()
                 arg = parts[1] if len(parts) > 1 else ""
                 if directive == "END":
+                    if arg:
+                        raise AssemblyError("END takes no operands")
                     break
+                if (
+                    directive in ("ORG", "USING")
+                    and first
+                    and names_in(arg) & pending.keys()
+                ):
+                    raise AssemblyError(
+                        "Layout directives require an already resolved value"
+                    )
                 if directive == "ORG":
-                    pc = expression(arg, symbols, pc, first)
+                    pc = expression(arg, symbols, pc)
                     if not 0 <= pc < 65536:
                         raise AssemblyError("ORG out of range")
                     continue
                 if directive == "USING":
-                    bank = expression(arg, symbols, pc, first)
+                    bank = expression(arg, symbols, pc)
                     if not 0 <= bank <= 3:
                         raise AssemblyError("Register bank must be 0..3")
                     symbols.update({f"AR{i}": bank * 8 + i for i in range(8)})
@@ -270,22 +338,80 @@ def assemble(source):
                     }
                     used.update(range(pc, pc + len(values)))
                 pc += len(values)
-            except (ValueError, ZeroDivisionError, OverflowError) as error:
-                raise AssemblyError(str(error), line=number) from None
+            except (
+                ValueError,
+                ZeroDivisionError,
+                OverflowError,
+                RecursionError,
+            ) as error:
+                raise AssemblyError(
+                    error.message if isinstance(error, AssemblyError) else str(error),
+                    line=number,
+                ) from None
+        if first and pending:
+            active = set()
+
+            def resolve(name):
+                if len(active) >= 128:
+                    raise AssemblyError(
+                        "EQU dependency depth exceeds 128", pending[name][2]
+                    )
+                if name in active:
+                    raise AssemblyError(
+                        "Circular EQU definition: " + name, pending[name][2]
+                    )
+                if name not in pending:
+                    return symbols[name]
+                active.add(name)
+                expr, address, line_number, context = pending[name]
+
+                class Scope(dict):
+                    def __contains__(self, key):
+                        return (
+                            super().__contains__(key)
+                            or key in pending
+                            or (key in symbols and key not in mutable_symbols)
+                        )
+
+                    def __getitem__(self, key):
+                        if super().__contains__(key):
+                            return super().__getitem__(key)
+                        return resolve(key) if key in pending else symbols[key]
+
+                scope = Scope(context)
+                try:
+                    value = expression(expr, scope, address)
+                except (AssemblyError, RecursionError) as error:
+                    raise AssemblyError(
+                        error.message
+                        if isinstance(error, AssemblyError)
+                        else str(error),
+                        line_number,
+                    ) from None
+                symbols[name] = value
+                if "$" in expr or names_in(expr) & symbols["__labels__"]:
+                    symbols["__labels__"].add(name)
+                active.remove(name)
+                del pending[name]
+                return value
+
+            for name in list(pending):
+                resolve(name)
     return Program(code, locations, symbols, used)
 
 
 def export_hex(program):
     lines = []
     addresses = sorted(program.used)
-    while addresses:
-        start = addresses[0]
+    index = 0
+    while index < len(addresses):
+        start = addresses[index]
         group = [start]
-        for p in addresses[1:16]:
+        for p in addresses[index + 1 : index + 16]:
             if p != group[-1] + 1:
                 break
             group.append(p)
-        addresses = addresses[len(group) :]
+        index += len(group)
         record = [len(group), start >> 8, start & 255, 0] + [
             program.code[p] for p in group
         ]
@@ -311,9 +437,11 @@ def import_hex(text):
         except (ValueError, IndexError):
             raise AssemblyError(f"Invalid HEX record at line {number}") from None
         if kind == 1:
+            if n != 0 or address != 0:
+                raise AssemblyError("Invalid HEX EOF record")
             ended = True
         elif kind in (2, 4):
-            if n != 2:
+            if n != 2 or address != 0:
                 raise AssemblyError("Invalid extended address")
             base = int.from_bytes(b[4:6], "big") << (4 if kind == 2 else 16)
         elif kind == 0:
@@ -324,7 +452,10 @@ def import_hex(text):
                 raise AssemblyError("Overlapping HEX records")
             code[address : address + n] = b[4 : 4 + n]
             used.update(range(address, address + n))
-        elif kind not in (3, 5):
+        elif kind in (3, 5):
+            if n != 4 or address != 0:
+                raise AssemblyError("Invalid HEX start-address record")
+        else:
             raise AssemblyError(f"Unsupported HEX record type {kind}")
     if not ended:
         raise AssemblyError("Missing HEX EOF record")

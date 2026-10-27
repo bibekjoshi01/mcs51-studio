@@ -481,7 +481,12 @@ class WorkspaceView:
 
     def log_activity(self, message):
         self.activity.configure(state="normal")
-        self.activity.insert("end", message + "\n")
+        self.activity.insert(
+            "end", message[:4096] + ("…" if len(message) > 4096 else "") + "\n"
+        )
+        lines = int(self.activity.index("end-1c").split(".")[0])
+        if lines > 1000:
+            self.activity.delete("1.0", f"{lines - 1000}.0")
         self.activity.see("end")
         self.activity.configure(state="disabled")
 

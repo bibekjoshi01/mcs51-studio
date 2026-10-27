@@ -159,6 +159,8 @@ class CPU:
         if address in (0xE0, 0xD0):
             self.parity()
         if address == 0x99:
+            if len(self.serial_tx) >= 8192:
+                del self.serial_tx[:1024]
             self.serial_tx.append(value & 255)
             self.serial.send()
         if self.on_write:

@@ -108,6 +108,7 @@ class ProjectView:
         return True
 
     def open_project_file(self, path=None, recovery=False):
+        self.pause_execution()
         if path is None:
             path = filedialog.askopenfilename(
                 filetypes=[("MCS51 Studio Project", "*.mcs51")]

@@ -10,6 +10,7 @@ from ..config import settings_path
 from ..engine.assembler import AssemblyError, assemble, export_hex, import_hex
 from ..engine.cpu import CPU, ISA, SFR
 from ..engine.debugger import Debugger
+from ..engine.source import strip_comment
 from ..hardware.analyzer import LogicCapture, port_mask
 from ..hardware.board import DEFAULT_MAPPING, Board, pin
 from ..hardware.wiring import validate_preset
@@ -189,6 +190,7 @@ class App(
                 f"Stepped opcode {op:02X} · {self.cpu.instructions:,} instructions · {self.cpu.cycles:,} machine cycles"
             )
         except Exception as e:
+            self.status.set(f"Execution Stopped · {e}")
             messagebox.showerror("Execution Stopped", str(e))
         self.refresh()
 
@@ -230,6 +232,7 @@ class App(
             )
         except Exception as e:
             self.pause_execution()
+            self.status.set(f"Execution Stopped · {e}")
             messagebox.showerror("Execution Stopped", str(e))
         self.refresh()
         if self.running:
@@ -239,6 +242,8 @@ class App(
 
     def populate_listing(self):
         self.listing.delete(*self.listing.get_children())
+        self.listing_pc = None
+        self.listing_breakpoints = set()
         if not self.program:
             return
         entries = self.program.locations or {
@@ -355,7 +360,7 @@ class App(
             self.program.code[self.cpu.pc : self.cpu.pc + size]
         )
         description = (
-            location["source"].split(";", 1)[0].strip()
+            strip_comment(location["source"]).strip()
             if location and source_matches and not self.dirty
             else ISA[opcode]["mnemonic"].split()[0]
         )
@@ -386,8 +391,15 @@ class App(
                 iid=str(addr),
                 values=[f"{addr:04X}"] + [f"{b:02X}" for b in data],
             )
-        for row in self.listing.get_children():
-            addr = int(row)
+        previous_pc = getattr(self, "listing_pc", None)
+        previous_breakpoints = getattr(self, "listing_breakpoints", set())
+        changed_rows = {self.cpu.pc, previous_pc} | (
+            self.breakpoints ^ previous_breakpoints
+        )
+        for addr in changed_rows:
+            row = str(addr)
+            if addr is None or not self.listing.exists(row):
+                continue
             self.listing.item(
                 row,
                 tags=("pc",)
@@ -396,9 +408,11 @@ class App(
                 if addr in self.breakpoints
                 else (),
             )
-            values = list(self.listing.item(row, "values"))
-            values[0] = ("● " if addr in self.breakpoints else "") + f"{addr:04X}"
-            self.listing.item(row, values=values)
+            self.listing.set(
+                row, "#1", ("● " if addr in self.breakpoints else "") + f"{addr:04X}"
+            )
+        self.listing_pc = self.cpu.pc
+        self.listing_breakpoints = set(self.breakpoints)
         self.run_button.configure(text="Pause  F5" if self.running else "Run  F5")
         self.machine_state.set(
             "RUNNING"
@@ -408,11 +422,11 @@ class App(
             else "EDITING"
         )
         self.editor_view.breakpoint_lines = {
-            location["line"]
-            for address, location in (
-                self.program.locations.items() if self.program else []
-            )
-            if address in self.breakpoints and location["line"] > 0
+            self.program.locations[address]["line"]
+            for address in self.breakpoints
+            if self.program
+            and address in self.program.locations
+            and self.program.locations[address]["line"] > 0
         }
         self.editor_view.execution_line = None
         self.editor.tag_remove("pc", "1.0", "end")
@@ -421,14 +435,16 @@ class App(
             if line > 0 and not self.dirty:
                 self.editor.tag_add("pc", f"{line}.0", f"{line}.end")
                 self.editor_view.execution_line = line
-            if str(self.cpu.pc) in self.listing.get_children():
+            if self.listing.exists(str(self.cpu.pc)):
                 self.listing.see(str(self.cpu.pc))
         self.editor_view.redraw()
         self.update_board()
         self.refresh_debug()
-        if self.uart_position < len(self.board.uart.received):
-            data = self.board.uart.received[self.uart_position :]
-            self.uart_position = len(self.board.uart.received)
+        uart = self.board.uart
+        total = uart.received_dropped + len(uart.received)
+        if self.uart_position < total:
+            data = uart.received[max(0, self.uart_position - uart.received_dropped) :]
+            self.uart_position = total
             self.uart_output.configure(state="normal")
             self.uart_output.insert(
                 "end",
@@ -437,7 +453,11 @@ class App(
                     for v in data
                 ),
             )
-            self.uart_output.see("end")
+            size = int(self.uart_output.count("1.0", "end-1c", "chars")[0])
+            if size > 131072:
+                self.uart_output.delete("1.0", f"1.0+{size - 131072}c")
+            if self.uart_output.winfo_ismapped():
+                self.uart_output.see("end")
             self.uart_output.configure(state="disabled")
 
     def switch_changed(self):
@@ -480,6 +500,7 @@ class App(
         self.refresh()
 
     def open_file(self):
+        self.pause_execution()
         if not self.confirm_discard():
             return
         self.pause_execution()
@@ -552,7 +573,11 @@ class App(
 
     def mapping_dialog(self):
         self.pause_execution()
-        window = tk.Toplevel(self.root)
+        existing = getattr(self, "mapping_window", None)
+        if existing is not None and existing.winfo_exists():
+            existing.lift()
+            return
+        window = self.mapping_window = tk.Toplevel(self.root)
         window.title("Pin Mappings")
         window.geometry("650x650")
         canvas = tk.Canvas(window, highlightthickness=0)
@@ -633,7 +658,11 @@ class App(
         self.show_instruments("DAC Scope")
 
     def isa_window(self):
-        w = tk.Toplevel(self.root)
+        existing = getattr(self, "reference_window", None)
+        if existing is not None and existing.winfo_exists():
+            existing.lift()
+            return
+        w = self.reference_window = tk.Toplevel(self.root)
         w.title("8051 Instruction Reference")
         w.geometry("670x500")
         text = tk.Text(w, font=(self.mono_font, -12))
@@ -649,6 +678,8 @@ class App(
     def load_settings(self):
         try:
             data = json.loads(self.settings_path.read_text(encoding="utf-8"))
+            if not isinstance(data, dict):
+                return
             presets = data.get("wiring_presets", {})
             if isinstance(presets, dict):
                 for name, preset in presets.items():
@@ -667,19 +698,23 @@ class App(
                     for value in values:
                         pin(value)
                 self.board.mapping = data["mapping"]
-            self.board.enabled.update(
-                {
-                    k: bool(v)
-                    for k, v in data.get("enabled", {}).items()
-                    if k in self.board.enabled
-                }
-            )
-        except (OSError, ValueError, TypeError):
+            enabled = data.get("enabled", {})
+            if isinstance(enabled, dict):
+                self.board.enabled.update(
+                    {
+                        k: v
+                        for k, v in enabled.items()
+                        if k in self.board.enabled and type(v) is bool
+                    }
+                )
+
+        except (OSError, ValueError, TypeError, AttributeError, RecursionError):
             pass
 
     def save_settings(self):
         self.settings_path.parent.mkdir(parents=True, exist_ok=True)
-        self.settings_path.write_text(
+        write_source(
+            self.settings_path,
             json.dumps(
                 {
                     "mapping": self.board.mapping,
@@ -690,7 +725,6 @@ class App(
                 },
                 indent=2,
             ),
-            encoding="utf-8",
         )
 
     def about(self):

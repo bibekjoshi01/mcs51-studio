@@ -27,7 +27,11 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y python3-tk xvfb xauth
       - name: Linux GUI smoke test
         if: runner.os == 'Linux' && matrix.python-version == '3.12'
-        run: xvfb-run -a python tests/gui.py
+        run: |
+          xvfb-run -a python tests/gui.py
+          xvfb-run -a python tests/stress_gui.py
       - name: Windows/macOS GUI smoke test
         if: runner.os != 'Linux' && matrix.python-version == '3.12'
-        run: python tests/gui.py
+        run: |
+          python tests/gui.py
+          python tests/stress_gui.py

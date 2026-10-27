@@ -6,6 +6,7 @@ class UARTEndpoint:
         self.baud, self.parity, self.data_bits, self.stop_bits = 4800, 0, 8, 1
         self.period = 208
         self.pending, self.received = [], []
+        self.received_dropped = 0
         self.errors = {"parity": 0, "framing": 0, "start": 0}
         self.last_error = ""
         self.reset_link()
@@ -87,6 +88,12 @@ class UARTEndpoint:
             value |= parity_bit << self.data_bits
         return value
 
+    def record_received(self, value):
+        if len(self.received) >= 65536:
+            del self.received[:1024]
+            self.received_dropped += 1024
+        self.received.append(value)
+
     def error(self, kind, message):
         self.errors[kind] += 1
         self.last_error = message
@@ -129,7 +136,7 @@ class UARTEndpoint:
                             )
                             valid = False
                         if valid:
-                            self.received.append(
+                            self.record_received(
                                 sum(bit << i for i, bit in enumerate(data))
                             )
                         self.receiving = False

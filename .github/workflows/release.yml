@@ -47,10 +47,14 @@ jobs:
       - run: python -m unittest discover -s tests -v
       - name: Linux desktop integration tests
         if: runner.os == 'Linux'
-        run: xvfb-run -a python tests/gui.py
+        run: |
+          xvfb-run -a python tests/gui.py
+          xvfb-run -a python tests/stress_gui.py
       - name: Windows/macOS desktop integration tests
         if: runner.os != 'Linux'
-        run: python tests/gui.py
+        run: |
+          python tests/gui.py
+          python tests/stress_gui.py
       - name: Build and smoke-test Linux installer
         if: runner.os == 'Linux'
         run: xvfb-run -a python scripts/build_release.py

@@ -40,7 +40,7 @@ Device badges distinguish disabled
 hardware from an enabled device that is idle. Keypad keys support mouse hold or
 Space while focused. Keypad and motor cards stack when space is limited.
 
-UART has its own scrollable transcript and Clear output action; clearing the view
+UART has a transcript with vertical and horizontal scrolling and a Clear Output action; clearing the view
 does not erase received simulation data. Hardware shows port latch and effective
 pin values in both binary and hexadecimal. Reset clears the terminal and machine
 state while retaining the analogue slider, switch, and interrupt-gate inputs.
@@ -249,3 +249,20 @@ in the application settings directory. A startup status message points to
 save it as a project to keep it. Successful saves and confirmed normal closing
 remove that session's recovery file. Writes are atomic; a failed save leaves the
 previous file intact. Layout and platform fonts remain local preferences.
+
+
+## Assembler Diagnostics And Long Sessions
+
+Operand expressions preserve word operators such as `AND`, `OR`, and `SHL`, plus
+`HIGH`/`LOW`. Forward `EQU` chains are resolved before code emission; circular
+chains report an error. `SET` variables must be initialized before use and retain
+source-order values. Negative direct/bit addresses and out-of-range relative
+offsets are rejected rather than silently wrapped. HEX input validates record
+lengths, checksums, EOF, extended addresses, and start-address record shapes.
+
+Large listings update only changed execution/breakpoint rows. The UART terminal
+uses horizontal scrolling for long lines and does not force-scroll hidden tabs.
+Receive history, the visible transcript, and activity logs have retention limits
+listed in the supported-features guide. Malformed application settings fall back
+to defaults; settings writes replace files atomically. These safeguards do not
+change simulated cycle costs or the Show Transitions playback setting.

@@ -206,8 +206,13 @@ class BoardView:
             height=12,
             font=(self.mono_font, -12),
             state="disabled",
-            wrap="word",
+            wrap="none",
         )
+        horizontal = ttk.Scrollbar(
+            transcript, orient="horizontal", command=self.uart_output.xview
+        )
+        horizontal.pack(side="bottom", fill="x")
+        self.uart_output.configure(xscrollcommand=horizontal.set)
         output_scroll = ttk.Scrollbar(transcript, command=self.uart_output.yview)
         output_scroll.pack(side="right", fill="y")
         self.uart_output.configure(
@@ -357,7 +362,9 @@ class BoardView:
         self.uart_output.configure(state="normal")
         self.uart_output.delete("1.0", "end")
         self.uart_output.configure(state="disabled")
-        self.uart_position = len(self.board.uart.received)
+        self.uart_position = self.board.uart.received_dropped + len(
+            self.board.uart.received
+        )
 
     def update_board(self):
         enabled = sum(self.board.enabled.values())

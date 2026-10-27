@@ -140,13 +140,28 @@ class Board:
             self.adc_value = 255
             self.adc_intr = True
             self.previous_wr = True
-        self.digits = [255] * 4
-
-        if self.enabled["display"] and self.get("display_cs"):
-            selected = (
-                self.get("display_select", 0) | self.get("display_select", 1) << 1
-            )
-            self.digits[selected] = self.data("segments")
+        if self.enabled["uart"]:
+            rx = self.get("uart_rx")
+            for _ in range(elapsed):
+                self.uart.pulse(rx)
+            if not self.uart.tx_line:
+                self.hold_low(self.mapping["uart_tx"][0])
+        if self.enabled["motor"]:
+            first, second = self.get("motor_control", 0), self.get("motor_control", 1)
+            self.motor_direction = 0 if first == second else 1 if first else -1
+            if self.motor_direction:
+                self.motor_count -= elapsed * self.cycle_us
+            if self.motor_count <= 0:
+                steps = int(-self.motor_count // self.motor_current) + 1
+                self.motor_count += steps * self.motor_current
+                self.motor_position = (
+                    self.motor_position + steps * self.motor_direction
+                ) % 8
+            self.motor_angle = self.motor_position * 45
+            if self.motor_position == 0:
+                self.hold_low(self.mapping["motor_sensor"][0])
+        else:
+            self.motor_direction = 0
         if self.enabled["dac"]:
             if not self.get("dac_wr"):
                 self.dac_value = self.data("dac_data")
@@ -155,19 +170,20 @@ class Board:
                 self.scope[-1] = sample
             else:
                 self.scope.append(sample)
-        if self.enabled["motor"]:
-            first, second = self.get("motor_control", 0), self.get("motor_control", 1)
-            self.motor_direction = 0 if first == second else 1 if first else -1
-            if self.motor_direction:
-                self.motor_count -= elapsed * self.cycle_us
-            if self.motor_count <= 0:
-                self.motor_count = self.motor_current
-                self.motor_position = (self.motor_position + self.motor_direction) % 8
-            self.motor_angle = self.motor_position * 45
-            if self.motor_position == 0:
-                self.hold_low(self.mapping["motor_sensor"][0])
-        else:
-            self.motor_direction = 0
+        if (
+            self.enabled["comparator"]
+            and not self.enabled["adc"]
+            and self.analogue <= self.dac_value * 5 / 255
+        ):
+            self.hold_low(self.mapping["comparator_output"][0])
+        self.settle_keys()
+        self.digits = [255] * 4
+
+        if self.enabled["display"] and self.get("display_cs"):
+            selected = (
+                self.get("display_select", 0) | self.get("display_select", 1) << 1
+            )
+            self.digits[selected] = self.data("segments")
         if self.enabled["lcd"]:
             e = bool(self.get("lcd_e"))
             if self.previous_e and not e:
@@ -180,20 +196,6 @@ class Board:
             self.previous_e = e
         else:
             self.previous_e = False
-        if (
-            self.enabled["comparator"]
-            and not self.enabled["adc"]
-            and self.analogue <= self.dac_value * 5 / 255
-        ):
-            self.hold_low(self.mapping["comparator_output"][0])
-        if self.enabled["uart"]:
-            rx = self.get("uart_rx")
-            if not self.uart.tx_line:
-                self.hold_low(self.mapping["uart_tx"][0])
-            for _ in range(elapsed):
-                self.uart.pulse(rx)
-
-        self.settle_keys()
         if self.on_sample:
             self.on_sample()
 

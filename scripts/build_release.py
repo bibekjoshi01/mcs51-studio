@@ -140,23 +140,44 @@ def windows_installer(bundle, output, arch):
 
 def macos_installer(bundle, output, arch):
     installer = output / f"MCS51-Studio-{VERSION}-macos-{arch}.pkg"
-    arguments = [
-        require_tool("pkgbuild"),
-        "--component",
-        str(bundle),
-        "--install-location",
-        "/Applications",
-        "--identifier",
-        "org.mcs51studio.desktop",
-        "--version",
-        VERSION,
-        "--ownership",
-        "recommended",
-    ]
-    identity = os.environ.get("MCS51_MAC_INSTALLER_IDENTITY")
-    if identity:
-        arguments += ["--sign", identity]
-    run(*arguments, installer)
+    with tempfile.TemporaryDirectory(prefix="mcs51-pkg-") as temporary:
+        staging = Path(temporary)
+        payload = staging / "payload"
+        payload.mkdir()
+        shutil.copytree(bundle, payload / bundle.name, symlinks=True)
+        components = staging / "components.plist"
+        with components.open("wb") as stream:
+            plistlib.dump(
+                [
+                    {
+                        "RootRelativeBundlePath": bundle.name,
+                        "BundleIsRelocatable": False,
+                        "BundleIsVersionChecked": True,
+                        "BundleHasStrictIdentifier": True,
+                        "BundleOverwriteAction": "upgrade",
+                    }
+                ],
+                stream,
+            )
+        arguments = [
+            require_tool("pkgbuild"),
+            "--root",
+            payload,
+            "--component-plist",
+            components,
+            "--install-location",
+            "/Applications",
+            "--identifier",
+            "org.mcs51studio.desktop",
+            "--version",
+            VERSION,
+            "--ownership",
+            "recommended",
+        ]
+        identity = os.environ.get("MCS51_MAC_INSTALLER_IDENTITY")
+        if identity:
+            arguments += ["--sign", identity]
+        run(*arguments, installer)
     notary = os.environ.get("MCS51_MAC_NOTARY_PROFILE")
     if notary:
         run(
