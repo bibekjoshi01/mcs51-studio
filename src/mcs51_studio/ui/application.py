@@ -78,7 +78,7 @@ class App(
         self.editor.edit_modified(False)
         self.editor_view.highlight()
         self.refresh()
-        self.root.after_idle(self.restore_layout)
+        self.start_layout_tracking()
         self.init_projects()
 
     def pause_execution(self):

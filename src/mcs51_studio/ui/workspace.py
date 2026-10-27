@@ -432,13 +432,61 @@ class WorkspaceView:
         self.workspace.select(self.editor_tab)
         self.editor.focus_set()
 
+    def start_layout_tracking(self):
+        # Idle callbacks alone can precede native window mapping on Windows/X11.
+        self._layout_initialized = False
+        self._layout_after = None
+        self.vertical.bind("<Configure>", self.queue_layout, add="+")
+        self.vertical.bind("<Map>", self.queue_layout, add="+")
+        self.horizontal.bind("<Configure>", self.queue_layout, add="+")
+        self.queue_layout()
+
+    def queue_layout(self, event=None):
+        if self._layout_after is None:
+            self._layout_after = self.root.after_idle(self.settle_layout)
+
+    def settle_layout(self):
+        self._layout_after = None
+        if (
+            not self.vertical.winfo_ismapped()
+            or self.vertical.winfo_height() < 200
+            or self.vertical.winfo_width() < 400
+        ):
+            return
+        if not self._layout_initialized:
+            self._layout_initialized = True
+            self.restore_layout()
+        self.clamp_layout()
+
+    @staticmethod
+    def bounded_sash(value, extent, leading, trailing):
+        # Keep both panes usable, even when the available size is unusually small.
+        low = min(leading, extent // 2)
+        high = max(low, extent - min(trailing, extent // 3) - 8)
+        return max(low, min(value, high))
+
+    def clamp_layout(self):
+        if self.bottom_visible.get() and self.vertical.winfo_height() > 1:
+            value = self.vertical.sashpos(0)
+            position = self.bounded_sash(value, self.vertical.winfo_height(), 280, 140)
+            if position != value:
+                self.vertical.sashpos(0, position)
+        if self.inspector_visible.get() and self.horizontal.winfo_width() > 1:
+            value = self.horizontal.sashpos(0)
+            position = self.bounded_sash(value, self.horizontal.winfo_width(), 400, 240)
+            if position != value:
+                self.horizontal.sashpos(0, position)
+
     def reset_layout(self):
         for name in ("inspector", "bottom"):
             getattr(self, f"{name}_visible").set(True)
             self.apply_pane(name)
         self.root.update_idletasks()
-        self.horizontal.sashpos(0, max(350, self.horizontal.winfo_width() - 300))
-        self.vertical.sashpos(0, max(300, self.vertical.winfo_height() - 260))
+        self.vertical.sashpos(0, max(280, self.vertical.winfo_height() - 260))
+        # Set the outer split first so the inner split has its allocated width.
+        self.root.update_idletasks()
+        self.horizontal.sashpos(0, max(400, self.horizontal.winfo_width() - 300))
+        self.clamp_layout()
 
     def capture_layout(self):
         return {
@@ -478,6 +526,8 @@ class WorkspaceView:
             self.vertical.sashpos(
                 0, max(180, min(vertical, self.vertical.winfo_height() - 100))
             )
+
+        self.clamp_layout()
 
     def log_activity(self, message):
         self.activity.configure(state="normal")

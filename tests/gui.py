@@ -303,6 +303,57 @@ class WorkbenchUI(unittest.TestCase):
         app.analogue.set(0)
         app.key_gate_var.set(False)
 
+    def test_layout_waits_for_mapping_and_survives_resize(self):
+        root, app = self.root, self.app
+        root.withdraw()
+        root.update()
+        app._layout_initialized = False
+        app.layout_settings = {}
+        app.queue_layout()
+        root.update()
+        self.assertFalse(app._layout_initialized)
+        # Do not call Reset Layout after mapping: startup must work by itself.
+        root.geometry("960x640")
+        root.deiconify()
+        root.update()
+        self.assertTrue(app._layout_initialized)
+        for geometry in ("960x640", "1370x900", "1024x768", "960x640"):
+            root.geometry(geometry)
+            root.update()
+            self.assertGreaterEqual(app.horizontal.winfo_height(), 280)
+            self.assertGreaterEqual(app.center.winfo_width(), 400)
+            self.assertGreaterEqual(app.inspector.winfo_width(), 240)
+            self.assertGreaterEqual(app.bottom.winfo_height(), 140)
+        # Resizing must not keep restoring defaults over the user's split.
+        app.vertical.sashpos(0, 310)
+        root.update()
+        self.assertEqual(app.vertical.sashpos(0), 310)
+
+    def test_collapsed_saved_layout_is_recovered(self):
+        root, app = self.root, self.app
+        root.deiconify()
+        root.update()
+        for position in (0, -1000, 100000):
+            app.layout_settings = {
+                "version": 2,
+                "horizontal": [position],
+                "vertical": position,
+            }
+            app.restore_layout()
+            root.update()
+            self.assertGreaterEqual(app.horizontal.winfo_height(), 280)
+            self.assertGreaterEqual(app.center.winfo_width(), 400)
+            self.assertGreaterEqual(app.inspector.winfo_width(), 240)
+            self.assertGreaterEqual(app.bottom.winfo_height(), 140)
+        app.layout_settings = {
+            "version": 2,
+            "visible": {"inspector": False, "bottom": False},
+        }
+        app.restore_layout()
+        root.update()
+        self.assertEqual(len(app.horizontal.panes()), 1)
+        self.assertEqual(len(app.vertical.panes()), 1)
+
     def test_inspector_and_legacy_layout(self):
         app = self.app
         self.assertFalse(hasattr(app, "sidebar"))
