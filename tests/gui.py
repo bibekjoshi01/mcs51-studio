@@ -642,6 +642,45 @@ class WorkbenchUI(unittest.TestCase):
         self.assertTrue(app.assemble())
         self.assertEqual(len(app.program.used), 5000)
 
+    def test_program_termination_preserves_results_until_reset(self):
+        app = self.app
+        app.debugger.watches.clear()
+        app.replace_source("ORG 0000H\nMOV A,#25H\nMOV B,#15H\nADD A,B\nEND")
+        self.assertTrue(app.assemble())
+        for action in (app.toggle_run, app.step):
+            with self.subTest(action=action.__name__):
+                app.reset()
+                if action == app.step:
+                    app.step()
+                    app.step()
+                action()
+                while app.running:
+                    self.root.update()
+                self.assertEqual((app.cpu.a, app.cpu.ram[0xF0]), (0x3A, 0x15))
+                self.assertEqual((app.cpu.pc, app.cpu.instructions), (7, 3))
+                self.assertIsNone(app.run_after)
+                self.assertIn("Program terminated", app.status.get())
+                self.assertEqual(app.machine_state.get(), "TERMINATED")
+                self.assertEqual(app.current_instruction.get(), "Program terminated")
+                self.assertEqual(app.instruction_state.get(), "Reset to run again")
+                self.assertEqual(app.instruction_timing.get(), "No next instruction")
+                self.assertEqual(app.instruction_bytes.get(), "—")
+                self.assertEqual(app.run_button.cget("text"), "Run  F5")
+                self.assertEqual(app.reg_vars["ACC"].get(), "3A")
+                for _ in range(2):
+                    app.toggle_run()
+                    app.step()
+                self.assertEqual(
+                    (app.cpu.pc, app.cpu.instructions, app.cpu.a), (7, 3, 0x3A)
+                )
+                self.assertIsNone(app.run_after)
+                app.reset()
+                self.assertEqual(app.machine_state.get(), "READY")
+                self.assertEqual(app.instruction_state.get(), "Ready to execute")
+                self.assertEqual((app.cpu.pc, app.cpu.a), (0, 0))
+                app.step()
+                self.assertEqual((app.cpu.a, app.cpu.instructions), (0x25, 1))
+
     def test_visible_output_transitions(self):
         app = self.app
         app.replace_source("loop: CPL P1.0\nSJMP loop")

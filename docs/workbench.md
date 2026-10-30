@@ -82,6 +82,14 @@ program. Export Intel HEX writes the current assembled program.
 
 ## Keyboard Shortcuts
 
+Run and Step stop with **Program terminated** when the next program address has
+no loaded code or data. Final registers, memory, and the last instruction remain
+available for inspection. Run or Step again keeps that result; use **Reset** to
+start over. This applies with or without an `END` directive and to imported HEX
+images. `END` ends assembly; explicit loops continue running until paused or a
+breakpoint is reached. Jumps and returns to loaded addresses continue normally;
+execution into an unloaded gap stops as well.
+
 Use Command on macOS wherever Ctrl is shown below. Function keys may require
 Fn depending on your keyboard settings.
 

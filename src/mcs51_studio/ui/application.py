@@ -177,7 +177,10 @@ class App(
 
     def step_once(self):
         location = self.program.locations.get(self.cpu.pc, {}) if self.program else {}
-        return self.debugger.step(self.board, location.get("source", ""))
+        op = self.debugger.step(self.board, location.get("source", ""), self.program)
+        if self.debugger.terminated:
+            self.pause_execution()
+        return op
 
     def step(self):
         self.pause_execution()
@@ -186,8 +189,13 @@ class App(
                 return
         try:
             op = self.step_once()
+            result = (
+                "Program terminated"
+                if self.debugger.terminated
+                else f"Stepped opcode {op:02X}"
+            )
             self.status.set(
-                f"Stepped opcode {op:02X} · {self.cpu.instructions:,} instructions · {self.cpu.cycles:,} machine cycles"
+                f"{result} · PC {self.cpu.pc:04X} · {self.cpu.instructions:,} instructions · {self.cpu.cycles:,} machine cycles"
             )
         except Exception as e:
             self.status.set(f"Execution Stopped · {e}")
@@ -417,6 +425,8 @@ class App(
         self.machine_state.set(
             "RUNNING"
             if self.running
+            else "TERMINATED"
+            if self.program and not self.dirty and self.debugger.terminated
             else "READY"
             if self.program and not self.dirty
             else "EDITING"

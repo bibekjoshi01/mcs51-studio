@@ -158,8 +158,14 @@ class InspectorView:
             )
         self.flag_values["BANK"].set(str((psw >> 3) & 3))
         self.flag_labels["BANK"].configure(foreground=theme.FOCUS)
-        self.current_instruction.set(description)
         self.instruction_address.set(f"{self.cpu.pc:04X}")
+        if self.debugger.terminated and not self.dirty:
+            self.current_instruction.set("Program terminated")
+            self.instruction_bytes.set("—")
+            self.instruction_timing.set("No next instruction")
+            self.instruction_state.set("Reset to run again")
+            return
+        self.current_instruction.set(description)
         self.instruction_bytes.set(encoded.hex(" ").upper())
         cycles = ISA[opcode]["cycles"]
         self.instruction_timing.set(

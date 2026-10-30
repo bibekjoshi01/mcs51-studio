@@ -64,6 +64,7 @@ class Debugger:
         self.changed = set()
         self.target = None
         self.reason = ""
+        self.terminated = False
         self.frame_warning = ""
         self.serial = 0
         self.cpu.on_frame = self.frame_event
@@ -133,8 +134,13 @@ class Debugger:
             }
         return True
 
-    def step(self, board, source=""):
+    def step(self, board, source="", program=None):
         cpu = self.cpu
+        self.terminated = program is not None and cpu.pc not in program.used
+        if self.terminated:
+            self.reason = "Program terminated"
+            self.target = None
+            return None
         before, ram, start_cycles = registers(cpu), bytes(cpu.ram), cpu.cycles
         pc, op = cpu.pc, cpu.code[cpu.pc]
         encoded = bytes(cpu.code[(pc + i) & 65535] for i in range(ISA[op]["size"]))
@@ -195,6 +201,9 @@ class Debugger:
                     self.reason
                     or "Temporary run stopped after 1,000,000 instructions; target was not reached."
                 )
+        self.terminated = program is not None and cpu.pc not in program.used
+        if self.terminated:
+            self.reason = "Program terminated"
         if self.reason:
             self.target = None
         return op
