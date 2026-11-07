@@ -6,6 +6,8 @@ MCS51 Studio brings assembly editing, debugging, and peripheral simulation into
 one desktop application. Inspect registers and memory, trace program execution,
 and work with a configurable virtual board.
 
+![MCS51 Studio workbench](docs/images/dashboard.png)
+
 ## Install And Run
 
 Get the installer from [Releases](https://github.com/bibekjoshi01/mcs51-studio/releases).
