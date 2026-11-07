@@ -16,8 +16,8 @@ installer and SHA-256 checksum. Download them from that workflow's artifacts.
 For a release, update `VERSION` in `metadata.py`, then push the corresponding
 `v<version>` tag. After all five native builds succeed, the workflow creates a
 **draft GitHub Release** containing the installers. Review, test installation on
-clean machines, and publish the draft explicitly. No release has been published
-from the current local repository.
+clean machines, and publish the draft explicitly. Published versions are available
+on the [GitHub Releases page](https://github.com/bibekjoshi01/mcs51-studio/releases).
 
 Outputs are:
 
