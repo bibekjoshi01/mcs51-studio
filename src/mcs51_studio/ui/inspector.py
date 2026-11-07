@@ -1,11 +1,11 @@
 """Processor inspector presentation, separate from workspace and CPU behavior."""
 
 import tkinter as tk
-from tkinter import ttk
+from tkinter import messagebox, ttk
 
-from ..engine.cpu import ISA
+from ..engine.cpu import BITS, ISA, SFR
 from . import theme
-from .widgets import CollapsibleSection, ScrollableFrame
+from .widgets import CollapsibleSection, ScrollableFrame, Tooltip
 
 FLAGS = (("CY", 7), ("AC", 6), ("OV", 2), ("P", 0), ("F0", 5), ("RS1", 4), ("RS0", 3))
 
@@ -130,12 +130,22 @@ class InspectorView:
         names = ["PC", "ACC", "B", "PSW", "SP", "DPL", "DPH"] + [
             f"R{i}" for i in range(8)
         ]
+        names += [name for name in SFR if name not in names]
         for i, name in enumerate(names):
             row, column = divmod(i, 3)
             cell = ttk.Frame(registers)
             cell.grid(row=row, column=column, sticky="ew", padx=3, pady=5)
             registers.columnconfigure(column, weight=1)
-            ttk.Label(cell, text=name, style="Section.TLabel").pack(anchor="w")
+            label = ttk.Label(cell, text=name, style="Section.TLabel")
+            label.pack(anchor="w")
+            Tooltip(
+                label,
+                f"SFR address {SFR[name]:02X}H"
+                if name in SFR
+                else "Program counter"
+                if name == "PC"
+                else f"Register {name} in the active bank",
+            )
             var = tk.StringVar()
             self.reg_vars[name] = var
             entry = ttk.Entry(
@@ -147,8 +157,118 @@ class InspectorView:
         ttk.Label(
             parent, text="Hexadecimal · Enter to apply", style="Muted.TLabel"
         ).pack(anchor="w", pady=10)
+        self.build_bitfield(parent)
+
+    def build_bitfield(self, parent):
+        section = CollapsibleSection(parent, "Bitfield")
+        section.pack(fill="x", pady=6)
+        self.bitfield_address = 0xE0
+        self.bitfield_target = tk.StringVar(value="ACC")
+        target = ttk.Combobox(
+            section.body,
+            textvariable=self.bitfield_target,
+            values=list(SFR),
+            width=10,
+        )
+        target.pack(anchor="w")
+        target.bind("<Return>", self.select_bitfield)
+        target.bind("<<ComboboxSelected>>", self.select_bitfield)
+        bits = ttk.Frame(section.body)
+        bits.pack(fill="x", pady=8)
+        self.bitfield_buttons = {}
+        self.bitfield_hints = {}
+        for column, bit in enumerate(range(7, -1, -1)):
+            bits.columnconfigure(column, weight=1)
+            ttk.Label(bits, text=str(bit), anchor="center").grid(
+                row=0, column=column, sticky="ew"
+            )
+            button = ttk.Button(
+                bits,
+                text="0",
+                width=2,
+                style="Footer.TButton",
+                command=lambda b=bit: self.toggle_bitfield(b),
+            )
+            button.grid(row=1, column=column, sticky="ew")
+            self.bitfield_buttons[bit] = button
+            self.bitfield_hints[bit] = Tooltip(button, "")
+        self.bitfield_status = ttk.Label(
+            section.body, style="Muted.TLabel", wraplength=240
+        )
+        self.bitfield_status.pack(fill="x")
+
+    def select_bitfield(self, event=None):
+        text = self.bitfield_target.get().strip().upper()
+        try:
+            address = SFR[text] if text in SFR else int(text.removesuffix("H"), 16)
+            if not (0 <= address <= 127 or address in SFR.values()):
+                raise ValueError()
+        except ValueError:
+            messagebox.showerror(
+                "Invalid Bitfield",
+                "Choose an SFR name or a RAM address from 00 to 7F (hex).",
+                parent=self.root,
+            )
+            return
+        self.bitfield_address = address
+        self.update_bitfield()
+
+    def toggle_bitfield(self, bit):
+        address = self.bitfield_address
+        if not self.bitfield_editable(address) or self.running:
+            return
+        self.cpu.write(address, self.cpu.read(address, latch=True) ^ (1 << bit))
+        self.debugger.reset()
+        self.breakpoint_stop = None
+        self.board.update()
+        self.refresh()
+
+    @staticmethod
+    def bitfield_editable(address):
+        return 0x20 <= address <= 0x2F or address >= 128 and address % 8 == 0
+
+    def update_bitfield(self):
+        address = self.bitfield_address
+        value = self.cpu.read(address, latch=True)
+        editable = self.bitfield_editable(address)
+        descriptions = (
+            (
+                "GATE1",
+                "C/T1",
+                "M1 (Timer 1)",
+                "M0 (Timer 1)",
+                "GATE0",
+                "C/T0",
+                "M1 (Timer 0)",
+                "M0 (Timer 0)",
+            )
+            if address == 0x89
+            else None
+        )
+        for bit, button in self.bitfield_buttons.items():
+            button.configure(text=str(value >> bit & 1))
+            button.state(["!disabled" if editable and not self.running else "disabled"])
+            name = (
+                next((n for n, a in BITS.items() if a == address + bit), "")
+                if address >= 128
+                else ""
+            )
+            self.bitfield_hints[bit].text = (
+                descriptions[7 - bit]
+                if descriptions
+                else name or f"Bit {bit} of {address:02X}H"
+            )
+        self.bitfield_status.configure(
+            text=f"{address:02X}H · {value:02X} · "
+            + (
+                "Click a bit to toggle"
+                if editable
+                else "Read only: not bit-addressable"
+            )
+        )
 
     def update_inspector(self, opcode, encoded, description):
+        self.update_bitfield()
         psw = self.cpu.ram[0xD0]
         for name, bit in FLAGS:
             value = (psw >> bit) & 1

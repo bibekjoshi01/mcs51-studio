@@ -8,6 +8,9 @@ shows a next-instruction card, individual status-flag tiles, and editable regist
 The card separates source, address, bytes, and timing; the flag grid shows the
 active register bank alongside the PSW bits. Register values are hexadecimal.
 Edit a value and press Enter to apply it.
+All implemented SFRs are included. Hover over a register label for its address.
+The Bitfield section accepts an SFR name or hexadecimal RAM address; click a bit
+to toggle it when the byte is bit-addressable. Other bytes are read only there.
 
 ## Panels And Navigation
 
@@ -115,6 +118,15 @@ After assembly, click an editor line number or double-click a listing row to
 toggle a breakpoint. A pink gutter dot marks the breakpoint; a mint arrow and
 line highlight mark the next source instruction. The toolbar batch value limits
 work per UI update; it is not an oscillator-frequency setting.
+Choose a preset or type a count from 1 to 1,000,000 and press Enter. This can be
+changed while running; typing alone leaves the last applied count active.
+Listing also accepts a hexadecimal breakpoint address and offers Clear All
+Breakpoints. A breakpoint at the initial PC stops before the first instruction;
+Run resumes from it and Reset makes it stop there again.
+
+Editing Code memory updates Listing with a code-modified marker. Assembly source
+remains separate. Export Intel HEX saves the current edited machine bytes;
+Reset or Assemble reloads the original assembled bytes.
 
 ## Visual Conventions
 
@@ -208,7 +220,11 @@ Keypad **Standard** toggles independent keys, **Pulse** closes while held, and
 **Radio** permits one latched key; pressing that key again releases it. Changing
 mode releases all keys. Held keys are visually pressed. Optional switch bounce
 uses a repeatable ten-phase contact pattern over the chosen duration, then settles.
-It advances only with simulated time. Bounce applies to switches, not the keypad.
+It advances only with simulated time. **Keypad Bounce** adds a separate 30 ms
+contact pattern in Standard mode; Pulse and Radio do not bounce. Standard is the
+initial mode. Bouncing contacts are highlighted until they settle.
+The motor card has a speed slider; Experiment Settings also accepts a speed
+percentage. Experiment/UART settings and the applied batch persist across sessions.
 
 Choose **P3.2 / INT0** or **P3.3 / INT1** and a low-pulse width, then **Apply And Pulse**.
 Configure TCON/IE in your program to observe an interrupt. Pulses hold the resolved
@@ -217,8 +233,10 @@ and bounce are observed at instruction boundaries; sub-instruction widths and
 analogue electrical behavior are not modeled.
 
 The LCD renders eight programmable 5×8 CGRAM glyphs (codes 0–7, aliased at 8–15),
-a cursor underline, and simulated-time blinking. ASCII text is supported; other
-controller-ROM glyphs appear as placeholders. With busy timing enabled, Clear/Home
+a cursor underline, and simulated-time blinking. ASCII text and the controller's
+yen/right/left-arrow substitutions are supported; other ROM glyphs appear as
+placeholders. Function Set configurations outside 2-line, 5×8 display mode are
+reported beside the LCD. With busy timing enabled, Clear/Home
 need 1,520 µs and other completed commands/data writes need 37 µs. Writes during
 busy time are ignored and counted visibly. R/W is grounded, so programs must wait;
 they cannot read a busy flag. Disabling timing is an explicit teaching option.

@@ -155,6 +155,8 @@ class DebugView:
 
     def debug_run(self, action):
         self.pause_execution()
+        if not self.apply_batch_size():
+            return
         if self.source_is_stale() or not self.program:
             if not self.assemble():
                 return
@@ -177,7 +179,6 @@ class DebugView:
                     self.status.set(self.debugger.reason)
                 return
             self.show_bottom("Debug")
-            self.running = True
-            self.run_batch()
+            self.start_execution()
         except ValueError as error:
             self.status.set(str(error))

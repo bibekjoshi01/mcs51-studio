@@ -6,6 +6,38 @@ from tkinter import ttk
 from . import theme
 
 
+class Tooltip:
+    """A delayed, non-focusable hint that cleans up with its owning widget."""
+
+    def __init__(self, widget, text):
+        self.widget, self.text = widget, text
+        self.job = self.window = None
+        widget.bind("<Enter>", self.schedule, add=True)
+        for event in ("<Leave>", "<ButtonPress>", "<Destroy>"):
+            widget.bind(event, self.hide, add=True)
+
+    def schedule(self, event=None):
+        self.hide()
+        self.job = self.widget.after(500, self.show)
+
+    def show(self):
+        self.job = None
+        self.window = tk.Toplevel(self.widget)
+        self.window.overrideredirect(True)
+        self.window.geometry(
+            f"+{self.widget.winfo_rootx()}+{self.widget.winfo_rooty() + self.widget.winfo_height() + 4}"
+        )
+        ttk.Label(self.window, text=self.text, padding=6).pack()
+
+    def hide(self, event=None):
+        if self.job is not None:
+            self.widget.after_cancel(self.job)
+            self.job = None
+        if self.window is not None:
+            self.window.destroy()
+            self.window = None
+
+
 class CollapsibleSection(ttk.Frame):
     def __init__(self, parent, title):
         super().__init__(parent)

@@ -5,7 +5,9 @@ from dataclasses import asdict, dataclass
 
 @dataclass
 class ExperimentSettings:
-    keypad_mode: str = "Pulse"
+    keypad_mode: str = "Standard"
+    keypad_bounce: bool = False
+    motor_speed: int = 100
     switch_bounce: bool = False
     bounce_us: int = 30000
     lcd_timing: bool = True
@@ -14,16 +16,21 @@ class ExperimentSettings:
 
     @classmethod
     def validated(cls, data):
-        if not isinstance(data, dict) or set(data) != set(asdict(cls())):
+        fields = set(asdict(cls()))
+        optional = {"keypad_bounce", "motor_speed"}
+        if not isinstance(data, dict) or not fields - optional <= set(data) <= fields:
             raise ValueError("Experiment settings are incomplete or unsupported.")
         result = cls(**data)
         if result.keypad_mode not in ("Standard", "Pulse", "Radio"):
             raise ValueError("Keypad mode must be Standard, Pulse, or Radio.")
         if (
             type(result.switch_bounce) is not bool
+            or type(result.keypad_bounce) is not bool
             or type(result.lcd_timing) is not bool
         ):
             raise ValueError("Bounce and LCD timing must be true or false.")
+        if type(result.motor_speed) is not int or not 1 <= result.motor_speed <= 100:
+            raise ValueError("Motor speed must be from 1 to 100 percent.")
         if type(result.bounce_us) is not int or not 1 <= result.bounce_us <= 100000:
             raise ValueError("Bounce duration must be 1–100000 µs.")
         if result.interrupt_pin not in ("P3.2", "P3.3"):
@@ -41,6 +48,25 @@ class InputStimulus:
         self.previous_switches = [True] * 8
         self.bounces = {}
         self.pulses = {}
+        self.previous_keys = set()
+        self.key_bounces = {}
+
+    def key_levels(self, desired, time, settings):
+        desired = set(desired)
+        if settings.keypad_bounce and settings.keypad_mode == "Standard":
+            for key in desired - self.previous_keys:
+                self.key_bounces[key] = time
+        else:
+            self.key_bounces.clear()
+        self.previous_keys = set(desired)
+        contacts = set(desired)
+        for key, started in list(self.key_bounces.items()):
+            elapsed = time - started
+            if key not in desired or elapsed >= 30000:
+                del self.key_bounces[key]
+            elif elapsed // 3000 % 2 == 0:
+                contacts.discard(key)
+        return contacts
 
     def switch_levels(self, desired, time, settings):
         for index, (old, new) in enumerate(zip(self.previous_switches, desired)):

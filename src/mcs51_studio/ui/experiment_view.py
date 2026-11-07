@@ -25,6 +25,8 @@ class ExperimentView:
         variables = {}
         fields = [
             ("keypad_mode", "Keypad Mode", ["Standard", "Pulse", "Radio"]),
+            ("keypad_bounce", "Keypad Bounce (30 ms)", None),
+            ("motor_speed", "Motor Speed (%)", []),
             ("switch_bounce", "Switch Bounce", None),
             ("bounce_us", "Bounce Duration (µs)", []),
             ("lcd_timing", "Enforce LCD Busy Timing", None),
@@ -57,12 +59,12 @@ class ExperimentView:
             text="Standard: Toggle Keys · Pulse: Hold To Close · Radio: One Key\nBounce and pulses advance with simulated time. LCD R/W is grounded.\nProjects preserve these settings. Processor and clock are fixed for this profile.",
             style="Muted.TLabel",
             justify="left",
-        ).grid(row=7, column=0, columnspan=2, sticky="w", pady=14)
+        ).grid(row=len(fields) + 1, column=0, columnspan=2, sticky="w", pady=14)
 
         def apply(pulse=False):
             try:
                 data = {k: v.get() for k, v in variables.items()}
-                for key in ("bounce_us", "interrupt_width_us"):
+                for key in ("bounce_us", "interrupt_width_us", "motor_speed"):
                     data[key] = int(data[key])
                 settings = ExperimentSettings.validated(data)
                 self.board.set_keypad_mode(settings.keypad_mode)
@@ -86,7 +88,7 @@ class ExperimentView:
                 )
 
         buttons = ttk.Frame(body)
-        buttons.grid(row=8, column=0, columnspan=2, sticky="ew")
+        buttons.grid(row=len(fields) + 2, column=0, columnspan=2, sticky="ew")
         ttk.Button(buttons, text="Apply", command=apply).pack(side="left")
         ttk.Button(buttons, text="Apply And Pulse", command=lambda: apply(True)).pack(
             side="left", padx=8
@@ -117,6 +119,7 @@ class ExperimentView:
 
     def reset_uart_link(self):
         self.board.uart.reset_link()
+        self.board.update()
         self.refresh()
 
     def draw_lcd(self):
@@ -152,7 +155,9 @@ class ExperimentView:
                         x,
                         y,
                         anchor="nw",
-                        text=char if 32 <= ord(char) < 127 else "□",
+                        text={92: "¥", 126: "→", 127: "←"}.get(
+                            ord(char), char if 32 <= ord(char) < 127 else "□"
+                        ),
                         fill=color,
                         font=(self.mono_font, -21),
                     )
@@ -163,5 +168,6 @@ class ExperimentView:
         state = "Busy" if self.cpu.cycles < lcd.busy_until else "Ready"
         self.lcd_status.configure(
             text=f"{state} · {lcd.ignored_writes} ignored writes"
+            + (f" · {lcd.configuration_error}" if lcd.configuration_error else "")
             + (f" · {lcd.last_error}" if lcd.last_error else "")
         )

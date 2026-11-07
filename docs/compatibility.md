@@ -40,10 +40,12 @@ runs on those systems and a complete visual review remain pending.
 
 - The simulated machine cycle is fixed at one microsecond; oscillator selection
   is not exposed in the interface.
-- Sub-instruction shared-pin timing, analogue contact bounce, keypad bounce, and
-  arbitrary processor clocks are not modeled. Switch bounce is deterministic.
+- Sub-instruction shared-pin timing, analogue contact bounce, and arbitrary
+  processor clocks are not modeled. Switch/keypad bounce is deterministic;
+  keypad bounce lasts 30 ms in Standard mode only.
 - LCD busy timing and eight custom glyphs are supported; the full controller
-  character ROM and readable busy flag are not. R/W is grounded.
+  character ROM and readable busy flag are not. The documented yen/right-arrow/
+  left-arrow substitutions are rendered. R/W is grounded.
 - External UART supports 7/8 data bits, parity, 1/2 stops, and start/parity/framing
   diagnostics on a 1 µs grid; it does not model an arbitrary physical link.
 - Change breakpoints compare complete instruction boundaries. Stack frames are

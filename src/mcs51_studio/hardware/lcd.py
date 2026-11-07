@@ -18,6 +18,7 @@ class LCD:
         self.busy_until = 0
         self.ignored_writes = 0
         self.last_error = ""
+        self.configuration_error = ""
 
     def accept(self, value, rs, now=None, enforce_timing=True):
         if now is not None and enforce_timing and now < self.busy_until:
@@ -69,6 +70,11 @@ class LCD:
             self.cg = True
         elif value & 32:
             self.four_bit = not bool(value & 16)
+            self.configuration_error = (
+                ""
+                if value & 8 and not value & 4
+                else "Use Function Set for 2 lines and a 5×8 font (28H or 38H)."
+            )
         elif value & 16:
             if value & 8:
                 self.shift = (self.shift + (-1 if value & 4 else 1)) % 40

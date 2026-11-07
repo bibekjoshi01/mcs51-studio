@@ -50,12 +50,14 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           xvfb-run -a python -u tests/gui.py
+          xvfb-run -a python -u tests/guide_gui.py
           xvfb-run -a python -u tests/stress_gui.py
       - name: Windows/macOS desktop integration tests
         timeout-minutes: 8
         if: runner.os != 'Linux'
         run: |
           python -u tests/gui.py
+          python -u tests/guide_gui.py
           python -u tests/stress_gui.py
       - name: Build and smoke-test Linux installer
         if: runner.os == 'Linux'

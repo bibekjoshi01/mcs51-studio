@@ -168,6 +168,7 @@ class TeachingPeripherals(unittest.TestCase):
     def test_keypad_modes_and_repeat(self):
         board = Board(CPU())
         board.enabled["keypad"] = True
+        board.set_keypad_mode("Pulse")
         a, b = (0, 0), (1, 2)
         board.key_event(a, True)
         self.assertEqual(board.keys, {a})

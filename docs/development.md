@@ -37,6 +37,7 @@ python -m unittest discover -s tests -v
 python -m ruff check .
 python -m ruff format --check .
 python tests/gui.py
+python tests/guide_gui.py
 python tests/stress_gui.py
 ```
 
@@ -63,6 +64,11 @@ event-loop heartbeat measurements, failed/canceled project saves, corrupted
 settings, and bounded serial/activity output. Both desktop suites run in CI and
 native installer jobs. Timings are measurements, not promises of real-time speed;
 simulated machine cycles remain independent of UI throughput.
+
+`tests/test_guide_acceptance.py` and `tests/guide_gui.py` add program-level and
+desktop checks derived from the EdSim51 user guide. See the
+[acceptance review](guide-acceptance.md) for section-by-section coverage, fixes,
+and remaining differences; passing tests do not imply full feature parity.
 
 ## Contributing
 

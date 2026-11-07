@@ -86,6 +86,7 @@ class ProjectView:
         path = self.project_path
         if path is None or save_as:
             chosen = filedialog.asksaveasfilename(
+                initialdir=self.last_directory,
                 defaultextension=".mcs51",
                 filetypes=[("MCS51 Studio Project", "*.mcs51")],
             )
@@ -99,6 +100,7 @@ class ProjectView:
             messagebox.showerror("Save Project Failed", str(error), parent=self.root)
             return False
         self.project_path = Path(path)
+        self.last_directory = str(Path(path).parent)
         self.saved_project = data
         self.saved_source = data["source"]
         self.document_modified = False
@@ -111,7 +113,8 @@ class ProjectView:
         self.pause_execution()
         if path is None:
             path = filedialog.askopenfilename(
-                filetypes=[("MCS51 Studio Project", "*.mcs51")]
+                initialdir=self.last_directory,
+                filetypes=[("MCS51 Studio Project", "*.mcs51")],
             )
         if not path:
             return False
@@ -123,6 +126,7 @@ class ProjectView:
         if not self.confirm_discard():
             return False
         self.apply_project(data, None if recovery else Path(path))
+        self.last_directory = str(Path(path).parent)
         if recovery:
             self.recovered_from = Path(path)
             self.saved_source = ""

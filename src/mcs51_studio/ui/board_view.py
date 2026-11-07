@@ -154,6 +154,17 @@ class BoardView:
             motor, text="Stopped", style="BoardValue.TLabel", anchor="center"
         )
         self.motor_text.pack(fill="x")
+        ttk.Label(motor, text="Motor Speed", style="BoardMuted.TLabel").pack(
+            anchor="w", pady=(8, 0)
+        )
+        self.motor_speed = tk.DoubleVar(value=self.board.experiment.motor_speed)
+        ttk.Scale(
+            motor,
+            from_=1,
+            to=100,
+            variable=self.motor_speed,
+            command=self.motor_speed_changed,
+        ).pack(fill="x")
         card, analogue = self.board_card(
             peripherals,
             "Analogue Signals",
@@ -236,12 +247,23 @@ class BoardView:
             command=self.clear_uart_output,
             style="Footer.TButton",
         ).pack(side="right")
-        self.baud = tk.StringVar(value="4800")
-        self.parity = tk.StringVar(value="None")
+        self.baud = tk.StringVar(value=str(self.board.uart.baud))
+        self.parity = tk.StringVar(
+            value=["None", "Odd", "Even"][self.board.uart.parity]
+        )
         ttk.Combobox(
             uart_controls,
             textvariable=self.baud,
-            values=["1200", "2400", "4800", "9600", "19200"],
+            values=[
+                "1200",
+                "2400",
+                "4800",
+                "9600",
+                "19200",
+                "38400",
+                "57600",
+                "115200",
+            ],
             width=8,
             state="readonly",
         ).pack(side="left", padx=5)
@@ -255,8 +277,8 @@ class BoardView:
         ).pack(side="left")
         framing = ttk.Frame(terminal)
         framing.pack(fill="x", pady=6)
-        self.data_bits = tk.StringVar(value="8")
-        self.stop_bits = tk.StringVar(value="1")
+        self.data_bits = tk.StringVar(value=str(self.board.uart.data_bits))
+        self.stop_bits = tk.StringVar(value=str(self.board.uart.stop_bits))
         for label, var, values in [
             ("Data Bits", self.data_bits, ["7", "8"]),
             ("Stop Bits", self.stop_bits, ["1", "2"]),
@@ -366,6 +388,11 @@ class BoardView:
             self.board.uart.received
         )
 
+    def motor_speed_changed(self, value):
+        self.board.experiment.motor_speed = max(1, min(100, round(float(value))))
+        self.board.update()
+        self.refresh()
+
     def update_board(self):
         enabled = sum(self.board.enabled.values())
         self.board_summary.configure(
@@ -382,9 +409,15 @@ class BoardView:
             button.state(
                 ["!disabled" if self.board.enabled["switches"] else "disabled"]
             )
+        contacts = self.board.key_contacts()
         for index, button in enumerate(self.keypad_buttons):
             key = (3 - index // 3, 2 - index % 3)
-            button.state(["pressed" if key in self.board.keys else "!pressed"])
+            button.state(["pressed" if key in contacts else "!pressed"])
+            button.configure(
+                style="Bouncing.Keypad.TButton"
+                if key in self.board.stimulus.key_bounces
+                else "Keypad.TButton"
+            )
             button.state(["!disabled" if self.board.enabled["keypad"] else "disabled"])
         self.draw_leds()
         self.draw_segments()
@@ -499,11 +532,22 @@ class BoardView:
         c.delete("all")
         c.create_oval(30, 15, 140, 125, fill="#121B29", outline="#303D55", width=2)
         offset = (max(c.winfo_width(), 170) - 170) / 2
-        a = math.radians(self.board.motor_angle)
+        a = math.radians(self.board.motor_angle - 90)
         x = 85 + 45 * math.cos(a)
         y = 70 + 45 * math.sin(a)
         c.create_line(85, 70, x, y, width=5, fill="#A598F8")
         c.create_oval(79, 64, 91, 76, fill="#92A1B9", outline="")
+        c.create_line(
+            85,
+            9,
+            85,
+            23,
+            width=4,
+            fill=theme.ERROR
+            if self.board.enabled["motor"] and self.board.motor_position == 0
+            else theme.MUTED,
+        )
+        self.motor_speed.set(self.board.experiment.motor_speed)
         c.move("all", offset, 0)
         self.motor_text.configure(
             text={-1: "↶ Counterclockwise", 0: "Stopped", 1: "↷ Clockwise"}[

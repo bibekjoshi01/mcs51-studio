@@ -3,6 +3,7 @@
 import json
 import time
 import tkinter as tk
+from dataclasses import asdict, replace
 from pathlib import Path
 from tkinter import filedialog, messagebox, simpledialog, ttk
 
@@ -13,6 +14,7 @@ from ..engine.debugger import Debugger
 from ..engine.source import strip_comment
 from ..hardware.analyzer import LogicCapture, port_mask
 from ..hardware.board import DEFAULT_MAPPING, Board, pin
+from ..hardware.experiment import ExperimentSettings
 from ..hardware.wiring import validate_preset
 from ..metadata import APP_NAME, DESCRIPTION, PROJECT_URL, TAGLINE, VERSION
 from ..resources import LED_COUNTER
@@ -53,20 +55,24 @@ class App(
         self.instruments = None
         self.wiring_presets = {}
         self.program = None
+        self.runtime_program = None
         self.assembled_source = None
         self.running = False
         self.run_after = None
         self.breakpoints = set()
+        self.breakpoint_stop = None
         self.path = None
         self.dirty = False
         self.uart_position = 0
         self.saved_source = LED_COUNTER
         self.document_modified = False
         self.layout_settings = {}
+        self.batch_size = 1000
+        self.last_directory = None
         self.settings_path = settings_path()
         self.load_settings()
         self.status = tk.StringVar(value="Ready · assemble the example to begin")
-        self.speed = tk.StringVar(value="1000")
+        self.speed = tk.StringVar(value=str(self.batch_size))
         self.reg_vars = {}
         self.reg_entries = {}
         self.port_labels = {}
@@ -89,6 +95,7 @@ class App(
             self.run_after = None
 
     def edited(self, event=None):
+        self.breakpoint_stop = None
         self.dirty = True
         self.hex_loaded = False
         self.pause_execution()
@@ -113,6 +120,7 @@ class App(
                 raise AssemblyError("Program contains no instructions or data")
         except AssemblyError as error:
             self.program = None
+            self.runtime_program = None
             self.assembled_source = None
             self.dirty = True
             self.breakpoints.clear()
@@ -141,6 +149,7 @@ class App(
 
     def reset(self):
         self.pause_execution()
+        self.breakpoint_stop = None
         mapping = self.board.mapping
         enabled = self.board.enabled.copy()
         keys = set(self.board.keys)
@@ -165,6 +174,11 @@ class App(
         self.board.enabled.update(enabled)
         if self.program:
             self.cpu.code[:] = self.program.code
+        self.runtime_program = (
+            replace(self.program, code=self.cpu.code, used=set(self.program.used))
+            if self.program
+            else None
+        )
         self.uart_position = 0
         self.clear_uart_output()
         self.board.analogue = self.analogue.get()
@@ -177,13 +191,24 @@ class App(
 
     def step_once(self):
         location = self.program.locations.get(self.cpu.pc, {}) if self.program else {}
-        op = self.debugger.step(self.board, location.get("source", ""), self.program)
+        size = ISA[self.cpu.code[self.cpu.pc]]["size"]
+        source_matches = (
+            self.program
+            and self.cpu.code[self.cpu.pc : self.cpu.pc + size]
+            == self.program.code[self.cpu.pc : self.cpu.pc + size]
+        )
+        op = self.debugger.step(
+            self.board,
+            location.get("source", "") if source_matches else "",
+            self.runtime_program,
+        )
         if self.debugger.terminated:
             self.pause_execution()
         return op
 
     def step(self):
         self.pause_execution()
+        self.breakpoint_stop = None
         if self.source_is_stale() or not self.program:
             if not self.assemble():
                 return
@@ -208,9 +233,37 @@ class App(
             self.status.set("Paused")
             self.refresh()
             return
+        if not self.apply_batch_size():
+            return
         if self.source_is_stale() or not self.program:
             if not self.assemble():
                 return
+        self.start_execution()
+
+    def apply_batch_size(self, event=None):
+        try:
+            value = int(self.speed.get())
+            if not 1 <= value <= 1_000_000:
+                raise ValueError()
+        except ValueError:
+            messagebox.showerror(
+                "Invalid Batch Size",
+                "Enter an instruction count from 1 to 1,000,000.",
+                parent=self.root,
+            )
+            return False
+        self.batch_size = value
+        return True
+
+    def start_execution(self):
+        if self.cpu.pc in self.breakpoints and self.breakpoint_stop != self.cpu.pc:
+            self.pause_execution()
+            self.breakpoint_stop = self.cpu.pc
+            self.debugger.reason = "Breakpoint"
+            self.status.set(f"Breakpoint · PC {self.cpu.pc:04X}")
+            self.refresh()
+            return
+        self.breakpoint_stop = None
         self.running = True
         self.run_batch()
 
@@ -222,9 +275,11 @@ class App(
         try:
             previous_output = self.board.output_state()
             deadline = time.monotonic() + 0.025
-            for _ in range(int(self.speed.get())):
+            for _ in range(self.batch_size):
                 self.step_once()
                 if self.debugger.reason or self.cpu.pc in self.breakpoints:
+                    if self.cpu.pc in self.breakpoints:
+                        self.breakpoint_stop = self.cpu.pc
                     self.pause_execution()
                     break
                 if (
@@ -254,7 +309,7 @@ class App(
         self.listing_breakpoints = set()
         if not self.program:
             return
-        entries = self.program.locations or {
+        entries = dict(self.program.locations) or {
             p: {
                 "source": ISA[self.cpu.code[p]]["display"],
                 "size": ISA[self.cpu.code[p]]["size"],
@@ -262,15 +317,22 @@ class App(
             }
             for p in sorted(self.program.used)[:2000]
         }
-        for address, entry in entries.items():
-            data = " ".join(
-                f"{b:02X}" for b in self.cpu.code[address : address + entry["size"]]
-            )
+        if self.runtime_program:
+            for address in self.runtime_program.used - self.program.used:
+                entries[address] = {"source": "Code memory patch", "size": 1, "line": 0}
+        for address, entry in sorted(entries.items()):
+            encoded = self.cpu.code[address : address + entry["size"]]
+            data = encoded.hex(" ").upper()
+            modified = encoded != self.program.code[address : address + entry["size"]]
             self.listing.insert(
                 "",
                 "end",
                 iid=str(address),
-                values=(f"{address:04X}", data, entry["source"]),
+                values=(
+                    f"{address:04X}",
+                    data,
+                    entry["source"] + (" [code modified]" if modified else ""),
+                ),
             )
 
     def breakpoint(self, event):
@@ -285,6 +347,7 @@ class App(
 
     def edit_register(self, name):
         self.pause_execution()
+        self.breakpoint_stop = None
         try:
             value = int(self.reg_vars[name].get(), 16)
             if name == "PC":
@@ -327,11 +390,18 @@ class App(
                 raise ValueError()
             if self.memory_kind.get() == "Code":
                 self.cpu.code[address] = n
+                if self.runtime_program:
+                    self.runtime_program.used.add(address)
+                self.populate_listing()
+                self.status.set(
+                    "Code memory modified · export Intel HEX to save changes"
+                )
             elif self.memory_kind.get() == "XDATA":
                 self.cpu.xram[address] = n
             else:
                 self.cpu.write(address, n)
             self.debugger.reset()
+            self.breakpoint_stop = None
             self.board.update()
             self.refresh()
         except ValueError as error:
@@ -515,12 +585,17 @@ class App(
             return
         self.pause_execution()
         path = filedialog.askopenfilename(
-            filetypes=[("8051 Programs", "*.asm *.a51 *.hex *.txt"), ("All Files", "*")]
+            initialdir=self.last_directory,
+            filetypes=[
+                ("8051 Programs", "*.asm *.a *.a51 *.hex *.txt"),
+                ("All Files", "*"),
+            ],
         )
         if not path:
             return
         try:
             text = Path(path).read_text(encoding="utf-8-sig")
+            self.last_directory = str(Path(path).parent)
             if path.lower().endswith(".hex"):
                 program = import_hex(text)
                 self.replace_source(
@@ -547,7 +622,9 @@ class App(
         path = self.path
         if path is None or save_as:
             chosen = filedialog.asksaveasfilename(
-                defaultextension=".asm", filetypes=[("8051 Assembly", "*.asm")]
+                initialdir=self.last_directory,
+                defaultextension=".asm",
+                filetypes=[("8051 Assembly", "*.asm")],
             )
             if not chosen:
                 return False
@@ -559,6 +636,7 @@ class App(
             messagebox.showerror("Save Failed", str(error))
             return False
         self.path = path
+        self.last_directory = str(path.parent)
         self.saved_source = source
         if getattr(self, "saved_project", None) is not None:
             self.saved_project["source"] = source
@@ -572,11 +650,14 @@ class App(
             if not self.assemble():
                 return
         path = filedialog.asksaveasfilename(
-            defaultextension=".hex", filetypes=[("Intel HEX", "*.hex")]
+            initialdir=self.last_directory,
+            defaultextension=".hex",
+            filetypes=[("Intel HEX", "*.hex")],
         )
         if path:
             try:
-                Path(path).write_text(export_hex(self.program), encoding="ascii")
+                write_source(path, export_hex(self.runtime_program))
+                self.last_directory = str(Path(path).parent)
                 self.status.set("Intel HEX exported")
             except OSError as e:
                 messagebox.showerror("Export Failed", str(e))
@@ -690,6 +771,24 @@ class App(
             data = json.loads(self.settings_path.read_text(encoding="utf-8"))
             if not isinstance(data, dict):
                 return
+            batch = data.get("batch_size")
+            if type(batch) is int and 1 <= batch <= 1_000_000:
+                self.batch_size = batch
+            directory = data.get("last_directory")
+            if isinstance(directory, str) and directory:
+                self.last_directory = directory
+            if "experiment" in data:
+                try:
+                    self.board.experiment = ExperimentSettings.validated(
+                        data["experiment"]
+                    )
+                except (ValueError, TypeError):
+                    pass
+            if isinstance(data.get("uart"), dict):
+                try:
+                    self.board.uart.configure(**data["uart"])
+                except (ValueError, TypeError):
+                    pass
             presets = data.get("wiring_presets", {})
             if isinstance(presets, dict):
                 for name, preset in presets.items():
@@ -732,6 +831,13 @@ class App(
                     "key_gate": self.board.key_gate,
                     "enabled": self.board.enabled,
                     "layout": self.capture_layout(),
+                    "batch_size": self.batch_size,
+                    "last_directory": self.last_directory,
+                    "experiment": asdict(self.board.experiment),
+                    "uart": {
+                        k: getattr(self.board.uart, k)
+                        for k in ("baud", "parity", "data_bits", "stop_bits")
+                    },
                 },
                 indent=2,
             ),

@@ -74,6 +74,7 @@ def apply_theme(root):
     )
     style.configure("BoardValue.TLabel", background=INPUT, font=(technical, -12))
     style.configure("Keypad.TButton", padding=(10, 9), font=(technical, -14))
+    style.configure("Bouncing.Keypad.TButton", foreground=ERROR)
     style.layout(
         "Switch.TCheckbutton",
         [

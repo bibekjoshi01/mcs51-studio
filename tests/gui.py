@@ -730,6 +730,7 @@ class WorkbenchUI(unittest.TestCase):
         app.replace_source("loop: CPL P1.0\nSJMP loop")
         app.assemble()
         app.speed.set("1000")
+        self.assertTrue(app.apply_batch_size())
         app.observe_outputs.set(True)
         masks = []
         for _ in range(4):

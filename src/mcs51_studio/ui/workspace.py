@@ -61,13 +61,15 @@ class WorkspaceView:
         ttk.Label(toolbar, text="Batch", style="Muted.TLabel").pack(
             side="left", padx=(10, 6)
         )
-        ttk.Combobox(
+        self.batch_selector = ttk.Combobox(
             toolbar,
             textvariable=self.speed,
-            values=["1", "10", "100", "1000", "10000"],
+            values=["1", "10", "100", "1000", "10000", "50000"],
             width=7,
-            state="readonly",
-        ).pack(side="left")
+        )
+        self.batch_selector.pack(side="left")
+        self.batch_selector.bind("<Return>", self.apply_batch_size)
+        self.batch_selector.bind("<<ComboboxSelected>>", self.apply_batch_size)
         for label, command in [
             ("Wiring", self.wiring_window),
             ("Instruments", self.show_instruments),
@@ -189,6 +191,22 @@ class WorkspaceView:
             text="Double-click a row or click an editor line number to toggle a breakpoint.",
             style="Muted.TLabel",
         ).pack(anchor="w", pady=(0, 5))
+        controls = ttk.Frame(parent)
+        self.listing_controls = controls
+        controls.pack(fill="x", pady=(0, 5))
+        ttk.Label(controls, text="Breakpoint (hex)", style="Muted.TLabel").pack(
+            side="left"
+        )
+        self.breakpoint_address = tk.StringVar(value="0000")
+        entry = ttk.Entry(controls, textvariable=self.breakpoint_address, width=6)
+        entry.pack(side="left", padx=6)
+        entry.bind("<Return>", self.toggle_address_breakpoint)
+        ttk.Button(
+            controls, text="Toggle", command=self.toggle_address_breakpoint
+        ).pack(side="left")
+        ttk.Button(
+            controls, text="Clear All Breakpoints", command=self.clear_breakpoints
+        ).pack(side="right")
         self.listing = ttk.Treeview(
             parent, columns=("pc", "bytes", "source"), show="headings", height=4
         )
@@ -204,6 +222,41 @@ class WorkspaceView:
         self.listing.bind("<Double-1>", self.breakpoint)
         self.listing.tag_configure("pc", background="#23413E", foreground=theme.MINT)
         self.listing.tag_configure("break", foreground=theme.ERROR)
+
+    def toggle_address_breakpoint(self, event=None):
+        if self.source_is_stale() or not self.program:
+            if not self.assemble():
+                return
+        try:
+            address = int(self.breakpoint_address.get(), 16)
+            if not 0 <= address <= 65535 or address not in self.runtime_program.used:
+                raise ValueError()
+            if (
+                self.program.locations
+                and address in self.program.used
+                and (
+                    address not in self.program.locations
+                    or not self.program.locations[address].get("instruction", True)
+                )
+            ):
+                raise ValueError()
+        except ValueError:
+            messagebox.showerror(
+                "Invalid Breakpoint",
+                "Enter the hexadecimal address of a loaded instruction.",
+                parent=self.root,
+            )
+            return
+        if address in self.breakpoints:
+            self.breakpoints.remove(address)
+        else:
+            self.breakpoints.add(address)
+        self.refresh()
+
+    def clear_breakpoints(self):
+        self.breakpoints.clear()
+        self.breakpoint_stop = None
+        self.refresh()
 
     def build_memory(self, parent):
         header = ttk.Frame(parent)
@@ -224,8 +277,10 @@ class WorkspaceView:
         )
         entry = ttk.Entry(header, textvariable=self.memory_start, width=7)
         entry.pack(side="left")
-        entry.bind("<Return>", lambda e: self.refresh())
-        ttk.Button(header, text="Go", command=self.refresh).pack(side="left", padx=5)
+        entry.bind("<Return>", self.goto_memory)
+        ttk.Button(header, text="Go", command=self.goto_memory).pack(
+            side="left", padx=5
+        )
         ttk.Label(
             header, text="Double-click to edit a byte", style="Muted.TLabel"
         ).pack(side="right")
@@ -242,9 +297,28 @@ class WorkspaceView:
             self.memory.column(name, width=width, minwidth=30, stretch=name != "addr")
         scrollbar = ttk.Scrollbar(parent, command=self.memory.yview)
         scrollbar.pack(side="right", fill="y")
+        horizontal = ttk.Scrollbar(
+            parent, orient="horizontal", command=self.memory.xview
+        )
+        horizontal.pack(side="bottom", fill="x")
+        self.memory.configure(xscrollcommand=horizontal.set)
         self.memory.configure(yscrollcommand=scrollbar.set)
         self.memory.pack(fill="both", expand=True)
         self.memory.bind("<Double-1>", self.edit_memory)
+
+    def goto_memory(self, event=None):
+        try:
+            address = int(self.memory_start.get(), 16)
+            if not 0 <= address <= 65535:
+                raise ValueError()
+        except ValueError:
+            messagebox.showerror(
+                "Invalid Address",
+                "Enter a hexadecimal address from 0000 to FFFF.",
+                parent=self.root,
+            )
+            return
+        self.refresh()
 
     def build_menu(self):
         menu = tk.Menu(self.root)
@@ -591,6 +665,7 @@ class WorkspaceView:
         self.document_modified = False
         self.dirty = True
         self.program = None
+        self.runtime_program = None
         self.assembled_source = None
         self.breakpoints.clear()
         self.populate_listing()

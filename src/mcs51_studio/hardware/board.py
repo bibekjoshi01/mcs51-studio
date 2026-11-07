@@ -147,6 +147,10 @@ class Board:
             if not self.uart.tx_line:
                 self.hold_low(self.mapping["uart_tx"][0])
         if self.enabled["motor"]:
+            interval = 700 / self.experiment.motor_speed
+            if interval != self.motor_current:
+                self.motor_count *= interval / self.motor_current
+                self.motor_current = interval
             first, second = self.get("motor_control", 0), self.get("motor_control", 1)
             self.motor_direction = 0 if first == second else 1 if first else -1
             if self.motor_direction:
@@ -213,7 +217,7 @@ class Board:
         # A connected key group must settle regardless of set iteration order.
         for _ in range(7):
             before = tuple(self.cpu.port_inputs.values())
-            for row, column in self.keys:
+            for row, column in self.key_contacts():
                 r = self.mapping["key_rows"][row]
                 col = self.mapping["key_columns"][column]
                 if not self.read_pin(r) or not self.read_pin(col):
@@ -222,9 +226,12 @@ class Board:
             if tuple(self.cpu.port_inputs.values()) == before:
                 break
         if self.key_gate and any(
-            not self.read_pin(p) for p in self.mapping["key_rows"]
+            not self.read_pin(p) for p in self.mapping["key_columns"]
         ):
             self.hold_low(self.mapping["key_gate"][0])
+
+    def key_contacts(self):
+        return self.stimulus.key_levels(self.keys, self.cpu.cycles, self.experiment)
 
     def key_event(self, key, pressed):
         if pressed and not self.enabled["keypad"]:
@@ -258,6 +265,8 @@ class Board:
         if mode != self.experiment.keypad_mode:
             self.keys.clear()
             self.held_keys.clear()
+            self.stimulus.key_bounces.clear()
+            self.stimulus.previous_keys.clear()
         self.experiment.keypad_mode = mode
 
     def receive(self, text):
