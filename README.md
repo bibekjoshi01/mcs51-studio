@@ -54,6 +54,7 @@ and peripheral behavior supported by this version.
 
 ## Development And Documentation
 
+- [Contributing](CONTRIBUTING.md): reporting bugs and submitting changes.
 - [Development](docs/development.md): source setup, testing, and contribution.
 - [Workbench guide](docs/workbench.md): editor, debugger, panels, and shortcuts.
 - [Processor Profile](docs/processor.md): exact configuration and validation.
