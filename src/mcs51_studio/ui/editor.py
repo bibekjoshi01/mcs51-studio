@@ -113,7 +113,9 @@ class AssemblyEditor(EditorActions, ttk.Frame):
         ).pack(side="right")
         self.footer = ttk.Frame(self, padding=(12, 5))
         footer = self.footer
-        footer.pack(fill="x")
+        # Reserve the status row before the text area's font-dependent request
+        # is allocated, so zooming only changes the scrollable editor content.
+        footer.pack(side="bottom", before=self.body, fill="x")
         ttk.Label(footer, text="8051 ASM · UTF-8", style="Muted.TLabel").pack(
             side="left"
         )
@@ -391,7 +393,7 @@ class AssemblyEditor(EditorActions, ttk.Frame):
         self.clear_diagnostic()
         self.error_line = line
         self.diagnostic_text.set(f"Line {line}: {message}" if line else message)
-        self.diagnostic.pack(before=self.footer, fill="x")
+        self.diagnostic.pack(side="bottom", before=self.body, fill="x")
         if line:
             self.text.tag_add("error", f"{line}.0", f"{line}.0+1line")
             self.goto_error()

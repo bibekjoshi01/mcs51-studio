@@ -515,6 +515,50 @@ class WorkbenchUI(unittest.TestCase):
         self.assertEqual(view.zoom.get(), "100%")
         self.assertEqual(app.editor.get("1.0", "end-1c"), source)
 
+    def test_editor_zoom_preserves_footer_and_diagnostics(self):
+        app, view = self.app, self.app.editor_view
+        self.root.deiconify()
+        self.addCleanup(self.root.withdraw)
+        for geometry in ("960x640", "1370x900"):
+            self.root.geometry(geometry)
+            self.root.update()
+            app.reset_layout()
+            for panels_visible in (False, True):
+                if panels_visible:
+                    view.show_find()
+                    view.show_diagnostic("Example assembly error", line=1)
+                else:
+                    view.hide_find()
+                    view.clear_diagnostic()
+                view.change_zoom(reset=True)
+                for size in range(13, 25):
+                    with self.subTest(
+                        geometry=geometry, panels=panels_visible, font_size=size
+                    ):
+                        if size > 13:
+                            view.change_zoom(1)
+                        self.root.update()
+                        self.assertTrue(view.footer.winfo_ismapped())
+                        self.assertEqual(
+                            view.footer.winfo_height(), view.footer.winfo_reqheight()
+                        )
+                        self.assertLessEqual(
+                            view.footer.winfo_y() + view.footer.winfo_height(),
+                            view.winfo_height(),
+                        )
+                        self.assertLessEqual(
+                            view.body.winfo_y() + view.body.winfo_height(),
+                            view.footer.winfo_y(),
+                        )
+                        if panels_visible:
+                            self.assertTrue(view.search_panel.winfo_ismapped())
+                            self.assertTrue(view.diagnostic.winfo_ismapped())
+                            self.assertLessEqual(
+                                view.diagnostic.winfo_y()
+                                + view.diagnostic.winfo_height(),
+                                view.footer.winfo_y(),
+                            )
+
     def test_search_options_unicode_and_atomic_replacement(self):
         app, view = self.app, self.app.editor_view
         search = view.search_panel
