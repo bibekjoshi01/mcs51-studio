@@ -1,0 +1,11 @@
+---
+import { Code } from '@astrojs/starlight/components';
+interface Props { name: string }
+const { name } = Astro.props;
+const files = import.meta.glob<string>('../../public/examples/*.asm', { query: '?raw', import: 'default', eager: true });
+const code = files[`../../public/examples/${name}.asm`];
+if (!code) throw new Error(`Unknown example: ${name}`);
+---
+<Code code={code.trimEnd()} lang="asm" title={`${name}.asm`} />
+<p class="example-download"><a href={`${import.meta.env.BASE_URL}examples/${name}.asm`} download={`${name}.asm`}>Download {name}.asm</a></p>
+<style>.example-download { font-size: .875rem; margin-block: .75rem 1.5rem; } a { color: var(--sl-color-text-accent); text-underline-offset: .2em; }</style>

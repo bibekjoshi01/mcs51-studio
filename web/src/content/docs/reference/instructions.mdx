@@ -1,0 +1,37 @@
+---
+title: Instruction catalog
+description: Find Classic 8051 instruction encodings, byte sizes, and machine-cycle costs from the application's own catalog.
+---
+
+import InstructionCatalog from '../../../components/InstructionCatalog.astro';
+
+An instruction's mnemonic describes the operation; its operands describe where data comes from and where the result goes. The same mnemonic can have several encodings and sizes.
+
+## A few instructions to start with
+
+- **MOV:** copy a byte or immediate value. The destination comes first.
+- **ADD / ADDC / SUBB:** perform arithmetic using A. ADDC includes carry; SUBB subtracts with borrow through CY.
+- **INC / DEC:** increase or decrease a value by one.
+- **CLR / SETB / CPL:** clear, set, or complement a supported bit; CLR/CPL also have accumulator forms.
+- **SJMP / LJMP:** jump to a label. SJMP uses a signed relative offset; LJMP can target the full code space.
+- **JZ / JNZ:** test whether A is zero or nonzero.
+- **DJNZ:** decrement an operand and jump when the result is nonzero.
+- **ACALL / LCALL / RET:** call and return from a subroutine.
+- **RETI:** return from an interrupt and release its active priority.
+- **MOVC / MOVX:** read code memory or access external-data memory.
+
+Use **Debug → Last Instruction** to connect an operation with its actual inputs, flags, and outputs. The desktop footer also opens the built-in Instruction Reference.
+
+## Encoding reference
+
+This catalog is copied from the application's instruction data. Expand a mnemonic to see its forms. Operand values such as `00H` are examples of the encoding layout, not the only values you can use. In source, prefer labels for branch destinations.
+
+**Bytes** is encoded instruction length. **Cycles** is the base instruction cost in machine cycles; one cycle is **1 µs** in this processor profile. Interrupt entry can add a separate cost. Reserved opcode A5H is intentionally excluded and stops execution in the simulator.
+
+<InstructionCatalog />
+
+## More detail
+
+The [processor model](../processor/) explains addressing, flags, timer/interrupt behavior, and timing limits. The [assembly syntax guide](../assembly/) explains directives and expressions accepted by this assembler.
+
+For complete instruction semantics, consult the primary instruction-set reference linked from the processor page, keeping this simulator's supported profile in mind.

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 512 512">
+  <title>MCS51 Studio</title>
+  <desc>A mint microcontroller with a 51 mark on a dark navy rounded tile.</desc>
+  <rect x="24" y="24" width="464" height="464" rx="108" fill="#101723" stroke="#303D55" stroke-width="2"/>
+  <g fill="none" stroke="#78E4BB" stroke-width="14" stroke-linecap="round">
+    <path d="M176 100v32m54-32v32m52-32v32m54-32v32M176 380v32m54-32v32m52-32v32m54-32v32M100 176h32m-32 54h32m-32 52h32m-32 54h32M380 176h32m-32 54h32m-32 52h32m-32 54h32"/>
+    <rect x="132" y="132" width="248" height="248" rx="40" fill="#182131"/>
+  </g>
+  <path d="M244 198h-52v52h36q16 0 16 16v30q0 18-18 18h-34" fill="none" stroke="#78E4BB" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="m284 220 28-22v116m-22 0h44" fill="none" stroke="#A598F8" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

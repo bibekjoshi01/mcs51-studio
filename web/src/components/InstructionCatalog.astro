@@ -1,0 +1,60 @@
+---
+import isa from '../data/isa.json';
+const groups = new Map<string, typeof isa>();
+for (const instruction of isa) {
+  if (instruction.opcode === 0xa5) continue;
+  const name = instruction.display.split(' ')[0]!;
+  if (!groups.has(name)) groups.set(name, []);
+  groups.get(name)!.push(instruction);
+}
+const catalog = [...groups.entries()].sort(([a], [b]) => a.localeCompare(b));
+---
+<div class="instruction-catalog">
+  <label for="instruction-filter">Find an instruction</label>
+  <input id="instruction-filter" type="search" placeholder="Try MOVX, ADD, or RETI" autocomplete="off" aria-describedby="catalog-count" />
+  <p id="catalog-count" role="status">{catalog.length} instruction groups · 255 defined opcodes</p>
+  <div class="catalog-list">
+    {catalog.map(([name, entries]) => <details class="instruction-group" data-name={name.toLowerCase()}>
+      <summary><code>{name}</code><span>{entries.length} {entries.length === 1 ? 'encoding' : 'encodings'}</span></summary>
+      <div class="catalog-table-wrap" tabindex="0" role="region" aria-label={`${name} instruction encodings`}>
+        <table><thead><tr><th scope="col">Opcode</th><th scope="col">Example form</th><th scope="col">Bytes</th><th scope="col">Cycles</th></tr></thead><tbody>
+          {entries.map((entry) => <tr><td><code>{entry.opcode.toString(16).toUpperCase().padStart(2, '0')}H</code></td><td><code>{entry.display}</code></td><td>{entry.size}</td><td>{entry.cycles}</td></tr>)}
+        </tbody></table>
+      </div>
+    </details>)}
+  </div>
+  <p class="catalog-empty" hidden>No instruction matches. Try a mnemonic such as MOV, ADD, or SJMP.</p>
+</div>
+<script>
+  const input = document.querySelector<HTMLInputElement>('#instruction-filter')!;
+  const groups = [...document.querySelectorAll<HTMLDetailsElement>('.instruction-group')];
+  input.addEventListener('input', () => {
+    const query = input.value.trim().toLowerCase();
+    let visible = 0;
+    groups.forEach((group) => {
+      const matches = group.dataset.name!.includes(query);
+      group.hidden = !matches;
+      if (matches) visible++;
+    });
+    document.querySelector('#catalog-count')!.textContent = `${visible} of ${groups.length} instruction groups`;
+    (document.querySelector('.catalog-empty') as HTMLElement).hidden = visible !== 0;
+  });
+</script>
+<style>
+  .instruction-catalog { margin-top: 1.5rem; }
+  label { display: block; font-size: .9375rem; font-weight: 650; color: var(--sl-color-white); margin-bottom: .5rem; }
+  input { display: block; width: 100%; padding: .7rem .85rem; border-radius: .4rem; border: 1px solid var(--sl-color-gray-4); background: var(--sl-color-bg); color: var(--sl-color-white); font: inherit; }
+  input::placeholder { color: var(--sl-color-gray-3); }
+  #catalog-count { font-size: .875rem; color: var(--sl-color-gray-2); margin-block: .65rem 1.25rem; }
+  details { border: 1px solid var(--sl-color-hairline); border-radius: .4rem; margin-top: .6rem; }
+  summary { padding: .75rem 1rem; cursor: pointer; color: var(--sl-color-white); }
+  summary code { font-weight: 700; background: none; }
+  summary span { float: right; font-size: .875rem; color: var(--sl-color-gray-2); }
+  .catalog-table-wrap { overflow-x: auto; }
+  table { font-size: .875rem; width: 100%; border-collapse: collapse; margin: 0; }
+  th, td { text-align: left; padding: .65rem 1rem; border-top: 1px solid var(--sl-color-hairline); }
+  th { background: var(--sl-color-bg-sidebar); color: var(--sl-color-white); }
+  td code { white-space: nowrap; background: none; font-size: .875rem; }
+  [hidden] { display: none; }
+  .catalog-empty { padding: 1rem; border: 1px dashed var(--sl-color-hairline); border-radius: .4rem; }
+</style>

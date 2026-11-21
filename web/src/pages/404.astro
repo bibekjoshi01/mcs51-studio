@@ -1,0 +1,20 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+const base = import.meta.env.BASE_URL;
+---
+<StarlightPage
+  frontmatter={{
+    title: 'Page not found',
+    description: 'This handbook page could not be found. Return to the overview or search the documentation.',
+    editUrl: false,
+    prev: false,
+    next: false,
+    tableOfContents: false,
+  }}
+>
+  <div data-pagefind-ignore>
+    <p>This address does not point to a handbook page. The page may have moved, or the link may have a typo.</p>
+    <p>Use Search to find a topic, or <a href={base}>return to the overview</a>. If you are new to MCS51 Studio, start with <a href={`${base}start/first-program/`}>Your first program</a>.</p>
+    <p>If a link inside the handbook brought you here, please <a href="https://github.com/bibekjoshi01/mcs51-studio/issues">report the broken link</a> with the address of the page you came from.</p>
+  </div>
+</StarlightPage>

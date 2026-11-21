@@ -1,0 +1,27 @@
+---
+import { Icon } from '@astrojs/starlight/components';
+import { Image } from 'astro:assets';
+import workbench from '../assets/workbench.png';
+const base = import.meta.env.BASE_URL;
+const guides = [
+  { icon: 'open-book', title: 'New to the 8051?', body: 'Start with the essentials, install the app, and write your first program.', label: 'Start here', path: 'start/introduction/' },
+  { icon: 'code-branch', title: 'Find your way around', body: 'Get comfortable with the editor, debugger, registers, and memory.', label: 'Use the workbench', path: 'workbench/interface/' },
+  { icon: 'puzzle', title: 'Connect code to hardware', body: 'Explore LEDs, displays, inputs, and the signals that connect them.', label: 'Explore peripherals', path: 'peripherals/wiring/' },
+] as const;
+---
+<div class="home-content">
+  <section class="guide-section" aria-labelledby="find-start">
+    <div class="section-heading"><div><p class="eyebrow">A CLEAR PATH THROUGH THE BASICS</p><h2 id="find-start">Make yourself at home.</h2></div><a href={`${base}reference/troubleshooting/`}>Need a hand?</a></div>
+    <div class="guide-grid">
+      {guides.map((guide) => <a class="guide-card" href={`${base}${guide.path}`}><span class="guide-icon"><Icon name={guide.icon} size="24" /></span><h3>{guide.title}</h3><p>{guide.body}</p><span class="card-link">{guide.label}</span></a>)}
+    </div>
+  </section>
+  <section class="workbench-section" aria-labelledby="see-workbench">
+    <div class="section-heading"><div><p class="eyebrow">YOUR VIRTUAL WORKBENCH</p><h2 id="see-workbench">See what your code is doing.</h2></div><a href={`${base}workbench/interface/`}>Take the tour</a></div>
+    <p class="section-intro">The editor, processor inspector, and virtual board work together. Follow each instruction from source to a change you can inspect.</p>
+    <a class="app-screenshot" href={`${base}workbench/interface/`} aria-label="Explore the MCS51 Studio workbench"><Image src={workbench} width={1440} loading="lazy" alt="MCS51 Studio desktop workbench, with LED-counter assembly source on the left and the next instruction, status flags, and registers in the processor inspector on the right." /></a>
+    <div class="workflow-strip"><p><strong>Write</strong><span>Start with a few assembly instructions.</span></p><p><strong>Step</strong><span>Execute one instruction at a time.</span></p><p><strong>Understand</strong><span>Inspect the values and signals that change.</span></p></div>
+  </section>
+  <section class="practice-panel" aria-labelledby="try-something"><div><p class="eyebrow">LEARN BY MAKING SMALL CHANGES</p><h2 id="try-something">A few lines go a long way.</h2><p>Count with LEDs, read switches, or watch a timer overflow. Each example includes the setup and what to look for.</p></div><a class="primary-link" href={`${base}examples/`}>Try an example</a></section>
+  <div class="reference-row"><span>Already know your way around?</span><a href={`${base}reference/assembly/`}>Assembly syntax</a><a href={`${base}reference/shortcuts/`}>Keyboard shortcuts</a><a href={`${base}reference/limits/`}>Features & limits</a></div>
+</div>

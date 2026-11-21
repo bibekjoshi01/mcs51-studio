@@ -1,0 +1,51 @@
+---
+const base = import.meta.env.BASE_URL;
+---
+<section class="welcome-hero" aria-labelledby="_top">
+  <div class="hero-copy">
+    <p class="eyebrow">THE MCS51 STUDIO HANDBOOK</p>
+    <h1 id="_top">Learn the 8051.<br /><span>One instruction<br class="wide-break" /> at a time.</span></h1>
+    <p class="hero-intro">Write a little assembly. Step through it. See what changes. Your guide to understanding the processor and the board around it.</p>
+    <div class="hero-actions">
+      <a class="primary-link" href={`${base}start/first-program/`}>Start learning</a>
+      <a class="secondary-link" href={`${base}start/installation/`}>Download the app</a>
+    </div>
+    <p class="platform-note">Windows · macOS · Linux <span>Free for educational use</span></p>
+  </div>
+  <div class="concept-board">
+    <div class="board-heading"><span class="board-name">A line of code. A visible result.</span><span class="board-label">8051 / P1</span></div>
+    <div class="code-line"><span class="code-op">MOV</span> P1,<span class="code-value">#<span data-port-code>0FEH</span></span></div>
+    <div class="pin-traces" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+    <div class="led-bank" role="group" aria-label="Illustration: toggle each active-low LED">
+      {Array.from({ length: 8 }, (_, index) => 7 - index).map((bit) => (
+        <button type="button" class="led-control" data-bit={bit} aria-pressed={bit === 0 ? 'true' : 'false'} aria-label={`LED ${bit}: ${bit === 0 ? 'on' : 'off'}. Toggle LED ${bit}`}>
+          <span class="led-light" aria-hidden="true"></span><span class="pin-label">{bit}</span>
+        </button>
+      ))}
+    </div>
+    <div class="byte-readout"><span>PORT (HEX) <strong data-port-hex>FE</strong></span><span>LIT BITS (DEC) <strong data-lit-value>1</strong></span></div>
+    <p class="board-explanation">These LEDs are active-low: <strong>0 means on.</strong><br />Select an LED to explore the idea.</p>
+    <div class="board-footnote">Interactive illustration · the desktop app runs your programs</div>
+    <p class="sr-only" aria-live="polite" data-led-status>P1 is FE hexadecimal. LED 0 is on.</p>
+  </div>
+</section>
+<script>
+  const controls = document.querySelectorAll<HTMLButtonElement>('.led-control');
+  let port = 0xfe;
+  controls.forEach((control) => {
+    control.addEventListener('click', () => {
+      port ^= 1 << Number(control.dataset.bit);
+      const hex = port.toString(16).toUpperCase().padStart(2, '0');
+      document.querySelector('[data-port-code]')!.textContent = `0${hex}H`;
+      document.querySelector('[data-port-hex]')!.textContent = hex;
+      document.querySelector('[data-lit-value]')!.textContent = String(255 - port);
+      controls.forEach((button) => {
+        const bit = Number(button.dataset.bit);
+        const on = !(port & (1 << bit));
+        button.setAttribute('aria-pressed', String(on));
+        button.setAttribute('aria-label', `LED ${bit}: ${on ? 'on' : 'off'}. Toggle LED ${bit}`);
+      });
+      document.querySelector('[data-led-status]')!.textContent = `P1 is ${hex} hexadecimal. The decimal value of the lit LED pattern is ${255 - port}.`;
+    });
+  });
+</script>

@@ -1,0 +1,84 @@
+---
+title: Example programs
+description: Small, downloadable 8051 examples with setup instructions, expected results, and ideas to try next.
+---
+
+import ExampleCode from '../../components/ExampleCode.astro';
+
+These programs are designed for small experiments in MCS51 Studio. Each includes a setup, an expected result, and a change to try. The downloads contain the same source shown below.
+
+Open a downloaded `.asm` file in the app, apply its preset in **Wiring**, and assemble with **F6**. Step with **F7** or run/pause with **F5**. Applying a preset does not load the source for you.
+
+## Light one LED
+
+**Setup:** apply **LED Counter**. **Goal:** connect two instructions with one visible output.
+
+<ExampleCode name="first-led" />
+
+**Look for:** after the first instruction, P1 is FF and all LEDs are off. After the second, P1 is FE and LED 0 lights. The loop keeps this state.
+
+**Try:** change `P1.0` to `P1.1`. The lit-bit readout changes from 1 to 2. Read [Your first program](../start/first-program/) for the complete walkthrough.
+
+## Count with LEDs
+
+**Setup:** apply **LED Counter**. This is the example bundled with the application.
+
+<ExampleCode name="led-counter" />
+
+**Look for:** the active-low LED pattern counts upward as A counts downward. At A = FF, no LEDs are lit. At FE, LED 0 is lit; at FD, LED 1 is lit; at FC, both are lit.
+
+**Try:** use **F8** on `ACALL delay` to skip over the delay's internal instructions. Lower `#20` to shorten the delay in simulated time. The program uses R0 and R1 for its nested delay loops.
+
+## Read switches
+
+**Setup:** apply **Switch Input**. **Goal:** read effective input levels and copy them to an output port.
+
+<ExampleCode name="switch-mirror" />
+
+**Look for:** a switch at level 0 lights the matching LED. P2's latch remains FF while its effective pin level changes.
+
+**Try:** replace `MOV P1,A` with `CPL A` followed by `MOV P1,A` to invert the display. Keep P2 released high so the switches can drive it.
+
+## Registers and memory
+
+**Setup:** peripherals are not used. Open **Memory → RAM** and **Debug → Last Instruction**.
+
+<ExampleCode name="registers-memory" />
+
+**Look for:** after three steps, A and RAM address 30H both contain 08. The next Step or Run reports Program terminated because no code follows. Final values remain available.
+
+**Try:** add watches for `ACC` and `RAM[30]`. Enable Break On Change on `RAM[30]`, Reset, and Run. It should stop when the final MOV changes RAM.
+
+## Wait for a timer
+
+**Setup:** apply **Timer / PWM**. Open the Logic Analyzer, apply probe `P1.0`, and Arm before running.
+
+<ExampleCode name="timer-toggle" />
+
+**Look for:** P1.0 toggles after Timer 0 overflows. Mode 1 counts from FC18H through FFFFH, requiring 1,000 timer increments. Polling, reloading, and the toggle instructions add overhead, so the output half-period is longer than exactly 1,000 µs.
+
+**Try:** change the preload and measure the new interval. Use the analyzer's cursor difference rather than wall-clock playback speed. A full output period contains two toggles.
+
+## Make a DAC ramp
+
+**Setup:** apply **DAC Waveform** and open **Instruments → DAC Scope**.
+
+<ExampleCode name="dac-ramp" />
+
+**Look for:** a repeating stepped ramp from 0 to 5 V as A increases and wraps from FF to 00. The DAC accepts P1 while its write input P0.7 is low.
+
+**Try:** use Freeze and two cursors to inspect part of the ramp. Remember that the scope keeps the latest 600 samples. This simple program deliberately runs quickly and has no software delay.
+
+## Send one UART character
+
+**Setup:** apply **UART Link**. Set terminal framing to **2400 baud, 8 data bits, no parity, 1 stop bit**, then choose Apply Framing before running. Use Reset Link if a framing change requires it.
+
+<ExampleCode name="uart-character" />
+
+**Look for:** one `A` appears in the UART output, then the program stays in its final loop. Timer 1 mode 2 with reload F3 at 12 MHz produces about 2404 baud, close to the selected 2400 terminal rate.
+
+**Try:** change `'A'` to `'B'`, reassemble, and run again. Clear Output changes the visible transcript; Reset Machine clears link state and diagnostics too.
+
+## Keep an experiment
+
+After adding wiring, watches, or instruments, choose **File → Save Project** to keep the setup alongside your source. The [project guide](../workbench/projects/) explains what is included.
