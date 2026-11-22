@@ -143,5 +143,19 @@ Upload the contents of `dist/`, preserving `_astro/`, `pagefind/`, and `examples
 Configure the host to serve `404.html` for missing routes. To return to a root-path
 local build, remove `SITE_URL`/`BASE_PATH` from the environment and rebuild.
 
-Hosting was intentionally left unconfigured: the repository website is ready for
-a chosen static host, but no remote site or deployment was created.
+## GitHub Pages workflow
+
+The repository includes `.github/workflows/pages.yml`. Set **Settings → Pages →
+Build and deployment → Source** to **GitHub Actions**. The workflow runs on changes
+to `web/` or the workflow itself on `main`, and can also be started manually.
+
+It uses Node.js 24 and `npm ci`, builds and checks the website, verifies the assembly
+examples, then uploads only `web/dist/` for deployment. GitHub Pages supplies the
+production origin and base path, so asset links, search, canonical URLs, and the
+sitemap use the actual configured address without hard-coded account settings.
+
+A project repository uses `https://OWNER.github.io/REPOSITORY/`. The exact address
+`https://mcs51-studio.github.io/` requires an account or organization named
+`mcs51-studio` and a repository named `mcs51-studio.github.io` under that owner.
+Naming a repository `mcs51-studio.github.io` under another account does not give it
+that hostname. See [GitHub's Pages URL rules](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages).

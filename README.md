@@ -54,6 +54,8 @@ and peripheral behavior supported by this version.
 
 ## Development And Documentation
 
+- [Online handbook](https://bibekjoshi01.github.io/mcs51-studio/): beginner tutorials,
+  installation, peripheral guides, examples, and reference.
 - [Contributing](CONTRIBUTING.md): reporting bugs and submitting changes.
 - [Development](docs/development.md): source setup, testing, and contribution.
 - [Workbench guide](docs/workbench.md): editor, debugger, panels, and shortcuts.

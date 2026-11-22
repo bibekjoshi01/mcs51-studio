@@ -43,7 +43,7 @@ Verified results: all seven downloadable examples and 13 inline assembly fragmen
 assemble; the example behavior checks pass. Root and `/mcs51-studio` production
 builds pass type and generated-link checks. Browser review covers light/dark desktop
 reading, 390 px mobile layouts, the mobile menu, indexed search, the LED illustration,
-and instruction filtering/expansion. No remote publishing was performed.
+and instruction filtering/expansion. That review used a local production preview.
 
 ## Ongoing content maintenance
 
